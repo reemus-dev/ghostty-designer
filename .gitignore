@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+/target/
+# Tauri's generated ACL schemas
+crates/app/gen/
+ui/styles.gen.css
+
+# sandboxes, VMs and smoke screenshots
+.cache/
+
+# mise local overrides
+.mise.local.toml
+.mise.*.local.toml
+
+# secrets and logs
+.env
+.env.*
+.auth.json
+*.log
+
+# editors
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# AI agent local state
+.agents/*
+!.agents/filehooks.*
+.claude/
+.codex/
+.pi/
+.air/
+.playwright-cli/
+.mcp.json
+CLAUDE.local.md

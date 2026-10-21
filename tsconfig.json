@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    {"path": "./tsconfig.app.json"},
+    {"path": "./tsconfig.bun.json"}
+  ],
+  // shadcn reads the aliases from here.
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./ui/*"]
+    }
+  }
+}

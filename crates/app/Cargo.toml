@@ -1,0 +1,38 @@
+[package]
+name = "ghostty-designer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["embed"]
+# Embeds dist/ui. `tauri dev` drops it and loads `devUrl` instead.
+embed = ["tauri/custom-protocol"]
+
+# The Tauri CLI writes the `features` lists of tauri and tauri-build on each
+# `tauri dev` and `tauri build`, from tauri.conf.json.
+[build-dependencies]
+tauri-build = { version = "2.7.3", features = [] }
+
+[dependencies]
+clap = { version = "4.6.7", features = ["derive"] }
+ghostty-designer-host = { path = "../host" }
+libc.workspace = true
+tauri = { version = "2.12.4", features = [] }
+tokio = { workspace = true, features = ["signal", "time"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = { workspace = true, features = ["std"] }
+objc2-foundation = { workspace = true, features = [
+  "std",
+  "NSAppleEventDescriptor",
+  "NSAppleEventManager",
+] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+gtk = "0.18.2"
+webkit2gtk = { version = "2.0.2", features = ["v2_40"] }

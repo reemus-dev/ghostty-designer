@@ -1,0 +1,43 @@
+{
+  "description": "An edit outside the designer is picked up, and drops draft values it makes redundant",
+  "steps": [
+    {"op": "intent", "intent": {"type": "theme", "theme": "Nord"}},
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "font-size", "values": ["20"]}
+    },
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "background", "values": ["#101010"]}
+    },
+    {
+      "op": "write-file",
+      "path": "xdg/ghostty/config",
+      "text": "<baseline>font-size = 20\nconfig-file = ?ghostty-designer.conf\n",
+      "expect": "state"
+    },
+    {"op": "settle"},
+    {
+      "op": "write-file",
+      "path": "xdg/ghostty/config",
+      "text": "background = #101010\n",
+      "append": true,
+      "expect": "state"
+    },
+    {"op": "settle"},
+    {
+      "op": "write-file",
+      "path": "xdg/ghostty/config",
+      "text": "<baseline>",
+      "expect": "state"
+    },
+    {"op": "settle"},
+    {
+      "op": "write-file",
+      "path": "xdg/ghostty/config",
+      "text": "<baseline>config-file = ?ghostty-designer.conf\n",
+      "expect": "state"
+    },
+    {"op": "settle"}
+  ]
+}

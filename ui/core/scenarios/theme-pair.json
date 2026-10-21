@@ -1,0 +1,33 @@
+{
+  "description": "A light/dark theme pair shows its half, and the other half can be chosen",
+  "steps": [
+    {
+      "op": "intent",
+      "intent": {
+        "type": "theme",
+        "theme": "light:GitHub Light Default,dark:GitHub Dark Default",
+        "pick": true
+      }
+    },
+    {"op": "intent", "intent": {"type": "appearance", "appearance": "light"}},
+    {"op": "intent", "intent": {"type": "appearance", "appearance": "dark"}},
+    {"op": "intent", "intent": {"type": "appearance", "appearance": "light"}},
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "background", "values": ["#202020"]}
+    },
+    {"op": "plan-save"},
+    {"op": "save"},
+    {"op": "settle"},
+    {"op": "intent", "intent": {"type": "appearance", "appearance": "light"}},
+    {"op": "intent", "intent": {"type": "revert"}},
+    {
+      "op": "intent",
+      "intent": {"type": "theme", "theme": "light:Nord Light,dark:Nope"}
+    },
+    {"op": "intent", "intent": {"type": "theme", "theme": "Nord"}},
+    {"op": "plan-save"},
+    {"op": "save"},
+    {"op": "settle"}
+  ]
+}

@@ -1,0 +1,55 @@
+[package]
+name = "ghostty-designer-host"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+indexmap = "2.14.2"
+libc.workspace = true
+notify = "8.2.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+skrifa = { version = "0.48.0", default-features = false, features = ["std"] }
+tempfile = "3.27.0"
+tokio = { workspace = true, features = [
+  "io-util",
+  "macros",
+  "process",
+  "rt",
+  "sync",
+  "time",
+] }
+ts-rs = "12.0.1"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["io-std", "rt-multi-thread"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = { workspace = true, features = ["std"] }
+objc2-app-kit = { version = "0.3.2", default-features = false, features = [
+  "std",
+  "libc",
+  "NSRunningApplication",
+] }
+objc2-core-foundation = { version = "0.3.2", default-features = false, features = [
+  "std",
+  "CFArray",
+  "CFDictionary",
+  "CFSet",
+  "CFString",
+  "CFURL",
+] }
+objc2-core-text = { version = "0.3.2", default-features = false, features = [
+  "std",
+  "CTFontDescriptor",
+] }
+objc2-foundation = { workspace = true, features = [
+  "std",
+  "NSArray",
+  "NSString",
+] }

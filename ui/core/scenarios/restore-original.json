@@ -1,0 +1,22 @@
+{
+  "description": "Restore puts back the config as it was before the first save",
+  "steps": [
+    {"op": "restore-original"},
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "font-size", "values": ["16"]}
+    },
+    {"op": "plan-save"},
+    {"op": "save"},
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "cursor-style", "values": ["bar"]}
+    },
+    {"op": "plan-save"},
+    {"op": "save"},
+    {"op": "settle"},
+    {"op": "restore-original"},
+    {"op": "settle"},
+    {"op": "restore-original"}
+  ]
+}

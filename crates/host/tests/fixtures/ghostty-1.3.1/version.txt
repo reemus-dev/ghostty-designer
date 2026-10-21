@@ -1,0 +1,12 @@
+Ghostty 1.3.1
+
+Version
+  - version: 1.3.1
+  - channel: stable
+Build Config
+  - Zig version   : 0.15.2
+  - build mode    : .ReleaseFast
+  - app runtime   : .none
+  - font engine   : .coretext
+  - renderer      : renderer.generic.Renderer(renderer.Metal)
+  - libxev        : kqueue

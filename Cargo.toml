@@ -1,0 +1,55 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+libc = "0.2.191"
+objc2 = { version = "0.6.5", default-features = false }
+objc2-foundation = { version = "0.3.2", default-features = false }
+tokio = "1.53.3"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+
+[workspace.lints.rust]
+rust_2018_idioms = { level = "warn", priority = -1 }
+unused_qualifications = "warn"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# Pedantic rules whose findings here are noise: Tauri commands take `State` by
+# value, the host crate has one consumer, and permission masks read best as masks.
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+must_use_candidate = "allow"
+needless_pass_by_value = "allow"
+similar_names = "allow"
+single_match_else = "allow"
+verbose_bit_mask = "allow"
+
+# House rules from the restriction group.
+allow_attributes = "deny"
+allow_attributes_without_reason = "deny"
+assertions_on_result_states = "deny"
+clone_on_ref_ptr = "deny"
+dbg_macro = "deny"
+map_err_ignore = "deny"
+multiple_unsafe_ops_per_block = "deny"
+todo = "deny"
+undocumented_unsafe_blocks = "deny"
+unimplemented = "deny"
+unwrap_used = "deny"
+wildcard_enum_match_arm = "deny"

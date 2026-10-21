@@ -1,0 +1,37 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "bracketSpacing": false,
+  "bracketSameLine": true,
+  "proseWrap": "always",
+  "sortTailwindcss": {
+    "stylesheet": "./ui/styles.css",
+    "functions": ["cn", "cva"]
+  },
+  "jsdoc": true,
+  "sortImports": {
+    "newlinesBetween": false,
+    "customGroups": [
+      {
+        "groupName": "react",
+        "elementNamePattern": ["react", "react/**", "react-dom", "react-dom/**"]
+      },
+      {
+        "groupName": "scoped",
+        "elementNamePattern": ["@*/**"],
+        "selector": "external"
+      }
+    ],
+    "groups": [
+      "side_effect",
+      "builtin",
+      "react",
+      "external",
+      "scoped",
+      "internal",
+      ["parent", "sibling", "index"],
+      "unknown"
+    ]
+  },
+  "ignorePatterns": ["ui/core/scenarios/recordings/", "ui/core/bindings.ts"]
+}

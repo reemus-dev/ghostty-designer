@@ -1,0 +1,13 @@
+{
+  "description": "Installing the include appends it to the config and starts previewing the draft",
+  "setup": {"include": false},
+  "steps": [
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "background", "values": ["#101010"]}
+    },
+    {"op": "intent", "intent": {"type": "install-preview"}},
+    {"op": "settle"},
+    {"op": "intent", "intent": {"type": "install-preview"}}
+  ]
+}

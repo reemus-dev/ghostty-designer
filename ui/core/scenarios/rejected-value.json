@@ -1,0 +1,14 @@
+{
+  "description": "Ghostty rejects one value: the preview keeps the other keys and the apply status names the rejected key",
+  "steps": [
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "background", "values": ["#101010"]}
+    },
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "font-size", "values": ["abc"]}
+    },
+    {"op": "settle"}
+  ]
+}

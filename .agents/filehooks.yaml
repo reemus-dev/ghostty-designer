@@ -1,0 +1,46 @@
+# Hooks that format, lint and typecheck the files a coding agent edits, run by
+# filehooks in the agent's harness. Only formatters, linters, typecheckers and
+# clippy: nothing here may run the designer, Ghostty or `mise run test`.
+# filehooks.sh runs each check from the repository root.
+# [UNTIL] filehooks is published: link its repository here.
+
+continuation:
+  turn_end:
+    failed: true
+    changed: false
+    clean: false
+  agent_before_settle:
+    failed: true
+    changed: false
+    clean: false
+
+hooks:
+  - name: oxlint
+    events: ["turn_end"]
+    include: ["**/*.ts", "**/*.tsx"]
+    skip_if_cmd: .agents/filehooks.sh skip-node {{cwd}} {{files}}
+    cmd: .agents/filehooks.sh oxlint {{cwd}} {{files}}
+
+  # After oxlint, so the files end formatted whatever --fix produced.
+  - name: oxfmt
+    events: ["turn_end"]
+    include:
+      - "**/*.{ts,tsx,js,mjs,cjs,json,jsonc,css,html,md,yaml,yml,toml}"
+    skip_if_cmd: .agents/filehooks.sh skip-node {{cwd}} {{files}}
+    cmd: .agents/filehooks.sh oxfmt {{cwd}} {{files}}
+
+  - name: rustfmt
+    events: ["turn_end"]
+    include: ["**/*.rs"]
+    cmd: .agents/filehooks.sh rustfmt {{cwd}} {{files}}
+
+  - name: tsc
+    events: ["agent_before_settle"]
+    include: ["**/*.ts", "**/*.tsx", "**/tsconfig*.json"]
+    skip_if_cmd: .agents/filehooks.sh skip-node {{cwd}} {{files}}
+    cmd: .agents/filehooks.sh tsc {{cwd}} {{files}}
+
+  - name: Clippy
+    events: ["agent_before_settle"]
+    include: ["**/*.rs", "**/Cargo.toml", "**/Cargo.lock", "**/clippy.toml"]
+    cmd: .agents/filehooks.sh clippy {{cwd}} {{files}}

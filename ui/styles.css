@@ -1,0 +1,179 @@
+@import "tailwindcss" source(".");
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+/* shadcn's Base UI components style orientation with these; Base UI sets data-orientation. */
+@custom-variant data-horizontal (&[data-orientation="horizontal"]);
+@custom-variant data-vertical (&[data-orientation="vertical"]);
+
+/*
+ * Ghostty Native tokens. The panel keeps its own quiet dark chrome: the only
+ * saturated pixels are theme content (swatches, theme cards), blue for focus,
+ * selection, changes and the one primary action, and amber for readability
+ * warnings. Type runs 12/13/14/15/17/24, body at 15.
+ */
+@theme {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --text-2xs: 12px;
+  --text-2xs--line-height: 1.35;
+  --text-xs: 13px;
+  --text-xs--line-height: 1.4;
+  --text-sm: 14px;
+  --text-sm--line-height: 1.4;
+  --text-base: 15px;
+  --text-base--line-height: 1.45;
+  --text-lg: 17px;
+  --text-lg--line-height: 1.35;
+  --text-xl: 24px;
+  --text-xl--line-height: 1.2;
+
+  /* 4 kbd · 5 swatch · 7 control · 10 menu · 12 card · 14 sheet */
+  --radius-sm: 4px;
+  --radius-md: 5px;
+  --radius-lg: 7px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 14px;
+
+  --color-app: #121316;
+  --color-panel: #191a1e;
+  --color-raised: #202126;
+  --color-hover: #27282e;
+  --color-selected: #34363d;
+  --color-line: #24262b;
+  --color-line-2: #2f3137;
+  --color-fg: #e9eaee;
+  --color-fg-2: #a2a5ad;
+  /* ≥ 4.5:1 on every surface up to raised. */
+  --color-fg-3: #8a8d94;
+  --color-primary-hover: #4862f6;
+  --color-primary-text: #8c9cff;
+  --color-primary-soft: rgb(61 87 240 / 16%);
+  --color-primary-line: rgb(90 114 255 / 45%);
+  --color-warn: #e8a948;
+  --color-warn-soft: rgb(232 169 72 / 12%);
+  --color-warn-line: rgb(232 169 72 / 28%);
+  --color-live: #4cc38a;
+  --color-danger: #f2786b;
+  /* Diff lines and config text on dark surfaces. */
+  --color-added: #a6e5c4;
+  --color-removed: #f6b1a8;
+  --color-star: #f5c451;
+
+  --shadow-live: 0 0 0 3px rgb(76 195 138 / 16%);
+
+  --default-transition-duration: 140ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+/* shadcn roles mapped onto the Native tokens. "accent" is shadcn's hover surface. */
+:root {
+  --background: var(--color-app);
+  --foreground: var(--color-fg);
+  --card: var(--color-panel);
+  --card-foreground: var(--color-fg);
+  --popover: var(--color-raised);
+  --popover-foreground: var(--color-fg);
+  /* White text on it is 5.5:1. */
+  --primary: #3d57f0;
+  --primary-foreground: #fff;
+  --secondary: var(--color-raised);
+  --secondary-foreground: var(--color-fg);
+  --muted: var(--color-raised);
+  --muted-foreground: var(--color-fg-3);
+  --accent: var(--color-hover);
+  --accent-foreground: var(--color-fg);
+  --destructive: var(--color-danger);
+  --border: var(--color-line);
+  --input: var(--color-line-2);
+  /* 4.4:1 on panels: the focus ring clears 3:1 everywhere. */
+  --ring: #5a72ff;
+  color-scheme: dark;
+}
+
+/* The 1px edge of cards and wells, inset so it takes no layout room. */
+@utility hairline {
+  box-shadow: inset 0 0 0 1px var(--color-line);
+}
+
+@utility card {
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-panel);
+  box-shadow: inset 0 0 0 1px var(--color-line);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-app font-sans text-base text-fg antialiased;
+    font-variant-numeric: tabular-nums;
+    /* No one- or two-word last lines. Browsers balance up to about six lines and wrap longer text as usual. */
+    text-wrap: balance;
+    overflow: hidden;
+  }
+  code,
+  kbd,
+  samp {
+    @apply font-mono;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-primary-soft);
+  }
+}
+
+@utility checkerboard {
+  background-color: #fff;
+  background-image: conic-gradient(
+    #c8c9cc 25%,
+    transparent 0 50%,
+    #c8c9cc 0 75%,
+    transparent 0
+  );
+  background-size: 8px 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

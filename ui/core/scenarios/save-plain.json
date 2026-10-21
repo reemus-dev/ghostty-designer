@@ -1,0 +1,35 @@
+{
+  "description": "Save replaces existing lines, adds new keys in a block and clears the draft",
+  "steps": [
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "font-size", "values": ["16"]}
+    },
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "cursor-style", "values": ["bar"]}
+    },
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "palette", "values": ["3=#abcdef"]}
+    },
+    {
+      "op": "intent",
+      "intent": {
+        "type": "set",
+        "key": "font-feature",
+        "values": ["-calt", "ss01"]
+      }
+    },
+    {"op": "plan-save"},
+    {"op": "save"},
+    {"op": "settle"},
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "cursor-style", "values": ["block"]}
+    },
+    {"op": "plan-save"},
+    {"op": "save"},
+    {"op": "settle"}
+  ]
+}

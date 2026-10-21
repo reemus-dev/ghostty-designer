@@ -1,0 +1,116 @@
+[env]
+_.path = ["{{config_root}}/node_modules/.bin"]
+
+[tools]
+bun = "1.4.3"
+node = "26.8.1"
+rust = { version = "1.99.0", components = "rustfmt,clippy" }
+
+# ── Setup ───────────────────────────────────────────────────────────────────
+
+[tasks.install]
+description = "Install the locked dependencies into node_modules"
+run = "bun install --frozen-lockfile"
+
+# ── App ─────────────────────────────────────────────────────────────────────
+
+[tasks.dev]
+description = "Run the app from source with the real environment and a hot-reloading UI (only the user runs this)"
+run = "TAURI_APP_PATH=crates/app tauri dev"
+
+[tasks.build]
+description = "Build the release app for this machine at dist/ghostty-designer"
+depends = ["ui:build"]
+run = '''
+set -eu
+cargo build --release --locked -p ghostty-designer
+cp target/release/ghostty-designer dist/ghostty-designer
+'''
+
+[tasks.sandbox]
+description = "Designer from source against a sandboxed home and config: run [--dev] [args]|env|reset [--no-include]; --name <name> picks the sandbox"
+run = "bun scripts/sandbox.ts"
+
+[tasks."smoke:linux"]
+description = "Launch the Linux window under Xvfb in a sandbox and close it with SIGTERM"
+depends = ["ui:build"]
+run = "scripts/smoke-linux.sh"
+
+# ── UI bundle ───────────────────────────────────────────────────────────────
+
+[tasks."ui:build"]
+description = "Build the window's UI bundle to dist/ui, which the app crate embeds"
+run = '''
+set -eu
+tailwindcss -i ui/styles.css -o ui/styles.gen.css --minify
+rm -rf dist/ui
+bun build ui/index.html --outdir dist/ui --production
+'''
+
+[tasks."ui:dev"]
+description = "Serve the window's UI with hot-reloading UI and CSS, for `tauri dev`"
+hide = true
+run = '''
+set -eu
+tailwindcss -i ui/styles.css -o ui/styles.gen.css
+tailwindcss -i ui/styles.css -o ui/styles.gen.css --watch=always &
+trap 'kill $! 2>/dev/null || true' EXIT
+bun --port=1420 ui/index.html
+'''
+
+# ── Checks ──────────────────────────────────────────────────────────────────
+
+[tasks.check]
+description = "Typecheck, lint, test, and check formatting of the TS and Rust code, without modifying files"
+depends = ["typecheck", "lint", "test", "format:check"]
+
+[tasks.typecheck]
+description = "Typecheck the panel, then the scripts and tests, which alone see Bun's types"
+run = ["tsc -p tsconfig.app.json", "tsc -p tsconfig.bun.json"]
+
+[tasks.lint]
+description = "Lint the TS and Rust code without modifying files"
+depends = ["lint:oxlint", "lint:clippy"]
+
+[tasks."lint:oxlint"]
+description = "Lint the TS code"
+run = "oxlint"
+
+[tasks."lint:clippy"]
+description = "Lint the Rust workspace"
+depends = ["ui:build"]
+run = "cargo clippy --workspace --all-targets --locked -- -D warnings"
+
+[tasks.test]
+description = "Run the UI and Rust tests"
+depends = ["test:bun", "test:cargo"]
+
+[tasks."test:bun"]
+description = "Run the UI tests"
+run = "bun test"
+
+[tasks."test:cargo"]
+description = "Run the Rust tests"
+depends = ["ui:build"]
+run = "cargo test --workspace --locked"
+
+[tasks."test:scenarios"]
+description = "Replay the session scenarios against Ghostty 1.3.1 in sandboxes; UPDATE_RECORDINGS=1 rewrites the recordings"
+run = [
+  "cargo build --locked -p ghostty-designer-host --example stdio-host",
+  "bun test --max-concurrency=4 ./ui/core/testing/replay.ts",
+]
+
+[tasks."format:check"]
+description = "Check formatting of repository files and the Rust code without modifying files"
+run = ["oxfmt --check", "cargo fmt --all --check"]
+
+# ── Fixes ───────────────────────────────────────────────────────────────────
+
+[tasks.fix]
+description = "Apply oxlint's safe fixes, then format repository files"
+run = ["oxlint --fix", { task = "format" }]
+
+[tasks.format]
+description = "Format repository files and the Rust code"
+run = ["oxfmt", "cargo fmt --all"]

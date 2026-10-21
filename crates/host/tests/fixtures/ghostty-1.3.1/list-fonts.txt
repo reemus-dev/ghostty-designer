@@ -1,0 +1,15 @@
+Courier New
+  Courier New
+  Courier New Bold
+  Courier New Bold Italic
+  Courier New Italic
+
+Menlo
+  Menlo Bold
+  Menlo Bold Italic
+  Menlo Italic
+  Menlo Regular
+
+Monaco
+  Monaco
+

@@ -1,0 +1,23 @@
+{
+  "productName": "Ghostty Designer",
+  "identifier": "dev.reemus.ghostty-designer",
+  "build": {
+    "frontendDist": "../../dist/ui",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "mise run ui:dev"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; font-src 'self' font:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    }
+  },
+  "bundle": {
+    "icon": ["icons/icon.png"],
+    "macOS": {"signingIdentity": "-"},
+    "linux": {
+      "deb": {"depends": ["procps", "fontconfig"]},
+      "rpm": {"depends": ["/usr/bin/pgrep", "/usr/bin/fc-list"]}
+    }
+  }
+}

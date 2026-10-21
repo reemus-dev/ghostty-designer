@@ -1,0 +1,262 @@
+import {type ReactNode, useEffect, useRef, useState} from "react";
+import {RotateCwIcon} from "lucide-react";
+import {Chip} from "@/components/chip";
+import {IconButton} from "@/components/icon-button";
+import {LiveDot} from "@/components/live-dot";
+import {PageFilter, PageSection} from "@/components/page";
+import {Kbd} from "@/components/ui/kbd";
+import type {FontFamily} from "@/core/bindings";
+import {ligatureTag} from "@/core/font-settings";
+import {whyNotShowing} from "@/core/preview";
+import {withPrimary} from "@/core/values";
+import {fontFace} from "@/lib/fonts";
+import {MOD} from "@/lib/keys";
+import {cancelPick, DWELL_MS, schedulePick} from "@/lib/pick";
+import {
+  getStore,
+  onHistoryMove,
+  send,
+  useEffective,
+  useSnapshot,
+} from "@/lib/store";
+import {NOT_SHOWING_TEXT} from "@/lib/views";
+import {FontControls, FontMetricsAndStyles} from "./controls";
+import {DEFAULT_FONT, DEFAULT_NAME, FamilyList} from "./family-list";
+
+const EMPTY: string[] = [];
+const FONT_KEYS = ["font-family"];
+
+const FILTERS = {
+  nerd: {label: "Nerd Font", test: (font: FontFamily) => font.nerd},
+  ligatures: {
+    label: "Ligatures",
+    test: (font: FontFamily) => ligatureTag(font) !== undefined,
+  },
+  variable: {
+    label: "Variable",
+    test: (font: FontFamily) => font.axes.length > 0,
+  },
+};
+
+type Filter = keyof typeof FILTERS;
+
+const ghosttyChain = () =>
+  getStore().snapshot?.state.effective["font-family"] ?? EMPTY;
+
+/**
+ * The installed fonts, each drawn in its face, in a scroll box of their own
+ * beside the selected font's settings. Ghostty's default font and the font in
+ * the saved config are pinned first; the selected row is the font Ghostty
+ * shows. Picking a font is a draft change, and picks one after another are one
+ * undo step.
+ */
+export function FontSection() {
+  const fonts = useSnapshot((snapshot) => snapshot.fonts);
+  const chain = useEffective("font-family") ?? EMPTY;
+  const savedFont = useSnapshot(
+    (snapshot) => snapshot.state.saved["font-family"]?.[0],
+  );
+
+  const [query, setQuery] = useState("");
+  const [filters, setFilters] = useState<Filter[]>([]);
+  /** The row moved to whose pick Ghostty does not show yet. */
+  const [cursor, setCursor] = useState<string | null>(null);
+  /** The list a rescan started from: the icon spins until a new one arrives. */
+  const [rescanFrom, setRescanFrom] = useState<FontFamily[] | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  // Undo, redo and discard drop a pick still waiting out its dwell.
+  useEffect(() => onHistoryMove(() => setCursor(null)), []);
+
+  const selected = cursor ?? chain[0] ?? "";
+  const family = fonts?.find((font) => font.family === selected);
+  const rescanning = rescanFrom !== null && rescanFrom === fonts;
+
+  const needle = query.trim().toLowerCase();
+  const matches = fonts?.filter(
+    (font) =>
+      font.family.toLowerCase().includes(needle) &&
+      filters.every((filter) => FILTERS[filter].test(font)),
+  );
+  const pinned = matches?.find((font) => font.family === savedFont);
+  const visible = matches
+    ? [
+        ...(pinned ? [pinned] : []),
+        ...matches.filter((font) => font !== pinned),
+      ]
+    : null;
+  const withDefault =
+    filters.length === 0 &&
+    [DEFAULT_NAME, DEFAULT_FONT].some((name) =>
+      name.toLowerCase().includes(needle),
+    );
+
+  const move = (name: string, dwell: boolean) => {
+    if (name === (ghosttyChain()[0] ?? "")) {
+      cancelPick();
+      setCursor(null);
+      return;
+    }
+    setCursor(name);
+    const pick = () => {
+      void send({
+        type: "set",
+        key: "font-family",
+        values: name ? withPrimary(getStore().snapshot!.state, name) : [],
+        label: name ? `Font ${name}` : DEFAULT_NAME,
+        pick: true,
+      }).then(() => setCursor((at) => (at === name ? null : at)));
+    };
+    schedulePick(pick, dwell ? DWELL_MS : 0);
+  };
+
+  return (
+    <PageSection id="font">
+      <div className="grid items-start gap-5 min-[60rem]:grid-cols-[minmax(0,1fr)_clamp(320px,40vw,440px)]">
+        <div className="flex min-w-0 flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <PageFilter
+              aria-label="Search fonts"
+              value={query}
+              placeholder={
+                fonts ? `Search ${fonts.length} fonts` : "Search fonts"
+              }
+              onValueChange={setQuery}
+              onKeyDown={(event) => {
+                if (event.key !== "ArrowDown" && event.key !== "Enter") return;
+                event.preventDefault();
+                listRef.current?.focus({preventScroll: true});
+                const names = [
+                  ...(withDefault ? [""] : []),
+                  ...(visible ?? []).map((font) => font.family),
+                ];
+                const first = names[0];
+                if (first !== undefined && !names.includes(selected))
+                  move(first, event.key === "ArrowDown");
+              }}
+            />
+            {Object.entries(FILTERS).map(([key, filter]) => (
+              <Chip
+                key={key}
+                pressed={filters.includes(key as Filter)}
+                count={fonts?.filter(filter.test).length}
+                onPressedChange={(on) =>
+                  setFilters(
+                    on
+                      ? [...filters, key as Filter]
+                      : filters.filter((item) => item !== key),
+                  )
+                }>
+                {filter.label}
+              </Chip>
+            ))}
+            <IconButton
+              label="Rescan fonts"
+              disabled={fonts === null || rescanning}
+              onClick={() => {
+                setRescanFrom(fonts);
+                void send({type: "rescan-fonts"});
+              }}>
+              <RotateCwIcon
+                className={
+                  rescanning || fonts === null
+                    ? "motion-safe:animate-spin"
+                    : undefined
+                }
+              />
+            </IconButton>
+          </div>
+          <p className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1 text-sm text-fg-3">
+            {visible
+              ? `${visible.length} of ${fonts?.length ?? 0} fonts`
+              : "Scanning fonts…"}
+            <span className="flex items-center gap-1.5 whitespace-nowrap">
+              <Kbd>↑</Kbd>
+              <Kbd>↓</Kbd> try fonts in Ghostty · <Kbd>{MOD}Z</Kbd> back to
+              where you started
+            </span>
+          </p>
+          {/* About ten rows. */}
+          <div className="h-[min(640px,68vh)] overflow-y-auto card p-1.5">
+            <FamilyList
+              families={visible}
+              withDefault={withDefault}
+              saved={savedFont}
+              cursor={selected}
+              listRef={listRef}
+              onMove={move}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-5 card p-6">
+          <FontHeader
+            family={family}
+            name={selected || DEFAULT_NAME}
+            saved={selected === (savedFont ?? "")}
+          />
+          <FontControls family={family} />
+        </div>
+      </div>
+      <FontMetricsAndStyles />
+    </PageSection>
+  );
+}
+
+function FontHeader(props: {
+  family: FontFamily | undefined;
+  name: string;
+  /** The font is the one in the saved config. */
+  saved: boolean;
+}) {
+  const {family, name, saved} = props;
+  const scanning = useSnapshot((snapshot) => snapshot.fonts === null);
+  const notShowing = useSnapshot((snapshot) =>
+    whyNotShowing(snapshot.state, FONT_KEYS),
+  );
+  let facts = "Not installed";
+  if (family) {
+    facts = [
+      family.nerd && "Nerd Font",
+      ligatureTag(family) !== undefined && "Ligatures",
+      family.axes.length > 0 && "Variable",
+      `${family.faces.length} ${family.faces.length === 1 ? "style" : "styles"}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  } else if (scanning) {
+    facts = "Scanning installed fonts…";
+  } else if (name === DEFAULT_NAME) {
+    facts = `${DEFAULT_FONT}, built into Ghostty`;
+  }
+
+  let status: ReactNode = (
+    <>
+      <LiveDot />
+      Showing in Ghostty
+    </>
+  );
+  if (saved) {
+    status = "In your config";
+  } else if (notShowing) {
+    status = NOT_SHOWING_TEXT[notShowing];
+  }
+
+  return (
+    <header className="flex flex-col gap-4">
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <span className="flex items-center gap-2 text-sm text-fg-2">
+          {status}
+        </span>
+        <h3
+          className="text-xl leading-tight tracking-[-0.01em] wrap-break-word"
+          style={
+            family
+              ? {fontFamily: `"${fontFace(family)}", ui-monospace`}
+              : undefined
+          }>
+          {name}
+        </h3>
+        <span className="truncate text-sm text-fg-3">{facts}</span>
+      </div>
+    </header>
+  );
+}

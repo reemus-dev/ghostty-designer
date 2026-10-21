@@ -1,0 +1,41 @@
+{
+  "description": "Lines are edited in the file that defines them and new keys go to the main config",
+  "setup": {
+    "config": "<baseline>config-file = extra.conf\n",
+    "files": {
+      "xdg/ghostty/extra.conf": "font-size = 18\nwindow-width = 100\nfont-feature = -liga\n"
+    }
+  },
+  "steps": [
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "font-size", "values": ["16"]}
+    },
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "window-width", "values": ["120"]}
+    },
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "background", "values": ["#101010"]}
+    },
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "cursor-style", "values": ["bar"]}
+    },
+    {
+      "op": "intent",
+      "intent": {"type": "set", "key": "font-feature", "values": ["-calt"]}
+    },
+    {"op": "plan-save"},
+    {"op": "save"},
+    {"op": "settle"},
+    {
+      "op": "write-file",
+      "path": "xdg/ghostty/extra.conf",
+      "text": "font-size = 18\nwindow-width = 100\nfont-feature = -liga\n",
+      "expect": "state"
+    },
+    {"op": "settle"}
+  ]
+}

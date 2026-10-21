@@ -1,0 +1,5 @@
+* text=auto eol=lf
+
+# Written by tools: collapsed in GitHub diffs and left out of language stats.
+ui/core/bindings.ts linguist-generated
+ui/core/scenarios/recordings/** linguist-generated

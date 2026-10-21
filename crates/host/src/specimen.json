@@ -1,0 +1,396 @@
+{
+  "pages": [
+    {
+      "name": "shell",
+      "lines": [
+        [
+          {"text": "~/src/ghostty", "fg": 4, "bold": true},
+          {"text": "  main", "fg": 5},
+          {"text": " !2", "fg": 3},
+          {"text": " ❯ ", "fg": 2, "bold": true},
+          {"text": "ls"}
+        ],
+        [
+          {"text": "src/", "fg": 4, "bold": true},
+          {"text": "  "},
+          {"text": "docs/", "fg": 4, "bold": true},
+          {"text": "  build.zig  "},
+          {"text": "run.sh*", "fg": 2, "bold": true},
+          {"text": "  README.md  "},
+          {"text": "a.tar.gz", "fg": 1},
+          {"text": "  "},
+          {"text": "lib@", "fg": 6}
+        ],
+        [
+          {"text": "~/src/ghostty", "fg": 4, "bold": true},
+          {"text": "  main", "fg": 5},
+          {"text": " !2", "fg": 3},
+          {"text": " ❯ ", "fg": 2, "bold": true},
+          {"text": "git status --short"}
+        ],
+        [{"text": " M", "fg": 1}, {"text": " src/font/face.zig"}],
+        [{"text": "M ", "fg": 2}, {"text": " src/config/Config.zig"}],
+        [{"text": "??", "fg": 1}, {"text": " notes.md"}],
+        [
+          {"text": "~/src/ghostty", "fg": 4, "bold": true},
+          {"text": "  main", "fg": 5},
+          {"text": " !2", "fg": 3},
+          {"text": " ❯ ", "fg": 2, "bold": true},
+          {"text": "git log --oneline -3"}
+        ],
+        [
+          {"text": "a3f9c1e", "fg": 3},
+          {"text": " ("},
+          {"text": "HEAD -> ", "fg": 6, "bold": true},
+          {"text": "main", "fg": 2, "bold": true},
+          {"text": ") font: honor cell height"}
+        ],
+        [
+          {"text": "7b20d4f", "fg": 3},
+          {"text": " "},
+          {"text": "renderer: thicken on retina", "selected": true}
+        ],
+        [
+          {"text": "3c88a07", "fg": 3},
+          {"text": " config: add palette-harmonious"}
+        ],
+        [
+          {"text": "~/src/ghostty", "fg": 4, "bold": true},
+          {"text": " ❯ ", "fg": 2, "bold": true},
+          {"text": "zig build test"}
+        ],
+        [
+          {"text": "✓ 1248 passed", "fg": 2},
+          {"text": "  "},
+          {"text": "▲ 3 skipped", "fg": 3},
+          {"text": "  "},
+          {"text": "✗ 1 failed", "fg": 1, "bold": true}
+        ],
+        [
+          {"text": "error:", "fg": 1, "bold": true},
+          {"text": " expected 14, found 13"}
+        ],
+        [{"text": "  └ src/font/face.zig:212:9", "fg": 8, "italic": true}],
+        [
+          {
+            "text": "# comments, autosuggestions and dim git lines use ANSI 8",
+            "fg": 8
+          }
+        ],
+        [
+          {"text": "~/src/ghostty", "fg": 4, "bold": true},
+          {"text": " ❯ ", "fg": 2, "bold": true},
+          {"text": "git commit -m \""},
+          {"text": "f", "cursor": true},
+          {"text": "ix cell width\"", "fg": 8}
+        ]
+      ]
+    },
+    {
+      "name": "code",
+      "lines": [
+        [
+          {
+            "text": "// Cell height follows adjust-cell-height.",
+            "fg": 8,
+            "italic": true
+          }
+        ],
+        [
+          {"text": "const", "fg": 5},
+          {"text": " std "},
+          {"text": "=", "fg": 6},
+          {"text": " "},
+          {"text": "@import", "fg": 4},
+          {"text": "("},
+          {"text": "\"std\"", "fg": 2},
+          {"text": ");"}
+        ],
+        [],
+        [
+          {"text": "pub fn", "fg": 5},
+          {"text": " "},
+          {"text": "metrics", "fg": 4, "bold": true},
+          {"text": "(face: "},
+          {"text": "*Face", "fg": 6},
+          {"text": ", size: "},
+          {"text": "f32", "fg": 6},
+          {"text": ") "},
+          {"text": "!Metrics", "fg": 6},
+          {"text": " {"}
+        ],
+        [
+          {"text": "    if", "fg": 5},
+          {"text": " (size "},
+          {"text": "<=", "fg": 6},
+          {"text": " "},
+          {"text": "0", "fg": 3},
+          {"text": " "},
+          {"text": "or", "fg": 5},
+          {"text": " size "},
+          {"text": ">=", "fg": 6},
+          {"text": " "},
+          {"text": "96", "fg": 3},
+          {"text": ") "},
+          {"text": "return", "fg": 5},
+          {"text": " error.InvalidSize;", "fg": 1}
+        ],
+        [
+          {"text": "    const", "fg": 5},
+          {"text": " cell "},
+          {"text": "=", "fg": 6},
+          {"text": " face."},
+          {"text": "cellHeight", "fg": 4},
+          {"text": "() "},
+          {"text": "*", "fg": 6},
+          {"text": " "},
+          {"text": "1.25", "fg": 3},
+          {"text": ";"}
+        ],
+        [
+          {"text": "    std.debug."},
+          {"text": "assert", "fg": 4},
+          {"text": "(cell "},
+          {"text": "!=", "fg": 6},
+          {"text": " "},
+          {"text": "0", "fg": 3},
+          {"text": " "},
+          {"text": "and", "fg": 5},
+          {"text": " cell "},
+          {"text": "==", "fg": 6},
+          {"text": " cell);"}
+        ],
+        [
+          {"text": "    return", "fg": 5},
+          {"text": " .{ .height "},
+          {"text": "=", "fg": 6},
+          {"text": " cell, .label "},
+          {"text": "=", "fg": 6},
+          {"text": " "},
+          {"text": "\"cell => ok\"", "fg": 2},
+          {"text": " };"}
+        ],
+        [{"text": "}"}],
+        [],
+        [
+          {
+            "text": "// -> => == != === !== <= >= <> :: |> <| ... /// && || ++",
+            "fg": 8
+          }
+        ],
+        [
+          {"text": "TODO", "fg": 0, "bg": 3, "bold": true},
+          {"text": " "},
+          {"text": "handle zero-width cells", "fg": 3}
+        ]
+      ]
+    },
+    {
+      "name": "diff",
+      "lines": [
+        [
+          {
+            "text": "diff --git a/src/config/Config.zig b/src/config/Config.zig",
+            "bold": true
+          }
+        ],
+        [{"text": "index 3c88a07..a3f9c1e 100644", "fg": 8}],
+        [{"text": "--- a/src/config/Config.zig", "bold": true}],
+        [{"text": "+++ b/src/config/Config.zig", "bold": true}],
+        [
+          {"text": "@@ -112,7 +112,7 @@", "fg": 6},
+          {"text": " pub const Config = struct {", "fg": 8}
+        ],
+        [{"text": "     /// Font size in points.", "dim": true}],
+        [
+          {"text": "-    font_size: f32 = ", "fg": 1},
+          {"text": "14", "fg": 1, "inverse": true},
+          {"text": ",", "fg": 1}
+        ],
+        [
+          {"text": "+    font_size: f32 = ", "fg": 2},
+          {"text": "16", "fg": 2, "inverse": true},
+          {"text": ",", "fg": 2}
+        ],
+        [{"text": "     cursor_style: Style = .bar,"}],
+        [{"text": "-    palette_generate: bool = false,", "fg": 1}],
+        [{"text": "+    palette_generate: bool = true,", "fg": 2}],
+        [{"text": "     window_padding_x: u32 = 8,"}],
+        [],
+        [
+          {"text": " 2 files changed, ", "fg": 8},
+          {"text": "3 insertions(+)", "fg": 2},
+          {"text": ", ", "fg": 8},
+          {"text": "3 deletions(-)", "fg": 1}
+        ]
+      ]
+    },
+    {
+      "name": "glyphs",
+      "lines": [
+        [
+          {"text": "Ligatures  ", "fg": 8},
+          {"text": "-> => == != === <= >= :: |> ... /// && ||"}
+        ],
+        [
+          {"text": "Ambiguous  ", "fg": 8},
+          {"text": "0O o 1lI| 5S 8B 2Z `'\" ,.;: {}[]() rn m cl d"}
+        ],
+        [
+          {"text": "Styles     ", "fg": 8},
+          {"text": "regular "},
+          {"text": "bold", "bold": true},
+          {"text": " "},
+          {"text": "italic", "italic": true},
+          {"text": " "},
+          {"text": "bold-italic", "bold": true, "italic": true},
+          {"text": " "},
+          {"text": "underline", "underline": true},
+          {"text": " "},
+          {"text": "dim", "dim": true},
+          {"text": " "},
+          {"text": "inverse", "inverse": true}
+        ],
+        [
+          {"text": "Box        ", "fg": 8},
+          {"text": "┌─┬─┐ ╭─╮ ╔═╗ ▀▄█▌▐ ░▒▓ ⣿⣶⣤⣀"}
+        ],
+        [
+          {"text": "           ", "fg": 8},
+          {"text": "├─┼─┤ ╰─╯ ╚═╝ ▁▂▃▄▅▆▇█ ◢◣◤◥"}
+        ],
+        [
+          {"text": "Powerline  ", "fg": 8},
+          {"text": " ~/src ", "fg": 0, "bg": 4},
+          {"text": "", "fg": 4, "bg": 5},
+          {"text": "  main ", "fg": 0, "bg": 5},
+          {"text": "", "fg": 5},
+          {"text": "   "}
+        ],
+        [{"text": "Nerd Font  ", "fg": 8}, {"text": "       "}],
+        [
+          {"text": "CJK        ", "fg": 8},
+          {"text": "日本語のテキスト 漢字 한글"}
+        ],
+        [{"text": "Emoji      ", "fg": 8}, {"text": "😀 👩‍💻 🇯🇵 ✅ ⚠️ ❤️ ▶︎"}],
+        [
+          {"text": "Normal     ", "fg": 8},
+          {"text": "   ", "bg": 0},
+          {"text": "   ", "bg": 1},
+          {"text": "   ", "bg": 2},
+          {"text": "   ", "bg": 3},
+          {"text": "   ", "bg": 4},
+          {"text": "   ", "bg": 5},
+          {"text": "   ", "bg": 6},
+          {"text": "   ", "bg": 7}
+        ],
+        [
+          {"text": "Bright     ", "fg": 8},
+          {"text": "   ", "bg": 8},
+          {"text": "   ", "bg": 9},
+          {"text": "   ", "bg": 10},
+          {"text": "   ", "bg": 11},
+          {"text": "   ", "bg": 12},
+          {"text": "   ", "bg": 13},
+          {"text": "   ", "bg": 14},
+          {"text": "   ", "bg": 15}
+        ],
+        [
+          {"text": "Cube       ", "fg": 8},
+          {"text": " ", "bg": 196},
+          {"text": " ", "bg": 202},
+          {"text": " ", "bg": 208},
+          {"text": " ", "bg": 214},
+          {"text": " ", "bg": 220},
+          {"text": " ", "bg": 226},
+          {"text": " ", "bg": 190},
+          {"text": " ", "bg": 154},
+          {"text": " ", "bg": 118},
+          {"text": " ", "bg": 82},
+          {"text": " ", "bg": 46},
+          {"text": " ", "bg": 47},
+          {"text": " ", "bg": 48},
+          {"text": " ", "bg": 49},
+          {"text": " ", "bg": 50},
+          {"text": " ", "bg": 51},
+          {"text": " ", "bg": 45},
+          {"text": " ", "bg": 39},
+          {"text": " ", "bg": 33},
+          {"text": " ", "bg": 27},
+          {"text": " ", "bg": 21},
+          {"text": " ", "bg": 57},
+          {"text": " ", "bg": 93},
+          {"text": " ", "bg": 129},
+          {"text": " ", "bg": 165},
+          {"text": " ", "bg": 201}
+        ],
+        [
+          {"text": "Greys      ", "fg": 8},
+          {"text": " ", "bg": 232},
+          {"text": " ", "bg": 233},
+          {"text": " ", "bg": 234},
+          {"text": " ", "bg": 235},
+          {"text": " ", "bg": 236},
+          {"text": " ", "bg": 237},
+          {"text": " ", "bg": 238},
+          {"text": " ", "bg": 239},
+          {"text": " ", "bg": 240},
+          {"text": " ", "bg": 241},
+          {"text": " ", "bg": 242},
+          {"text": " ", "bg": 243},
+          {"text": " ", "bg": 244},
+          {"text": " ", "bg": 245},
+          {"text": " ", "bg": 246},
+          {"text": " ", "bg": 247},
+          {"text": " ", "bg": 248},
+          {"text": " ", "bg": 249},
+          {"text": " ", "bg": 250},
+          {"text": " ", "bg": 251},
+          {"text": " ", "bg": 252},
+          {"text": " ", "bg": 253},
+          {"text": " ", "bg": 254},
+          {"text": " ", "bg": 255}
+        ],
+        [
+          {"text": "Ruler      ", "fg": 8},
+          {"text": "····|····|····|····|····|", "fg": 8}
+        ],
+        [
+          {"text": "           ", "fg": 8},
+          {"text": "iiiiiiiiiiiiiiiiiiiiiiiii"}
+        ],
+        [
+          {"text": "           ", "fg": 8},
+          {"text": "WWWWWWWWWWWWWWWWWWWWWWWWW"}
+        ]
+      ]
+    }
+  ],
+  "card": [
+    [
+      {"text": "~/ghostty", "fg": 4},
+      {"text": " main", "fg": 5},
+      {"text": " ❯ ", "fg": 2},
+      {"text": "git log --oneline -2"}
+    ],
+    [{"text": "a3f9c1e", "fg": 3}, {"text": " font: honour cell height"}],
+    [
+      {"text": "7b20d4f", "fg": 3},
+      {"text": " renderer: "},
+      {"text": "thicker cursor", "selected": true}
+    ],
+    [
+      {"text": "~/ghostty", "fg": 4},
+      {"text": " main", "fg": 5},
+      {"text": " ❯ ", "fg": 2},
+      {"text": "git diff"}
+    ],
+    [{"text": "- font-size = 14", "fg": 1}],
+    [{"text": "+ font-size = 16", "fg": 2}],
+    [{"text": "# reloaded in 48 ms", "fg": 8}],
+    [
+      {"text": "❯ ", "fg": 2},
+      {"text": " ", "cursor": true}
+    ]
+  ]
+}

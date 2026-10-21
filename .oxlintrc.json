@@ -1,0 +1,134 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import", "react"],
+  // Errors are definitely wrong. Warnings are stricter checks. Both fail lint.
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn",
+    "pedantic": "warn"
+  },
+  "options": {
+    "typeAware": true,
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "error"
+  },
+  "ignorePatterns": ["ui/core/bindings.ts"],
+  "rules": {
+    // React's automatic JSX runtime needs no React in scope.
+    "react/react-in-jsx-scope": "off",
+    // Most casts rest on an invariant: DOM elements, select values, own JSON.
+    "typescript/no-unsafe-type-assertion": "off",
+    // Return types already say when a function may return nothing.
+    "typescript/consistent-return": "off",
+    // The session runs requests one at a time, so sequential awaits are the
+    // safe default, not a missed chance to run them in parallel.
+    "no-await-in-loop": "off",
+    // Its fix mutates in place. Updates here are immutable, on short arrays.
+    "oxc/no-map-spread": "off",
+    // Would require readonly on every parameter, React and DOM types included.
+    "typescript/prefer-readonly-parameter-types": "off",
+    // The patterns match ASCII config syntax, where the u flag changes nothing.
+    "require-unicode-regexp": "off",
+    // Views compose many components. max-lines limits what matters.
+    "import/max-dependencies": "off",
+    // Flags apostrophes in UI copy.
+    "react/no-unescaped-entities": "off",
+    "max-classes-per-file": "off",
+    // no-misused-promises catches the harmful case: a promise where nothing
+    // awaits it. What remains is `cond && action()` in handlers.
+    "typescript/strict-void-return": "off",
+    // Flags the `new Promise((resolve) => setTimeout(resolve, ms))` idiom.
+    "no-promise-executor-return": "off",
+    // TypeScript checks callback signatures, so passing a named function is safe.
+    "unicorn/no-array-callback-reference": "off",
+
+    "typescript/no-confusing-void-expression": [
+      "warn",
+      {"ignoreArrowShorthand": true}
+    ],
+    // Nullable strings: "" can be a meaningful Ghostty value, so where it
+    // differs from absent, compare explicitly.
+    "typescript/strict-boolean-expressions": [
+      "warn",
+      {"allowNullableBoolean": true, "allowNullableString": true}
+    ],
+    "max-lines": [
+      "warn",
+      {"max": 500, "skipBlankLines": true, "skipComments": true}
+    ],
+    "max-lines-per-function": [
+      "warn",
+      {"max": 150, "skipBlankLines": true, "skipComments": true}
+    ],
+    "complexity": "warn",
+
+    // Rules from the recommended configs of eslint, typescript-eslint (type
+    // checked), react and import that oxlint files under style or restriction.
+    "no-empty": "error",
+    "no-regex-spaces": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+    "import/no-duplicates": "error",
+    "react/no-unknown-property": "error",
+    "react/unsupported-syntax": "error",
+    "typescript/no-empty-object-type": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-require-imports": "error",
+
+    // House rules from the style and restriction categories.
+    "import/no-default-export": "error",
+    "no-nested-ternary": "error",
+    "no-param-reassign": "error",
+    "typescript/consistent-type-definitions": ["error", "type"],
+    "unicorn/error-message": "error",
+    "unicorn/filename-case": ["error", {"case": "kebabCase"}],
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/throw-new-error": "error",
+
+    "no-unused-vars": ["error", {"ignoreRestSiblings": true}],
+    "import/no-cycle": "error",
+    // oxfmt orders the imports. This orders the names inside the braces.
+    "sort-imports": [
+      "error",
+      {"ignoreCase": true, "ignoreDeclarationSort": true}
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.tsx"],
+      "rules": {
+        "react/only-export-components": ["error", {"allowConstantExport": true}]
+      }
+    },
+    {
+      // shadcn components export variant helpers next to components.
+      "files": ["ui/components/ui/**"],
+      "rules": {"react/only-export-components": "off"}
+    },
+    {
+      "files": ["ui/core/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/app/*",
+                  "@/components/*",
+                  "@/features/*",
+                  "@/lib/*"
+                ],
+                "message": "ui/core holds the session's domain rules and must not depend on the views."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
