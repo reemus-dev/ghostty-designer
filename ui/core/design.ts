@@ -40,14 +40,14 @@ export type DesignIntent = Exclude<
  * when Ghostty reports a new status for the preview.
  */
 export class Design {
-  started = false;
-  draft = EMPTY_DRAFT;
-  appearance: Appearance = "dark";
+  #started = false;
+  #draft = EMPTY_DRAFT;
+  #appearance: Appearance = "dark";
   /**
    * Set while the user shows the half of a light/dark pair the system does not
    * pick.
    */
-  appearanceChosen = false;
+  private appearanceChosen = false;
   /** The half the system's appearance picks. */
   private system: Appearance = "dark";
   private readonly history = new History();
@@ -71,6 +71,19 @@ export class Design {
       this.apply = status;
       onStatus();
     });
+  }
+
+  get started() {
+    return this.#started;
+  }
+
+  get draft() {
+    return this.#draft;
+  }
+
+  /** The half of a light/dark pair the design shows. */
+  get appearance() {
+    return this.#appearance;
   }
 
   /** What the design adds to the session's state. */
@@ -99,22 +112,22 @@ export class Design {
    */
   start(system: Appearance, stash: string | null) {
     this.system = system;
-    this.appearance = system;
+    this.#appearance = system;
     if (stash !== null) {
       // The page reloaded, so the preview file still holds the old page's last
       // preview. The first sync then always applies or reverts.
       this.preview.text = null;
       try {
         const restored = JSON.parse(stash) as Stash;
-        this.draft = pruned(this.config.sources, restored.draft);
+        this.#draft = pruned(this.config.sources, restored.draft);
         this.history.restore(restored.history);
-        this.appearance = restored.appearance;
+        this.#appearance = restored.appearance;
         this.appearanceChosen = restored.appearanceChosen;
       } catch (error) {
         console.error("ghostty-designer: cannot restore the draft:", error);
       }
     }
-    this.started = true;
+    this.#started = true;
     this.sync();
   }
 
@@ -139,7 +152,7 @@ export class Design {
         break;
       }
       case "appearance": {
-        this.appearance = intent.appearance;
+        this.#appearance = intent.appearance;
         // Explicit colours for the half the system picks would stop Ghostty following it.
         this.appearanceChosen = intent.appearance !== this.system;
         this.show();
@@ -174,7 +187,7 @@ export class Design {
     // edit made since.
     if (latest) {
       const kept = pruned(this.config.sources, this.draft);
-      if (!sameDraft(kept, this.draft)) this.draft = kept;
+      if (!sameDraft(kept, this.draft)) this.#draft = kept;
     }
     // Instances pick up a new include on reload.
     if (answered.includes("install") && this.installed()) this.show();
@@ -188,7 +201,7 @@ export class Design {
   clear() {
     // Without the include, Ghostty reads no preview file to clear.
     if (this.installed()) this.revert();
-    this.draft = EMPTY_DRAFT;
+    this.#draft = EMPTY_DRAFT;
     this.history.clear();
     this.unpin();
   }
@@ -200,7 +213,7 @@ export class Design {
   async followSystem() {
     const system = await this.host.systemAppearance();
     this.system = system;
-    if (!this.appearanceChosen) this.appearance = system;
+    if (!this.appearanceChosen) this.#appearance = system;
     this.appearanceChosen = this.appearance !== system;
     this.sync();
   }
@@ -277,21 +290,21 @@ export class Design {
   private async commit(change: HistoryChange, next: Draft) {
     const ended = this.history.record(this.draft, next, change);
     if (sameDraft(next, this.draft)) return;
-    this.draft = next;
+    this.#draft = next;
     this.show();
     if (ended !== null) await this.remember(ended);
   }
 
   private step(moved: Draft | undefined) {
     if (!moved) return;
-    this.draft = moved;
+    this.#draft = moved;
     this.show();
   }
 
   /** Back to the system's half of a pair. */
   private unpin() {
     this.appearanceChosen = false;
-    this.appearance = this.system;
+    this.#appearance = this.system;
   }
 
   /** Back to the saved config, and to the system's half of a pair. */
