@@ -258,6 +258,9 @@ pub enum HostMessage {
     Fonts { fonts: Vec<FontFamily> },
     /// The number of running Ghostty instances changed.
     Instances { count: u32 },
+    /// The system may have switched between light and dark. The panel reads
+    /// the appearance with `system_appearance`.
+    AppearanceChanged,
     /// The status of the preview text the panel scheduled with this id.
     /// Statuses come in the order the texts were scheduled.
     PreviewStatus { id: String, apply: PreviewStatus },

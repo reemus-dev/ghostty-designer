@@ -84,7 +84,7 @@ stash: string | null, };
 /**
  * Messages on the panel's channel.
  */
-export type HostMessage = { "type": "config-changed" } | { "type": "themes-changed" } | { "type": "fonts", fonts: Array<FontFamily>, } | { "type": "instances", count: number, } | { "type": "preview-status", id: string, apply: PreviewStatus, } | { "type": "close-requested" };
+export type HostMessage = { "type": "config-changed" } | { "type": "themes-changed" } | { "type": "fonts", fonts: Array<FontFamily>, } | { "type": "instances", count: number, } | { "type": "appearance-changed" } | { "type": "preview-status", id: string, apply: PreviewStatus, } | { "type": "close-requested" };
 
 /**
  * A `config-file` line with an empty value, which drops the includes still

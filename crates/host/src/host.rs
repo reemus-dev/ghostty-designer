@@ -12,10 +12,10 @@
 //!   and the files the config loads at that moment, walked under the write
 //!   lock. This guards against a panel bug, not a hostile page: config text
 //!   can already run commands through Ghostty.
-//! - **Messages.** The watchers, the instance poll, the font scan and the
-//!   preview engine report to the connected panel's channel. Without a panel
-//!   their messages are dropped, and [`Host::connect`] returns what they
-//!   reported.
+//! - **Messages.** The watchers, the instance poll, the font scan, the
+//!   preview engine and the window's appearance report to the connected
+//!   panel's channel. Without a panel their messages are dropped, and
+//!   [`Host::connect`] returns what they reported.
 //! - **Watches.** Each load of the config points its watch at the folders of
 //!   the config files. The user themes folder and the font folders are
 //!   watched from the start. Config and theme events settle for
@@ -417,6 +417,11 @@ impl Host {
     /// The number of unsaved changes, for the close guard.
     pub fn changes(&self) -> usize {
         self.0.changes.load(Ordering::SeqCst)
+    }
+
+    /// Tells the panel the window's appearance changed.
+    pub fn appearance_changed(&self) {
+        self.0.panel.send(HostMessage::AppearanceChanged);
     }
 
     /// The font faces of the latest scan, for `font://`.

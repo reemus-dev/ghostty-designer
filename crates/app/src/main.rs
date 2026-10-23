@@ -99,7 +99,7 @@ fn main() {
     let frame_path = state.join("window-frame");
     let exit_frame_path = frame_path.clone();
     let guard = Arc::new(CloseGuard::default());
-    let (on_close, guard_on_close) = (host.clone(), Arc::clone(&guard));
+    let (on_window, guard_on_close) = (host.clone(), Arc::clone(&guard));
 
     let builder = tauri::Builder::default()
         .manage(host.clone())
@@ -116,9 +116,12 @@ fn main() {
             if let WindowEvent::CloseRequested { api, .. } = event {
                 errln!("[close] close requested");
                 save_frame(window, &frame_path);
-                if guard_on_close.holds(window, on_close.changes()) {
+                if guard_on_close.holds(window, on_window.changes()) {
                     api.prevent_close();
                 }
+            } else if let WindowEvent::ThemeChanged(_) = event {
+                // The window follows the system's appearance.
+                on_window.appearance_changed();
             }
         })
         .setup(move |app| {

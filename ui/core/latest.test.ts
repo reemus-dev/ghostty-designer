@@ -4,12 +4,10 @@ import {latestLoads} from "./latest";
 /** Loads the test answers by hand, in the order they started. */
 function setup() {
   const loads: PromiseWithResolvers<string>[] = [];
-  const waited: string[][] = [];
   const kept: [result: string | Error, answered: string[], latest: boolean][] =
     [];
   const latest = latestLoads<string, string>(
-    (waiting) => {
-      waited.push([...waiting]);
+    () => {
       const load = Promise.withResolvers<string>();
       loads.push(load);
       return load.promise;
@@ -19,7 +17,7 @@ function setup() {
       return result instanceof Error ? result : null;
     },
   );
-  return {latest, loads, waited, kept};
+  return {latest, loads, kept};
 }
 
 /** Why a request failed, or null once it is answered. */
@@ -88,11 +86,4 @@ it("rejects a request whose answer throws", async () => {
   });
   loads[0]!.resolve("loaded");
   expect(await failure(request)).toBe("not loaded");
-});
-
-it("starts each load with the kinds of the requests waiting", () => {
-  const {latest, waited} = setup();
-  void latest.request("settle");
-  latest.start();
-  expect(waited).toEqual([["settle"], ["settle"]]);
 });

@@ -15,13 +15,12 @@ type Waiter<K> = {
  * than the last one kept and is either the latest started or the first one a
  * waiting request can take. A failure counts only from the latest.
  *
- * `load` starts a load, given the kinds of the requests waiting. `keep`
- * receives each result that counts, the kinds of the requests it answers, and
- * whether it is the latest. It returns the failure those requests get, or null
- * to answer them.
+ * `load` starts a load. `keep` receives each result that counts, the kinds of
+ * the requests it answers, and whether it is the latest. It returns the failure
+ * those requests get, or null to answer them.
  */
 export function latestLoads<T, K>(
-  load: (waiting: readonly K[]) => Promise<T>,
+  load: () => Promise<T>,
   keep: (result: T | Error, answered: K[], latest: boolean) => Error | null,
 ) {
   let started = 0;
@@ -59,7 +58,7 @@ export function latestLoads<T, K>(
 
   const start = () => {
     const number = ++started;
-    void load(waiters.map((waiter) => waiter.kind))
+    void load()
       .catch((error: unknown) => asError(error))
       .then((result) => settle(number, result));
   };

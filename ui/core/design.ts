@@ -48,6 +48,8 @@ export class Design {
    * pick.
    */
   appearanceChosen = false;
+  /** The half the system's appearance picks. */
+  private system: Appearance = "dark";
   private readonly history = new History();
   /** Compare with saved: Ghostty shows the saved config meanwhile. */
   private paused = false;
@@ -96,6 +98,7 @@ export class Design {
    * page before a reload.
    */
   start(system: Appearance, stash: string | null) {
+    this.system = system;
     this.appearance = system;
     if (stash !== null) {
       // The page reloaded, so the preview file still holds the old page's last
@@ -138,8 +141,7 @@ export class Design {
       case "appearance": {
         this.appearance = intent.appearance;
         // Explicit colours for the half the system picks would stop Ghostty following it.
-        const system = await this.host.systemAppearance();
-        this.appearanceChosen = intent.appearance !== system;
+        this.appearanceChosen = intent.appearance !== this.system;
         this.show();
         break;
       }
@@ -165,11 +167,7 @@ export class Design {
   }
 
   /** Follows a config read that counts. */
-  configRead({answered, latest, system}: ConfigRead) {
-    if (this.appearanceChosen && system) {
-      this.appearanceChosen = false;
-      this.appearance = system;
-    }
+  configRead({answered, latest}: ConfigRead) {
     // An edit outside the designer can save what the draft sets. Only the
     // latest read prunes: an older one, kept for its waiters, may hold a saved
     // value a newer save replaced, and pruning against it would drop a draft
@@ -183,12 +181,28 @@ export class Design {
     else this.sync();
   }
 
-  /** The files hold the draft, or the original config: the draft clears. */
+  /**
+   * The files hold the draft, or the original config: the draft clears, and the
+   * preview no longer shows a chosen half of a pair.
+   */
   clear() {
     // Without the include, Ghostty reads no preview file to clear.
     if (this.installed()) this.revert();
     this.draft = EMPTY_DRAFT;
     this.history.clear();
+    this.unpin();
+  }
+
+  /**
+   * Follows a switch of the system's appearance. A chosen half stays until the
+   * system picks it too.
+   */
+  async followSystem() {
+    const system = await this.host.systemAppearance();
+    this.system = system;
+    if (!this.appearanceChosen) this.appearance = system;
+    this.appearanceChosen = this.appearance !== system;
+    this.sync();
   }
 
   remember(theme: string) {
@@ -274,13 +288,16 @@ export class Design {
     this.show();
   }
 
+  /** Back to the system's half of a pair. */
+  private unpin() {
+    this.appearanceChosen = false;
+    this.appearance = this.system;
+  }
+
   /** Back to the saved config, and to the system's half of a pair. */
   private async revertAll() {
     const unpinned = this.appearanceChosen;
-    if (unpinned) {
-      this.appearanceChosen = false;
-      this.appearance = await this.host.systemAppearance();
-    }
+    this.unpin();
     if (!sameDraft(this.draft, EMPTY_DRAFT)) {
       await this.commit({label: "Revert all changes"}, EMPTY_DRAFT);
     } else if (unpinned) {

@@ -29,14 +29,11 @@ export type ConfigRead = {
   answered: ReadKind[];
   /** No later read has started. */
   latest: boolean;
-  /** The system's appearance, when the read was asked to follow it. */
-  system?: Appearance;
 };
 
 type Read = {
   loaded: LoadedConfig;
   shown: string;
-  system?: Appearance;
 };
 
 const parseFiles = ({files}: Pick<LoadedConfig, "files">) =>
@@ -58,8 +55,6 @@ export function savedConfig(
   catalog: Catalog,
   configPath: string,
   on: {
-    /** Whether a settle read also reads the system's appearance. */
-    follow: () => boolean;
     config: (read: ConfigRead) => void;
     themes: (library: ThemeLibrary) => void;
     /** A failed read that answers no request. */
@@ -97,20 +92,13 @@ export function savedConfig(
     canRestoreOriginal = loaded.canRestoreOriginal;
   };
 
-  /**
-   * Reads the saved config, and the system's appearance for a settle that
-   * follows it. A later read can answer the waiting requests, so it reads
-   * whatever they need.
-   */
   const reads = latestLoads<Read, ReadKind>(
-    async (waiting) => {
-      const follow = on.follow() && waiting.includes("settle");
-      const [loaded, shown, system] = await Promise.all([
+    async () => {
+      const [loaded, shown] = await Promise.all([
         host.loadConfig(),
         host.showConfig(),
-        follow ? host.systemAppearance() : undefined,
       ]);
-      return {loaded, shown, system};
+      return {loaded, shown};
     },
     (result, answered, latest) => {
       if (result instanceof Error) {
@@ -118,7 +106,7 @@ export function savedConfig(
         return result;
       }
       keepRead(result);
-      on.config({answered, latest, system: result.system});
+      on.config({answered, latest});
       return null;
     },
   );

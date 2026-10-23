@@ -1,5 +1,10 @@
 import {describe, expect, it, setSystemTime} from "bun:test";
-import {PREVIEW_FILE_NAME, type ThemeFile} from "./bindings";
+import {
+  type Appearance,
+  type HostMessage,
+  PREVIEW_FILE_NAME,
+  type ThemeFile,
+} from "./bindings";
 import {SessionError} from "./errors";
 import type {Host} from "./host";
 import {startSession} from "./session";
@@ -33,6 +38,8 @@ function fakeHost(options: Options) {
   let file = original;
   let held: {started: () => void; released: Promise<void>} | null = null;
   let failNext = false;
+  let system: Appearance = "dark";
+  let onMessage: ((message: HostMessage) => void) | undefined;
   const themes: ThemeFile[] = Object.entries(options.themes ?? {}).map(
     ([name, text]) => ({name, source: "bundled", text}),
   );
@@ -44,15 +51,17 @@ function fakeHost(options: Options) {
   };
 
   const host: Host = {
-    connect: () =>
-      Promise.resolve({
+    connect(listener) {
+      onMessage = listener;
+      return Promise.resolve({
         ghostty: {version: "1.3.1", platform: "macos", configPath: CONFIG},
         defaultsWithDocs: DEFAULTS,
         fonts: [],
         instances: 0,
         persisted: options.persisted ?? null,
         stash: options.stash ?? null,
-      }),
+      });
+    },
     loadConfig: () =>
       Promise.resolve({
         files: [{path: CONFIG, text: file, utf8: true}],
@@ -76,7 +85,7 @@ function fakeHost(options: Options) {
       return shown;
     },
     validateConfig: () => Promise.resolve(""),
-    systemAppearance: () => Promise.resolve("dark"),
+    systemAppearance: () => Promise.resolve(system),
     loadThemes: () => Promise.resolve([...themes]),
     writeTheme(name, text) {
       if (themes.some((theme) => theme.name === name)) {
@@ -125,6 +134,12 @@ function fakeHost(options: Options) {
     },
     failNextRead() {
       failNext = true;
+    },
+    /** Switches the system's appearance, and lets the session follow it. */
+    switchAppearance(appearance: Appearance) {
+      system = appearance;
+      onMessage?.({type: "appearance-changed"});
+      return flush();
     },
   };
 }
@@ -260,6 +275,35 @@ describe("the draft", () => {
     await intents({type: "revert"});
     expect(state().appearance).toBe("dark");
     expect(state().draft.values).toEqual({});
+  });
+});
+
+describe("the system's appearance", () => {
+  it("picks the half of a draft theme pair that Ghostty previews", async () => {
+    const {fake, state, intents} = await setup({
+      config: INCLUDE,
+      themes: THEMES,
+    });
+    await intents({type: "theme", theme: "light:Light,dark:Dark"});
+    expect(fake.calls.previews.at(-1)).toContain("background = #111111");
+
+    await fake.switchAppearance("light");
+    expect(state().appearance).toBe("light");
+    expect(fake.calls.previews.at(-1)).toContain("background = #fafafa");
+  });
+
+  it("keeps a chosen half until the system picks it too", async () => {
+    const {fake, state, intents} = await setup({
+      config: "theme = light:Light,dark:Dark\n",
+      themes: THEMES,
+    });
+    await intents({type: "appearance", appearance: "light"});
+    await fake.switchAppearance("dark");
+    expect(state().appearance).toBe("light");
+
+    await fake.switchAppearance("light");
+    await fake.switchAppearance("dark");
+    expect(state().appearance).toBe("dark");
   });
 });
 

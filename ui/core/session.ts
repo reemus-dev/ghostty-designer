@@ -119,24 +119,22 @@ function sessionState(
  * saved config through `host`, then turns intents into draft changes that
  * preview live. `listener` receives every message for the panel, in order.
  *
- * Requests (intents, save plans, saves, saved themes and restores) run one at a
- * time, so each sees the effects of those before. Live intents wait in their
- * slot until the slot is free, or until another request comes, which applies
- * after them. A request that writes files holds later requests until the
- * session has read them back, so they edit against what it wrote. A save plan
- * takes the draft in turn, then validates and plans it while later requests
- * run, and only the newest plan stays up for review. Reloads may overlap:
- * `latestLoads` decides which results count, and `PreviewCalls` which preview
- * statuses do.
+ * Requests (intents, save plans, saves, saved themes, restores and switches of
+ * the system's appearance) run one at a time, so each sees the effects of those
+ * before. Live intents wait in their slot until the slot is free, or until
+ * another request comes, which applies after them. A request that writes files
+ * holds later requests until the session has read them back, so they edit
+ * against what it wrote. A save plan takes the draft in turn, then validates
+ * and plans it while later requests run, and only the newest plan stays up for
+ * review. Reloads may overlap: `latestLoads` decides which results count, and
+ * `PreviewCalls` which preview statuses do.
  */
 export async function startSession(
   host: Host,
   listener: (message: SessionMessage) => void,
 ) {
   const early: HostMessage[] = [];
-  let receive = (message: HostMessage) => {
-    early.push(message);
-  };
+  let receive = (message: HostMessage) => void early.push(message);
   const start = await host.connect((message) => receive(message));
   const catalog = buildCatalog(start.defaultsWithDocs);
   const {configPath} = start.ghostty;
@@ -147,7 +145,6 @@ export async function startSession(
     listener({type: "error", message: errorText(error)});
 
   const config = savedConfig(host, catalog, configPath, {
-    follow: () => design.appearanceChosen,
     config: (read) => {
       design.configRead(read);
       if (read.answered.length === 0) publish();
@@ -171,6 +168,13 @@ export async function startSession(
     listener({type: "state", state: state()});
   };
 
+  const requests = requestQueue(async (intent) => {
+    if (intent.type === "install-preview") await config.install(publish);
+    else if (intent.type === "rescan-fonts") await host.rescanFonts();
+    else await design.applyIntent(intent);
+    publish();
+  }, LIVE_MS);
+
   receive = (message) => {
     switch (message.type) {
       case "config-changed": {
@@ -192,6 +196,10 @@ export async function startSession(
         publish();
         break;
       }
+      case "appearance-changed": {
+        void requests.serial(() => design.followSystem()).then(publish, fail);
+        break;
+      }
       case "preview-status": {
         design.status(message.id, message.apply);
         break;
@@ -203,13 +211,6 @@ export async function startSession(
     }
   };
   for (const message of early.splice(0)) receive(message);
-
-  const requests = requestQueue(async (intent) => {
-    if (intent.type === "install-preview") await config.install(publish);
-    else if (intent.type === "rescan-fonts") await host.rescanFonts();
-    else await design.applyIntent(intent);
-    publish();
-  }, LIVE_MS);
 
   /**
    * After a save or restore the files hold the result, so the draft and preview
@@ -224,8 +225,6 @@ export async function startSession(
     reviews.clear();
     // The close guard reads the count before the read publishes.
     design.report();
-    // The read follows the system's appearance again, since the preview no
-    // longer shows the chosen half of a pair.
     try {
       await config.readConfig("settle", publish);
     } catch (error) {
