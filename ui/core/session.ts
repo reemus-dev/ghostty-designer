@@ -144,6 +144,8 @@ export async function startSession(
   const fail = (error: unknown) =>
     listener({type: "error", message: errorText(error)});
 
+  // The config and the design need each other. These callbacks run only for
+  // reads, which start once `design` and `publish` exist.
   const config = savedConfig(host, catalog, configPath, {
     config: (read) => {
       design.configRead(read);
