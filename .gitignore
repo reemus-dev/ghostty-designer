@@ -4,9 +4,15 @@ node_modules/
 # build output
 dist/
 /target/
-# Tauri's generated ACL schemas
-crates/app/gen/
 ui/styles.gen.css
+
+# Tauri's generated ACL schemas
+crates/app/gen/schemas/
+
+# Rust
+**/*.rs.bk
+**/mutants.out*/
+rustc-ice-*.txt
 
 # sandboxes, VMs and smoke screenshots
 .cache/
@@ -15,18 +21,32 @@ ui/styles.gen.css
 .mise.local.toml
 .mise.*.local.toml
 
-# secrets and logs
+# secrets
 .env
 .env.*
 .auth.json
+
+# logs
 *.log
 
 # editors
 .idea/
 .vscode/
+*.sw?
 
-# OS
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+__MACOSX/
+
+# Linux
+*~
+.directory
+.fuse_hidden*
+.nfs*
+.Trash-*
 
 # AI agent local state
 .agents/*
