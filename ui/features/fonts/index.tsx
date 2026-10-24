@@ -111,7 +111,7 @@ export function FontSection() {
 
   return (
     <PageSection id="font">
-      <div className="grid items-start gap-5 min-[60rem]:grid-cols-[minmax(0,1fr)_clamp(320px,40vw,440px)]">
+      <div className="editor-columns items-start">
         <div className="flex min-w-0 flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <PageFilter

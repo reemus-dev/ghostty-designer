@@ -30,7 +30,7 @@ export function WindowSection() {
   return (
     <PageSection id="window">
       <div className="flex flex-col gap-5">
-        <div className="grid items-start gap-5 min-[60rem]:grid-cols-2">
+        <div className="grid grid-cols-2 items-start gap-5">
           {layout.columns.map((column) => (
             <div key={column[0]!.label} className="flex flex-col gap-5">
               {column.map((section) => (
@@ -63,7 +63,7 @@ function OptionList(props: {options: OptionMeta[]}) {
   const {options} = props;
   const half = Math.ceil(options.length / 2);
   return (
-    <div className="-mt-2 grid gap-x-10 min-[60rem]:grid-cols-2">
+    <div className="-mt-2 grid grid-cols-2 gap-x-10">
       {[options.slice(0, half), options.slice(half)].map((column) => (
         <div key={column[0]?.key} className="flex flex-col">
           {column.map((option) => (

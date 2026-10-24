@@ -138,7 +138,7 @@ export function ColorsSection() {
           </Button>
         </>
       }>
-      <div className="grid grid-cols-[minmax(0,1fr)_clamp(300px,30vw,392px)] grid-rows-[auto_1fr] items-start gap-5">
+      <div className="editor-columns grid-rows-[auto_1fr] items-start">
         <div className="@container flex flex-col gap-5 card p-6">
           <Warnings warnings={state.warnings} />
           <div className="-my-1 flex items-center gap-4">

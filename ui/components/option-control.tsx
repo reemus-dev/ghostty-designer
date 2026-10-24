@@ -81,15 +81,16 @@ export function OptionControl(props: {option: OptionMeta; className?: string}) {
 }
 
 /**
- * An option's row around any control: its label on the left, the control and
- * reset on the right.
+ * An option's row around any control: its label and notes on the left, the
+ * control and reset on the right.
  */
 export function OptionRow(props: {
   option: OptionMeta;
+  note?: string;
   className?: string;
   children: ReactNode;
 }) {
-  const {option, className, children} = props;
+  const {option, note, className, children} = props;
   return (
     <div
       data-option={option.key}
@@ -97,7 +98,11 @@ export function OptionRow(props: {
         "flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1.5 py-1.5 not-first:border-t",
         className,
       )}>
-      <OptionLabel option={option} className="max-w-full min-w-28 flex-1" />
+      <OptionLabel
+        option={option}
+        note={note}
+        className="max-w-full min-w-28 flex-1"
+      />
       <div
         data-option-control
         className="ml-auto flex shrink-0 items-center gap-1.5">
@@ -112,8 +117,12 @@ export function OptionRow(props: {
  * The option's name with its doc tooltip, the changed marker and when it
  * applies.
  */
-function OptionLabel(props: {option: OptionMeta; className?: string}) {
-  const {option, className} = props;
+function OptionLabel(props: {
+  option: OptionMeta;
+  note: string | undefined;
+  className?: string;
+}) {
+  const {option, note, className} = props;
   const changed = useSnapshot(
     (snapshot) => snapshot.state.provenance[option.key] === "draft",
   );
@@ -127,6 +136,7 @@ function OptionLabel(props: {option: OptionMeta; className?: string}) {
       option.platforms[0] === snapshot.ghostty.platform,
   );
   const notes = [
+    note,
     RELOAD_NOTE[option.reload],
     onlyHere ? PLATFORM_NOTE[option.platforms[0]!] : null,
   ].filter(Boolean);

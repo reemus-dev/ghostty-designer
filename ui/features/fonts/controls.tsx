@@ -92,27 +92,30 @@ const rows = (options: OptionMeta[]) =>
 export function FontMetricsAndStyles() {
   const {metrics, rendering, fallback, styles} = useFontCards();
   return (
-    <div className="grid items-start gap-5 min-[60rem]:grid-cols-2">
-      <div className="flex flex-col gap-5">
-        <Card
-          label={metrics.label}
-          aside="Whole pixels, or a percentage such as 12.5%">
-          <div className="-mt-2 flex flex-col">{rows(metrics.options)}</div>
-        </Card>
-        <Card label={rendering.label}>
-          <div className="-mt-2 flex flex-col">{rows(rendering.options)}</div>
-        </Card>
-      </div>
-      <div className="flex flex-col gap-5">
-        <Card label={fallback.label} aside="For characters the font lacks">
-          <div className="-mt-2 flex flex-col">
-            <FallbackFonts />
-            {rows(fallback.options)}
-          </div>
-        </Card>
-        <Card label={styles.label}>
-          <div className="-mt-2 flex flex-col">{rows(styles.options)}</div>
-        </Card>
+    <div className="mt-6 flex flex-col gap-3">
+      <h3 className="px-1 text-sm text-muted-foreground">More font settings</h3>
+      <div className="grid grid-cols-2 items-start gap-5">
+        <div className="flex flex-col gap-5">
+          <Card
+            label={metrics.label}
+            aside="Whole pixels, or a percentage such as 12.5%">
+            <div className="-mt-2 flex flex-col">{rows(metrics.options)}</div>
+          </Card>
+          <Card label={rendering.label}>
+            <div className="-mt-2 flex flex-col">{rows(rendering.options)}</div>
+          </Card>
+        </div>
+        <div className="flex flex-col gap-5">
+          <Card label={fallback.label} aside="For characters the font lacks">
+            <div className="-mt-2 flex flex-col">
+              <FallbackFonts />
+              {rows(fallback.options)}
+            </div>
+          </Card>
+          <Card label={styles.label}>
+            <div className="-mt-2 flex flex-col">{rows(styles.options)}</div>
+          </Card>
+        </div>
       </div>
     </div>
   );
@@ -163,25 +166,22 @@ function FontSize(props: {option: OptionMeta}) {
   const {min = -Infinity, max = Infinity} =
     option.control.kind === "number" ? option.control : {};
   return (
-    <>
-      <OptionRow option={option}>
-        <NumberField
-          aria-label="Font size"
-          value={value}
-          min={min}
-          max={max}
-          onCommit={(next) =>
-            sendLive({type: "set", key: option.key, values: [String(next)]})
-          }
-        />
-        <span className="text-xs text-muted-foreground">pt</span>
-      </OptionRow>
-      {resetsZoom && (
-        <p className="pb-1.5 text-sm text-muted-foreground">
-          Changing it resets each Ghostty window's zoom ({MOD}+ / {MOD}−).
-        </p>
-      )}
-    </>
+    <OptionRow
+      option={option}
+      note={
+        resetsZoom ? `Resets each window's zoom (${MOD}+ / ${MOD}−)` : undefined
+      }>
+      <NumberField
+        aria-label="Font size"
+        value={value}
+        min={min}
+        max={max}
+        onCommit={(next) =>
+          sendLive({type: "set", key: option.key, values: [String(next)]})
+        }
+      />
+      <span className="text-xs text-muted-foreground">pt</span>
+    </OptionRow>
   );
 }
 
