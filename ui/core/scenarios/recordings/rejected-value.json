@@ -2,16 +2,16 @@
   "start": {
     "state": {
       "draft": {"theme":null,"values":{}},
-      "changes": 0,
       "history": {"undo":[],"redo":[]},
-      "previewInstalled": true,
-      "previewShadowed": false,
       "appearance": "dark",
-      "themeSetting": "GitHub Dark",
-      "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "favorites": [],
       "recentThemes": [],
       "reference": null,
+      "changes": 0,
+      "previewInstalled": true,
+      "previewShadowed": false,
+      "themeSetting": "GitHub Dark",
+      "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "canRestoreOriginal": false,
       "instances": 0,
       "colorMatch": {"theme":"Cobalt Next Minimal","exact":false},
@@ -421,7 +421,8 @@
         "window-height = 32",
         "config-file = ?ghostty-designer.conf",
         ""
-      ]
+      ],
+      "xdg/ghostty/ghostty-designer.conf": ["osc-color-report-format = none",""]
     }
   },
   "steps": [
@@ -430,15 +431,21 @@
       "reply": {
         "state": {
           "draft": {"theme":null,"values":{"background":["#101010"]}},
-          "changes": 1,
           "history": {"undo":[{"label":"Set Background"}],"redo":[]},
+          "changes": 1,
           "effective": {"background":["#101010"]},
           "provenance": {"background":"draft"},
           "own": {"colors":{"background":"#101010"}}
         }
       },
       "apply": {"state":"applied"},
-      "files": {"xdg/ghostty/ghostty-designer.conf":["background = #101010",""]}
+      "files": {
+        "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
+          "background = #101010",
+          ""
+        ]
+      }
     },
     {
       "op": "intent",
@@ -448,11 +455,11 @@
             "theme": null,
             "values": {"background":["#101010"],"font-size":["abc"]}
           },
-          "changes": 2,
           "history": {
             "undo": [{"label":"Set Background"},{"label":"Set Font size"}],
             "redo": []
           },
+          "changes": 2,
           "effective": {"font-size":["abc"]},
           "provenance": {"font-size":"draft"}
         }

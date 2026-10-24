@@ -2,16 +2,16 @@
   "start": {
     "state": {
       "draft": {"theme":null,"values":{}},
-      "changes": 0,
       "history": {"undo":[],"redo":[]},
-      "previewInstalled": true,
-      "previewShadowed": false,
       "appearance": "dark",
-      "themeSetting": "GitHub Dark",
-      "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "favorites": [],
       "recentThemes": [],
       "reference": null,
+      "changes": 0,
+      "previewInstalled": true,
+      "previewShadowed": false,
+      "themeSetting": "GitHub Dark",
+      "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "canRestoreOriginal": false,
       "instances": 0,
       "colorMatch": {"theme":"Cobalt Next Minimal","exact":false},
@@ -421,7 +421,8 @@
         "window-height = 32",
         "config-file = ?ghostty-designer.conf",
         ""
-      ]
+      ],
+      "xdg/ghostty/ghostty-designer.conf": ["osc-color-report-format = none",""]
     }
   },
   "steps": [
@@ -433,7 +434,6 @@
             "theme": "light:GitHub Light Default,dark:GitHub Dark Default",
             "values": {}
           },
-          "changes": 1,
           "history": {
             "undo": [
               {
@@ -442,6 +442,7 @@
             ],
             "redo": []
           },
+          "changes": 1,
           "themeSetting": "light:GitHub Light Default,dark:GitHub Dark Default",
           "themePair": {
             "light": "GitHub Light Default",
@@ -501,6 +502,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #0d1117",
           "foreground = #e6edf3",
           "cursor-color = #2f81f7",
@@ -802,6 +804,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #ffffff",
           "foreground = #1f2328",
           "cursor-color = #0969da",
@@ -1103,6 +1106,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #0d1117",
           "foreground = #e6edf3",
           "cursor-color = #2f81f7",
@@ -1404,6 +1408,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #ffffff",
           "foreground = #1f2328",
           "cursor-color = #0969da",
@@ -1678,7 +1683,6 @@
             "theme": "light:GitHub Light Default,dark:GitHub Dark Default",
             "values": {"background":["#202020"]}
           },
-          "changes": 2,
           "history": {
             "undo": [
               {
@@ -1691,6 +1695,7 @@
           "recentThemes": [
             "light:GitHub Light Default,dark:GitHub Dark Default"
           ],
+          "changes": 2,
           "colorMatch": {"theme":"GitHub Light Default","exact":false},
           "effective": {"background":["#202020"]},
           "provenance": {"background":"draft"},
@@ -1706,6 +1711,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #202020",
           "foreground = #1f2328",
           "cursor-color = #0969da",
@@ -2219,7 +2225,10 @@
           "config-file = ?ghostty-designer.conf",
           ""
         ],
-        "xdg/ghostty/ghostty-designer.conf": "",
+        "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
+          ""
+        ],
         "state/ghostty-designer/original/files/<root>/xdg/ghostty/config": [
           "theme = \"GitHub Dark\"",
           "font-family = Menlo",
@@ -2299,9 +2308,9 @@
       "reply": {
         "state": {
           "draft": {"theme":null,"values":{}},
-          "changes": 0,
           "history": {"undo":[],"redo":[]},
           "appearance": "dark",
+          "changes": 0,
           "canRestoreOriginal": true,
           "colorMatch": {"theme":"GitHub Dark Default","exact":false},
           "saved": {
@@ -2967,6 +2976,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "foreground = #1f2328",
           "cursor-color = #0969da",
           "cursor-text = #3c9cff",
@@ -3557,7 +3567,12 @@
         }
       },
       "apply": {"state":"idle"},
-      "files": {"xdg/ghostty/ghostty-designer.conf":""}
+      "files": {
+        "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
+          ""
+        ]
+      }
     },
     {"op":"intent","error":"input","apply":{"state":"idle"},"files":{}},
     {
@@ -3565,8 +3580,8 @@
       "reply": {
         "state": {
           "draft": {"theme":"Nord","values":{}},
-          "changes": 1,
           "history": {"undo":[{"label":"Theme Nord"}],"redo":[]},
+          "changes": 1,
           "themeSetting": "Nord",
           "themePair": {"light":"Nord","dark":"Nord"},
           "colorMatch": {"theme":"Nord","exact":true},
@@ -3601,6 +3616,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #2e3440",
           "foreground = #d8dee9",
           "cursor-color = #eceff4",
@@ -3984,7 +4000,10 @@
           "config-file = ?ghostty-designer.conf",
           ""
         ],
-        "xdg/ghostty/ghostty-designer.conf": ""
+        "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
+          ""
+        ]
       }
     },
     {
@@ -3992,12 +4011,12 @@
       "reply": {
         "state": {
           "draft": {"theme":null,"values":{}},
-          "changes": 0,
           "history": {"undo":[],"redo":[]},
           "recentThemes": [
             "Nord",
             "light:GitHub Light Default,dark:GitHub Dark Default"
           ],
+          "changes": 0,
           "saved": {
             "theme": ["Nord"],
             "background": ["#2e3440"],

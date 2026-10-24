@@ -154,9 +154,14 @@ the panel warns when that hides a change.
 
 - Ghostty checks every preview before loading it. A value it rejects is left
   out, and the panel names that setting.
+- While the designer runs, the preview file also turns off Ghostty's replies to
+  colour queries (`osc-color-report-format = none`). Ghostty 1.3.1 can freeze
+  when a reload lands while a program floods it with colour queries, as Herdr
+  does after every reload. Programs that ask for Ghostty's colours meanwhile
+  keep the colours they knew.
 - Stopping the designer clears the preview file: closing the panel, quitting the
   app, a termination signal, or a crash. After a hard kill or power loss,
-  Ghostty shows the last preview until the next start clears it, or until you
+  Ghostty shows the last preview until the next start replaces it, or until you
   delete the file. The `?` makes the include optional, so Ghostty starts fine
   without the file.
 - The panel can only change appearance keys: colours, fonts, cursor, window and
@@ -182,7 +187,7 @@ the panel warns when that hides a change.
 
 | What                                       | When                                                                    | Undo                                                  |
 | ------------------------------------------ | ----------------------------------------------------------------------- | ----------------------------------------------------- |
-| The preview file                           | On every change while the designer runs                                 | Stop the designer, or delete the file                 |
+| The preview file                           | On start, and on every change while the designer runs                   | Stop the designer, or delete the file                 |
 | Two lines at the end of your config        | When you click **Enable live preview** on first run                     | **Restore original config…**, or delete the two lines |
 | The changed lines in your config           | When you confirm **Save to config…**                                    | **Restore original config…**, or the previous copy    |
 | A theme file in `~/.config/ghostty/themes` | When you save colours as a theme, or tick the backup option when saving | Delete the file. A theme never replaces another file. |

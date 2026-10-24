@@ -2,16 +2,16 @@
   "start": {
     "state": {
       "draft": {"theme":null,"values":{}},
-      "changes": 0,
       "history": {"undo":[],"redo":[]},
-      "previewInstalled": false,
-      "previewShadowed": false,
       "appearance": "dark",
-      "themeSetting": "GitHub Dark",
-      "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "favorites": [],
       "recentThemes": [],
       "reference": null,
+      "changes": 0,
+      "previewInstalled": false,
+      "previewShadowed": false,
+      "themeSetting": "GitHub Dark",
+      "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "canRestoreOriginal": false,
       "instances": 0,
       "colorMatch": {"theme":"Cobalt Next Minimal","exact":false},
@@ -418,7 +418,8 @@
         "window-width = 110",
         "window-height = 32",
         ""
-      ]
+      ],
+      "xdg/ghostty/ghostty-designer.conf": ["osc-color-report-format = none",""]
     }
   },
   "steps": [
@@ -427,8 +428,8 @@
       "reply": {
         "state": {
           "draft": {"theme":null,"values":{"background":["#101010"]}},
-          "changes": 1,
           "history": {"undo":[{"label":"Set Background"}],"redo":[]},
+          "changes": 1,
           "effective": {"background":["#101010"]},
           "provenance": {"background":"draft"},
           "own": {"colors":{"background":"#101010"}}
@@ -483,6 +484,11 @@
           "",
           "# ghostty-designer: live preview, keep below other config-file lines",
           "config-file = ?ghostty-designer.conf",
+          ""
+        ],
+        "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
+          "background = #101010",
           ""
         ],
         "state/ghostty-designer/original/files/<root>/xdg/ghostty/config": [
@@ -554,8 +560,7 @@
           "window-width = 110",
           "window-height = 32",
           ""
-        ],
-        "xdg/ghostty/ghostty-designer.conf": ["background = #101010",""]
+        ]
       }
     },
     {"op":"settle","reply":{"state":{}},"apply":{"state":"applied"},"files":{}},

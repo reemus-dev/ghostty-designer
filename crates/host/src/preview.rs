@@ -32,10 +32,13 @@
 //!   a hung read cannot delay shutdown. The worker holds the engine only to
 //!   report and write, so an engine dropped without shutdown writes nothing
 //!   more.
-//! - **Crash recovery.** A non-empty preview file at [`Preview::start`] is a
-//!   stale draft from a crashed run, or the marker a preview-less read leaves
-//!   while Ghostty still shows the draft. It is reverted through the channel:
-//!   write, reload, and reset zoom when it set a font size.
+//! - **No colour replies.** While the engine runs, the file starts with
+//!   [`SESSION_TEXT`], even with no draft. Only the shutdown write empties it.
+//! - **Crash recovery.** A preview file at [`Preview::start`] that holds more
+//!   than [`SESSION_TEXT`] is a stale draft from a crashed run, or the marker a
+//!   preview-less read leaves while Ghostty still shows the draft. An empty
+//!   file is a clean start. Either is reverted through the channel: write
+//!   [`SESSION_TEXT`], reload, and reset zoom when the old text set a font size.
 //! - **Zoom.** Ghostty applies a new `font-size` only to terminals not zoomed
 //!   by hand (src/Surface.zig:1742-1756), so zoom resets whenever the last
 //!   `font-size` of the written text changes: on an apply, a revert, at
@@ -62,6 +65,23 @@ pub struct Status {
     pub id: Option<String>,
     pub apply: PreviewStatus,
 }
+
+/// What the preview file starts with while the engine runs, draft or not.
+///
+/// [UNTIL] Ghostty stops sending a config change's `color_scheme_report` into
+/// the termio thread's own mailbox (1.3.1: `src/termio/stream_handler.zig:122`
+/// sends it through `src/termio/mailbox.zig:92`). Without this line a preview
+/// reload can freeze Ghostty for good. Each terminal's termio thread is the
+/// only reader of a 64-message mailbox, yet handling a reload makes it send
+/// into that mailbox and wait for a free slot. Programs that subscribe to
+/// light/dark reports get one on every reload, and some answer with a burst
+/// of colour queries: Herdr sends 258, also on every resize. Each reply takes a
+/// mailbox slot. When a burst fills the mailbox while the thread handles a
+/// reload, the thread waits on itself. Its terminal stops, and the main thread
+/// blocks on the full mailbox next. With no colour replies, a burst takes no
+/// slots. Programs that ask for Ghostty's colours meanwhile get no answer and
+/// keep the colours they knew.
+const SESSION_TEXT: &str = "osc-color-report-format = none\n";
 
 /// Stands in for the preview text while a preview-less read runs. Ghostty
 /// loads nothing from it, but a start after a crash sees a file to revert.
@@ -103,8 +123,8 @@ struct FileState {
 }
 
 impl Preview {
-    /// Starts the engine for `ghostty`'s preview file and clears a stale
-    /// preview from a crashed run before returning. `on_status` runs on the
+    /// Starts the engine for `ghostty`'s preview file, and before returning
+    /// writes [`SESSION_TEXT`] in place of what it finds. `on_status` runs on the
     /// worker, in the order the texts were scheduled.
     pub async fn start(
         env: Env,
@@ -135,7 +155,7 @@ impl Preview {
         tokio::spawn(worker.run(receiver));
 
         let preview = Preview(shared);
-        if !stale.trim().is_empty() {
+        if stale != SESSION_TEXT {
             preview.revert(None);
             preview.settled().await;
         }
@@ -161,7 +181,8 @@ impl Preview {
         });
     }
 
-    /// Clears the preview file, so instances show the saved config.
+    /// Clears the draft from the preview file, so instances show the saved
+    /// config.
     pub fn revert(&self, id: Option<String>) {
         self.apply(id, String::new());
     }
@@ -319,7 +340,8 @@ impl Shared {
             if file.shut_down {
                 return;
             }
-            replace_own_file(&self.ghostty.preview_path, &text).map(|()| {
+            let file_text = format!("{SESSION_TEXT}{text}");
+            replace_own_file(&self.ghostty.preview_path, &file_text).map(|()| {
                 ghostty::reload(&pids);
                 std::mem::replace(&mut file.font_size, font_size.clone())
             })
@@ -580,6 +602,11 @@ mod tests {
         t
     }
 
+    /// The preview file while the engine runs and shows `draft`.
+    fn session(draft: &str) -> String {
+        format!("{SESSION_TEXT}{draft}")
+    }
+
     fn preview_path(t: &TestEnv) -> PathBuf {
         t.root.join("xdg/ghostty/ghostty-designer.conf")
     }
@@ -732,11 +759,11 @@ mod tests {
         r.validation_started(1).await;
         let reverted = r.revert();
         r.preview.settled().await;
-        assert_eq!(r.file(), "");
+        assert_eq!(r.file(), SESSION_TEXT);
 
         // Past the overtaken validation's delay.
         sleep(Duration::from_millis(700)).await;
-        assert_eq!(r.file(), "");
+        assert_eq!(r.file(), SESSION_TEXT);
         assert_eq!(r.states(Some(&applied)), [PreviewState::Applying]);
         assert_eq!(
             r.states(Some(&reverted)),
@@ -777,7 +804,7 @@ mod tests {
             },
         };
         assert_eq!(statuses.last(), Some(&rejected));
-        assert_eq!(r.file(), "background = #222222\n");
+        assert_eq!(r.file(), session("background = #222222\n"));
     }
 
     /// A drag schedules drafts faster than Ghostty validates them: each
@@ -799,7 +826,7 @@ mod tests {
         assert!(applied.count() >= 2, "too few frames applied in the drag");
 
         r.preview.settled().await;
-        assert_eq!(r.file(), "background = #00001d\n");
+        assert_eq!(r.file(), session("background = #00001d\n"));
         assert_eq!(r.states(Some(&last)).last(), Some(&PreviewState::Applied));
     }
 
@@ -826,7 +853,7 @@ mod tests {
         r.validation_started(2).await;
         let seen = r.preview.without_preview(slow_read).await.unwrap();
         assert_eq!(seen, hidden);
-        assert_eq!(r.file(), "background = #222222\n");
+        assert_eq!(r.file(), session("background = #222222\n"));
 
         // An apply asked for during the read.
         let (started, read_started) = oneshot::channel();
@@ -841,7 +868,7 @@ mod tests {
         let (seen, ()) = tokio::join!(read, edit);
         assert_eq!(seen.unwrap(), hidden);
         r.preview.settled().await;
-        assert_eq!(r.file(), "background = #333333\n");
+        assert_eq!(r.file(), session("background = #333333\n"));
     }
 
     /// The shutdown barrier, through `close`: a hung validation cannot delay
@@ -857,6 +884,8 @@ mod tests {
         };
         t.ghostty.set(Action::ValidateConfig, None, hang);
         let r = rig(t).await;
+        // The fake instance logs once for signals that arrive together.
+        eventually("the start reload", || instance.reloads() == [SESSION_TEXT]).await;
 
         r.apply(&[("background", "#111111")]);
         r.validation_started(1).await;
@@ -866,12 +895,12 @@ mod tests {
             .expect("close waited for a hung validation")
             .unwrap();
         assert_eq!(r.file(), "");
-        eventually("the reload", || instance.reloads() == [""]).await;
+        eventually("the reload", || instance.reloads() == [SESSION_TEXT, ""]).await;
 
         r.apply(&[("background", "#222222")]);
         sleep(Duration::from_millis(300)).await;
         assert_eq!(r.file(), "");
-        assert_eq!(instance.reloads(), [""]);
+        assert_eq!(instance.reloads(), [SESSION_TEXT, ""]);
         assert_eq!(r.t.ghostty.calls(Action::ValidateConfig).len(), 1);
     }
 
@@ -904,22 +933,27 @@ mod tests {
         assert_eq!(r.file(), "");
     }
 
-    /// Crash recovery: a stale preview from a crashed run, or the marker of a
-    /// read a crash cut short, is cleared before the reload. Zoom resets when
-    /// the stale preview set a font size.
+    /// Start, clean or after a crash: an empty file, a stale preview from a
+    /// crashed run, or the marker of a read a crash cut short is replaced with
+    /// the session text before the reload. Zoom resets when the stale preview
+    /// set a font size.
     #[tokio::test]
-    async fn start_reverts_a_stale_preview_through_the_engine() {
-        let stale = [("font-size = 15\nbackground = #111111\n", 1), (HIDDEN, 0)];
-        for (text, resets) in stale {
+    async fn start_writes_the_session_text_through_the_engine() {
+        let found = [
+            ("", 0),
+            ("font-size = 15\nbackground = #111111\n", 1),
+            (HIDDEN, 0),
+        ];
+        for (text, resets) in found {
             let mut t = test_env();
             fs::write(preview_path(&t), text).unwrap();
             let instance = FakeInstance::spawn(&t);
             t.env.target_pids = Some(vec![instance.pid()]);
 
             let r = rig(t).await;
-            assert_eq!(r.file(), "");
+            assert_eq!(r.file(), SESSION_TEXT);
             assert_eq!(r.states(None), [PreviewState::Applying, PreviewState::Idle]);
-            eventually("the reload", || instance.reloads() == [""]).await;
+            eventually("the reload", || instance.reloads() == [SESSION_TEXT]).await;
             if r.t.env.platform == Platform::Macos {
                 eventually("the zoom reset", || r.resets() == resets).await;
             }
@@ -942,7 +976,7 @@ mod tests {
         sleep(Duration::from_millis(400)).await;
 
         assert_eq!(r.states(Some(&dropped)), [PreviewState::Applying]);
-        assert_eq!(r.file(), "background = #222222\n");
+        assert_eq!(r.file(), session("background = #222222\n"));
     }
 
     /// Zoom resets once the font size the preview shows changes, and at
@@ -965,7 +999,7 @@ mod tests {
 
         r.apply(&[("font-size", "abc"), ("background", "#111111")]);
         r.preview.settled().await;
-        assert_eq!(r.file(), "background = #111111\n");
+        assert_eq!(r.file(), session("background = #111111\n"));
         r.apply(&[("font-size", "20")]);
         r.preview.settled().await;
         eventually("the zoom reset", || r.resets() == 1).await;

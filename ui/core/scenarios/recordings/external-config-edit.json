@@ -2,16 +2,16 @@
   "start": {
     "state": {
       "draft": {"theme":null,"values":{}},
-      "changes": 0,
       "history": {"undo":[],"redo":[]},
-      "previewInstalled": true,
-      "previewShadowed": false,
       "appearance": "dark",
-      "themeSetting": "GitHub Dark",
-      "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "favorites": [],
       "recentThemes": [],
       "reference": null,
+      "changes": 0,
+      "previewInstalled": true,
+      "previewShadowed": false,
+      "themeSetting": "GitHub Dark",
+      "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "canRestoreOriginal": false,
       "instances": 0,
       "colorMatch": {"theme":"Cobalt Next Minimal","exact":false},
@@ -421,7 +421,8 @@
         "window-height = 32",
         "config-file = ?ghostty-designer.conf",
         ""
-      ]
+      ],
+      "xdg/ghostty/ghostty-designer.conf": ["osc-color-report-format = none",""]
     }
   },
   "steps": [
@@ -430,8 +431,8 @@
       "reply": {
         "state": {
           "draft": {"theme":"Nord","values":{}},
-          "changes": 1,
           "history": {"undo":[{"label":"Theme Nord"}],"redo":[]},
+          "changes": 1,
           "themeSetting": "Nord",
           "themePair": {"light":"Nord","dark":"Nord"},
           "colorMatch": {"theme":"Nord","exact":true},
@@ -489,6 +490,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #2e3440",
           "foreground = #d8dee9",
           "cursor-color = #eceff4",
@@ -760,12 +762,12 @@
       "reply": {
         "state": {
           "draft": {"theme":"Nord","values":{"font-size":["20"]}},
-          "changes": 2,
           "history": {
             "undo": [{"label":"Theme Nord"},{"label":"Set Font size"}],
             "redo": []
           },
           "recentThemes": ["Nord"],
+          "changes": 2,
           "effective": {"font-size":["20"]},
           "provenance": {"font-size":"draft"}
         }
@@ -773,6 +775,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #2e3440",
           "foreground = #d8dee9",
           "cursor-color = #eceff4",
@@ -1049,7 +1052,6 @@
             "theme": "Nord",
             "values": {"font-size":["20"],"background":["#101010"]}
           },
-          "changes": 3,
           "history": {
             "undo": [
               {"label":"Theme Nord"},
@@ -1058,6 +1060,7 @@
             ],
             "redo": []
           },
+          "changes": 3,
           "colorMatch": {"theme":"Nord Wave","exact":false},
           "effective": {"background":["#101010"]},
           "provenance": {"background":"draft"},
@@ -1068,6 +1071,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #101010",
           "foreground = #d8dee9",
           "cursor-color = #eceff4",
@@ -1374,6 +1378,7 @@
           ""
         ],
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #101010",
           "foreground = #d8dee9",
           "cursor-color = #eceff4",
@@ -1736,7 +1741,10 @@
           "window-height = 32",
           ""
         ],
-        "xdg/ghostty/ghostty-designer.conf": ""
+        "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
+          ""
+        ]
       }
     },
     {
@@ -1793,6 +1801,7 @@
           ""
         ],
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "background = #101010",
           "foreground = #d8dee9",
           "cursor-color = #eceff4",

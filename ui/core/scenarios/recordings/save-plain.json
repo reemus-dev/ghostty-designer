@@ -2,16 +2,16 @@
   "start": {
     "state": {
       "draft": {"theme":null,"values":{}},
-      "changes": 0,
       "history": {"undo":[],"redo":[]},
-      "previewInstalled": true,
-      "previewShadowed": false,
       "appearance": "dark",
-      "themeSetting": "GitHub Dark",
-      "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "favorites": [],
       "recentThemes": [],
       "reference": null,
+      "changes": 0,
+      "previewInstalled": true,
+      "previewShadowed": false,
+      "themeSetting": "GitHub Dark",
+      "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "canRestoreOriginal": false,
       "instances": 0,
       "colorMatch": {"theme":"Cobalt Next Minimal","exact":false},
@@ -421,7 +421,8 @@
         "window-height = 32",
         "config-file = ?ghostty-designer.conf",
         ""
-      ]
+      ],
+      "xdg/ghostty/ghostty-designer.conf": ["osc-color-report-format = none",""]
     }
   },
   "steps": [
@@ -430,14 +431,20 @@
       "reply": {
         "state": {
           "draft": {"theme":null,"values":{"font-size":["16"]}},
-          "changes": 1,
           "history": {"undo":[{"label":"Set Font size"}],"redo":[]},
+          "changes": 1,
           "effective": {"font-size":["16"]},
           "provenance": {"font-size":"draft"}
         }
       },
       "apply": {"state":"applied"},
-      "files": {"xdg/ghostty/ghostty-designer.conf":["font-size = 16",""]}
+      "files": {
+        "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
+          "font-size = 16",
+          ""
+        ]
+      }
     },
     {
       "op": "intent",
@@ -447,11 +454,11 @@
             "theme": null,
             "values": {"font-size":["16"],"cursor-style":["bar"]}
           },
-          "changes": 2,
           "history": {
             "undo": [{"label":"Set Font size"},{"label":"Set Cursor style"}],
             "redo": []
           },
+          "changes": 2,
           "effective": {"cursor-style":["bar"]},
           "provenance": {"cursor-style":"draft"}
         }
@@ -459,6 +466,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "font-size = 16",
           "cursor-style = bar",
           ""
@@ -477,7 +485,6 @@
               "palette": ["3=#abcdef"]
             }
           },
-          "changes": 3,
           "history": {
             "undo": [
               {"label":"Set Font size"},
@@ -486,6 +493,7 @@
             ],
             "redo": []
           },
+          "changes": 3,
           "effective": {"palette:3":"#abcdef"},
           "provenance": {"palette:3":"draft"},
           "own": {
@@ -755,6 +763,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "font-size = 16",
           "cursor-style = bar",
           "palette = 3=#abcdef",
@@ -775,7 +784,6 @@
               "font-feature": ["-calt","ss01"]
             }
           },
-          "changes": 4,
           "history": {
             "undo": [
               {"label":"Set Font size"},
@@ -785,6 +793,7 @@
             ],
             "redo": []
           },
+          "changes": 4,
           "effective": {"font-feature":["-calt","ss01"]},
           "provenance": {"font-feature":"draft"}
         }
@@ -792,6 +801,7 @@
       "apply": {"state":"applied"},
       "files": {
         "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
           "font-size = 16",
           "cursor-style = bar",
           "palette = 3=#abcdef",
@@ -902,7 +912,10 @@
           "config-file = ?ghostty-designer.conf",
           ""
         ],
-        "xdg/ghostty/ghostty-designer.conf": "",
+        "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
+          ""
+        ],
         "state/ghostty-designer/original/files/<root>/xdg/ghostty/config": [
           "theme = \"GitHub Dark\"",
           "font-family = Menlo",
@@ -982,8 +995,8 @@
       "reply": {
         "state": {
           "draft": {"theme":null,"values":{}},
-          "changes": 0,
           "history": {"undo":[],"redo":[]},
+          "changes": 0,
           "canRestoreOriginal": true,
           "saved": {
             "font-size": ["16"],
@@ -1007,14 +1020,20 @@
       "reply": {
         "state": {
           "draft": {"theme":null,"values":{"cursor-style":["block"]}},
-          "changes": 1,
           "history": {"undo":[{"label":"Set Cursor style"}],"redo":[]},
+          "changes": 1,
           "effective": {"cursor-style":null},
           "provenance": {"cursor-style":"draft"}
         }
       },
       "apply": {"state":"applied"},
-      "files": {"xdg/ghostty/ghostty-designer.conf":["cursor-style = block",""]}
+      "files": {
+        "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
+          "cursor-style = block",
+          ""
+        ]
+      }
     },
     {
       "op": "plan-save",
@@ -1135,7 +1154,10 @@
           "config-file = ?ghostty-designer.conf",
           ""
         ],
-        "xdg/ghostty/ghostty-designer.conf": ""
+        "xdg/ghostty/ghostty-designer.conf": [
+          "osc-color-report-format = none",
+          ""
+        ]
       }
     },
     {
@@ -1143,8 +1165,8 @@
       "reply": {
         "state": {
           "draft": {"theme":null,"values":{}},
-          "changes": 0,
           "history": {"undo":[],"redo":[]},
+          "changes": 0,
           "saved": {"cursor-style":null},
           "provenance": {"cursor-style":"config"}
         }
