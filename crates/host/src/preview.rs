@@ -67,20 +67,21 @@ pub struct Status {
 }
 
 /// What the preview file starts with while the engine runs, draft or not.
-///
-/// [UNTIL] Ghostty stops sending a config change's `color_scheme_report` into
-/// the termio thread's own mailbox (1.3.1: `src/termio/stream_handler.zig:122`
-/// sends it through `src/termio/mailbox.zig:92`). Without this line a preview
-/// reload can freeze Ghostty for good. Each terminal's termio thread is the
-/// only reader of a 64-message mailbox, yet handling a reload makes it send
-/// into that mailbox and wait for a free slot. Programs that subscribe to
-/// light/dark reports get one on every reload, and some answer with a burst
-/// of colour queries: Herdr sends 258, also on every resize. Each reply takes a
-/// mailbox slot. When a burst fills the mailbox while the thread handles a
-/// reload, the thread waits on itself. Its terminal stops, and the main thread
-/// blocks on the full mailbox next. With no colour replies, a burst takes no
-/// slots. Programs that ask for Ghostty's colours meanwhile get no answer and
-/// keep the colours they knew.
+//
+// [UNTIL] Ghostty stops sending a config change's `color_scheme_report` into
+// the termio thread's own mailbox.
+// https://github.com/ghostty-org/ghostty/discussions/14825
+//
+// Without this line a preview reload can freeze Ghostty for good. Each
+// terminal's termio thread is the only reader of a 64-message mailbox, yet
+// handling a reload makes it send into that mailbox and wait for a free slot.
+// Programs that subscribe to light/dark reports get one on every reload, and
+// some answer with a burst of colour queries: Herdr sends 258, also on every
+// resize. Each reply takes a mailbox slot. When a burst fills the mailbox while
+// the thread handles a reload, the thread waits on itself. Its terminal stops,
+// and the main thread blocks on the full mailbox next. With no colour replies,
+// a burst takes no slots. Programs that ask for Ghostty's colours meanwhile get
+// no answer and keep the colours they knew.
 const SESSION_TEXT: &str = "osc-color-report-format = none\n";
 
 /// Stands in for the preview text while a preview-less read runs. Ghostty
