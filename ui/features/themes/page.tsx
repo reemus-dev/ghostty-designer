@@ -1,8 +1,8 @@
 import type {ReactNode} from "react";
 
 /**
- * Themes' body under the header: the filter row, which sticks while the content
- * scrolls at a readable width, and the side panel.
+ * Themes' body: the filter row, which sticks while the content scrolls at a
+ * readable width, and the side panel.
  */
 export function Page(props: {
   filter: ReactNode;

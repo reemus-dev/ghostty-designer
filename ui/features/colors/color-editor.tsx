@@ -287,6 +287,7 @@ function OklchFields(props: {id: SlotId; hex: string; label: string}) {
           className="min-w-[92px] flex-1"
           onCommit={commitHex}
         />
+        <CopyButton hex={hex} />
         <CommitInput
           aria-label="OKLCH"
           reason="Such as oklch(0.72 0.12 250)"
@@ -294,7 +295,6 @@ function OklchFields(props: {id: SlotId; hex: string; label: string}) {
           className="min-w-46 flex-[3]"
           onCommit={commitOklch}
         />
-        <CopyButton hex={hex} />
       </div>
       {!inSrgbGamut(lch) && (
         <p className="-mt-1 text-sm text-fg-3">

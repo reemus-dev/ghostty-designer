@@ -194,7 +194,7 @@ function Filters(props: {
           Light <Count>{counts.light}</Count>
         </ToggleGroupItem>
       </ToggleGroup>
-      <div className="flex basis-full flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Chip
           pressed={readable}
           count={counts.readable}
@@ -214,7 +214,6 @@ function Filters(props: {
           />
           Favourites
         </Chip>
-        <span className="flex-1" />
         <Select value={sort} onValueChange={(next) => next && onSort(next)}>
           <SelectTrigger
             size="sm"

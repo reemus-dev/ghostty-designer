@@ -244,10 +244,20 @@ fn open_panel(app: &AppHandle, state: &Path) -> tauri::Result<()> {
             open_in_browser(&url);
             NewWindowResponse::Deny
         });
+    // The panel draws its own toolbar under the traffic lights, centred in its
+    // top 48px.
+    #[cfg(target_os = "macos")]
+    let builder = builder
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .hidden_title(true)
+        .traffic_light_position(tauri::LogicalPosition::new(18.0, 26.0));
 
+    // Customise lays out the basic colours in three columns from about 1060px
+    // wide. A saved frame smaller than the minimum grows to it.
+    let builder = builder.min_inner_size(1080.0, 600.0);
     let builder = match restore_frame(app, &state.join("window-frame")) {
         Some([x, y, width, height]) => builder.position(x, y).inner_size(width, height),
-        None => builder.inner_size(1040.0, 760.0),
+        None => builder.inner_size(1200.0, 800.0),
     };
     #[cfg_attr(
         not(target_os = "linux"),

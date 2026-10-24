@@ -41,13 +41,15 @@
   --color-app: #121316;
   --color-panel: #191a1e;
   --color-raised: #202126;
+  /* The toolbar and rail around the content. */
+  --color-chrome: #25262b;
   --color-hover: #27282e;
   --color-selected: #34363d;
   --color-line: #24262b;
   --color-line-2: #2f3137;
   --color-fg: #e9eaee;
   --color-fg-2: #a2a5ad;
-  /* ≥ 4.5:1 on every surface up to raised. */
+  /* ≥ 4.5:1 on every surface up to chrome. */
   --color-fg-3: #8a8d94;
   --color-primary-hover: #4862f6;
   --color-primary-text: #8c9cff;
@@ -129,6 +131,7 @@
 @layer base {
   * {
     @apply border-border outline-ring;
+    scrollbar-width: thin;
   }
   html,
   body,

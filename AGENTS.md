@@ -36,7 +36,7 @@ session in TypeScript.
 | `ui/core/`                       | The session: config, catalog, draft, undo, intents, themes, save plans |
 | `ui/core/testing/`               | Scenario replay on the Rust host over stdio (`host/examples/`)         |
 | `ui/core/scenarios/`             | Session scenarios and their recordings                                 |
-| `ui/app/`                        | Header, view switch, bottom bar, ⌘K palette, save sheet, first run     |
+| `ui/app/`                        | Toolbar, rail, ⌘K palette, save sheet, first run                       |
 | `ui/features/`                   | Customise sections (colors, fonts, window) and the Themes view         |
 | `ui/components/`                 | Shared controls, with shadcn components in `components/ui/`            |
 | `ui/lib/`                        | Store, host commands, view helpers, specimen pages                     |

@@ -37,7 +37,7 @@ type Store = {
   failure: string | null;
   /** The window asked to close with unsaved changes. */
   closeRequested: boolean;
-  /** One transient line above the bottom bar. */
+  /** One transient line at the foot of the content. */
   notice: Notice | null;
   view: View;
   paletteOpen: boolean;
