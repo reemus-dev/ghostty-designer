@@ -165,7 +165,7 @@ export function FontSection() {
               />
             </IconButton>
           </div>
-          <p className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1 text-sm text-fg-3">
+          <p className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1 text-sm text-muted-foreground">
             {visible
               ? `${visible.length} of ${fonts?.length ?? 0} fonts`
               : "Scanning fonts…"}
@@ -243,7 +243,7 @@ function FontHeader(props: {
   return (
     <header className="flex flex-col gap-4">
       <div className="flex min-w-0 flex-col gap-1.5">
-        <span className="flex items-center gap-2 text-sm text-fg-2">
+        <span className="flex items-center gap-2 text-sm text-muted-foreground">
           {status}
         </span>
         <h3
@@ -255,7 +255,7 @@ function FontHeader(props: {
           }>
           {name}
         </h3>
-        <span className="truncate text-sm text-fg-3">{facts}</span>
+        <span className="truncate text-sm text-muted-foreground">{facts}</span>
       </div>
     </header>
   );

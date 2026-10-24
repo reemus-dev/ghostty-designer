@@ -15,9 +15,9 @@ type Status = {
 };
 
 const DOT = {
-  live: "bg-live shadow-live",
-  off: "bg-fg-3",
-  warn: "bg-warn shadow-[0_0_0_3px_var(--color-warn-soft)]",
+  live: "bg-live ring-3 ring-live/16",
+  off: "bg-muted-foreground",
+  warn: "bg-warn ring-3 ring-warn/12",
 };
 
 function liveStatus(state: SessionState, options: OptionMeta[]): Status {
@@ -100,7 +100,7 @@ export function LiveDot() {
       tip={
         <span className="flex flex-col gap-0.5">
           <span className="font-medium">{status.label}</span>
-          <span className="text-fg-2">{status.detail}</span>
+          <span className="text-muted-foreground">{status.detail}</span>
         </span>
       }
       className="size-8 justify-center rounded-lg">
@@ -150,9 +150,9 @@ function StatusTrigger(props: {
         }
         aria-label={props["aria-label"]}
         className={cn(
-          "flex shrink-0 items-center whitespace-nowrap text-fg-2 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "flex shrink-0 items-center whitespace-nowrap text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring",
           status.warn && "text-warn",
-          action && "hover:bg-white/5",
+          action && "hover:bg-accent",
           className,
         )}>
         {children}

@@ -142,7 +142,7 @@ export function ColorsSection() {
         <div className="@container flex flex-col gap-5 card p-6">
           <Warnings warnings={state.warnings} />
           <div className="-my-1 flex items-center gap-4">
-            <p className="min-w-0 flex-1 text-sm text-fg-3">
+            <p className="min-w-0 flex-1 text-sm text-muted-foreground">
               {reference
                 ? `Under each colour is ${reference.name}'s. Click one to use it.`
                 : `Click a colour to edit it. Drag to swap, ${ALT}-drag to copy.`}
@@ -155,26 +155,28 @@ export function ColorsSection() {
             className="flex flex-col gap-6"
             onKeyDown={onArrow}>
             <div className="flex flex-col gap-3">
-              <h3 className="text-sm text-fg-3">Basics</h3>
+              <h3 className="text-sm text-muted-foreground">Basics</h3>
               <div className="grid grid-cols-2 gap-4 @min-[34rem]:grid-cols-3 @min-[44rem]:grid-cols-4">
                 {BASE_SLOTS.map((slot) => tile(slot.key, true))}
               </div>
             </div>
             <div className="flex flex-col gap-3">
-              <h3 className="text-sm text-fg-3">Terminal colours</h3>
+              <h3 className="text-sm text-muted-foreground">
+                Terminal colours
+              </h3>
               <div className="grid grid-cols-[auto_repeat(8,minmax(0,1fr))] items-start gap-2 [&_code]:hidden @min-[30rem]:[&_code]:block">
                 <span />
                 {NAMES.map((name) => (
                   <span
                     key={name}
-                    className="truncate text-center text-xs text-fg-3">
+                    className="truncate text-center text-xs text-muted-foreground">
                     {name}
                   </span>
                 ))}
                 {["Normal", "Bright"].map((row, r) => [
                   <span
                     key={row}
-                    className="flex h-7 items-center pr-2 text-sm text-fg-3">
+                    className="flex h-7 items-center pr-2 text-sm text-muted-foreground">
                     {row}
                   </span>,
                   ...TERMINAL_SLOTS.slice(r * 8, r * 8 + 8).map((id) =>
@@ -218,12 +220,15 @@ function ReferencePicker(props: {reference: ThemeSummary | undefined}) {
             <Button
               variant="ghost"
               size="sm"
-              className="text-fg-3 [&>svg:last-child]:hidden"
+              className="text-muted-foreground [&>svg:last-child]:hidden"
             />
           }>
-          <PinIcon aria-hidden className={reference && "text-fg-2"} />
+          <PinIcon
+            aria-hidden
+            className={reference && "text-muted-foreground"}
+          />
           {reference ? (
-            <span className="text-fg-2">{reference.name}</span>
+            <span className="text-muted-foreground">{reference.name}</span>
           ) : (
             "Pin a theme for reference"
           )}
@@ -250,7 +255,7 @@ function ReferencePicker(props: {reference: ThemeSummary | undefined}) {
           variant="ghost"
           aria-label="Unpin reference"
           title="Unpin"
-          className="text-fg-3"
+          className="text-muted-foreground"
           onClick={() => void send({type: "reference", theme: null})}>
           <XIcon />
         </Button>

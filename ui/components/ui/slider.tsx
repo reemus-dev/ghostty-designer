@@ -26,7 +26,7 @@ function Slider({
       <SliderPrimitive.Control className="relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
         <SliderPrimitive.Track
           data-slot="slider-track"
-          className="relative grow overflow-hidden rounded-full bg-(--slider-track,var(--color-line-2)) select-none data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1">
+          className="relative grow overflow-hidden rounded-full bg-(--slider-track,var(--color-input)) select-none data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1">
           <SliderPrimitive.Indicator
             data-slot="slider-range"
             className="bg-(--slider-range,var(--primary)) select-none data-horizontal:h-full data-vertical:w-full"
@@ -37,7 +37,7 @@ function Slider({
             data-slot="slider-thumb"
             key={index}
             aria-label={label}
-            className="relative block size-4 shrink-0 rounded-full bg-[#f2f3f6] shadow-[0_1px_3px_rgb(0_0_0/50%),0_0_0_0.5px_rgb(0_0_0/40%)] select-none after:absolute after:-inset-2 disabled:pointer-events-none disabled:opacity-50 has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-app"
+            className="relative block size-4 shrink-0 rounded-full bg-foreground shadow-[0_1px_3px_rgb(0_0_0/50%),0_0_0_0.5px_rgb(0_0_0/40%)] select-none after:absolute after:-inset-2 disabled:pointer-events-none disabled:opacity-50 has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-background"
           />
         ))}
       </SliderPrimitive.Control>

@@ -48,7 +48,7 @@ export function ColorSummary(props: {state: SessionState}) {
                 <button
                   type="button"
                   title="Show it in Ghostty and on Themes"
-                  className="rounded-sm underline decoration-line-2 underline-offset-[3px] outline-none hover:decoration-fg-2 focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-sm underline decoration-input underline-offset-[3px] outline-none hover:decoration-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={() => {
                     revealTheme(colorMatch.theme)?.focus({
                       preventScroll: true,
@@ -62,7 +62,7 @@ export function ColorSummary(props: {state: SessionState}) {
           </>
         )}
       </span>
-      {hide && <span className="text-fg-3">{hide}</span>}
+      {hide && <span className="text-muted-foreground">{hide}</span>}
     </div>
   );
 }
@@ -87,16 +87,16 @@ export function Warnings(props: {warnings: ReadabilityWarning[]}) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-warn-soft py-3 pr-3 pl-4 shadow-[inset_0_0_0_1px_var(--color-warn-line)]">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-warn/12 py-3 pr-3 pl-4 inset-ring inset-ring-warn/28">
       <div className="flex min-w-48 flex-1 flex-col gap-0.5">
         <span>{text}</span>
-        <small className="text-sm text-fg-2">
+        <small className="text-sm text-muted-foreground">
           Make readable changes only their lightness.
         </small>
       </div>
       <Button
         variant="outline"
-        className="text-warn shadow-[inset_0_0_0_1px_var(--color-warn-line)]"
+        className="text-warn inset-ring inset-ring-warn/28"
         onClick={makeReadable}>
         Make readable
       </Button>

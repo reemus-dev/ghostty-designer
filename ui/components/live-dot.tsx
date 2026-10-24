@@ -6,7 +6,7 @@ export function LiveDot(props: {className?: string}) {
     <i
       aria-hidden
       className={cn(
-        "size-[7px] shrink-0 rounded-full bg-live shadow-live",
+        "size-[7px] shrink-0 rounded-full bg-live ring-3 ring-live/16",
         props.className,
       )}
     />

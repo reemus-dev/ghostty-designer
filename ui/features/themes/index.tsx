@@ -114,7 +114,7 @@ export function ThemesView() {
           onSort={setSort}
         />
       }>
-      <p className="flex items-center gap-1.5 pb-4 text-sm text-fg-3">
+      <p className="flex items-center gap-1.5 pb-4 text-sm text-muted-foreground">
         <Kbd>←</Kbd>
         <Kbd>→</Kbd>
         <Kbd>↑</Kbd>
@@ -133,7 +133,7 @@ export function ThemesView() {
           onFocus={setTheme}
         />
       ) : (
-        <div className="flex flex-col items-start gap-3 rounded-2xl p-6 text-sm text-fg-2 hairline">
+        <div className="flex flex-col items-start gap-3 rounded-2xl p-6 text-sm text-muted-foreground inset-ring inset-ring-border">
           <p>
             {query
               ? `No themes match “${query}” with these filters.`
@@ -186,11 +186,11 @@ function Filters(props: {
         }>
         <ToggleGroupItem value="all">All</ToggleGroupItem>
         <ToggleGroupItem value="dark">
-          <MoonIcon aria-hidden className="size-3 text-fg-3" />
+          <MoonIcon aria-hidden className="size-3 text-muted-foreground" />
           Dark <Count>{counts.dark}</Count>
         </ToggleGroupItem>
         <ToggleGroupItem value="light">
-          <SunIcon aria-hidden className="size-3 text-fg-3" />
+          <SunIcon aria-hidden className="size-3 text-muted-foreground" />
           Light <Count>{counts.light}</Count>
         </ToggleGroupItem>
       </ToggleGroup>
@@ -218,8 +218,11 @@ function Filters(props: {
           <SelectTrigger
             size="sm"
             aria-label="Sort"
-            className="border-0 px-1.5 text-fg-2 dark:bg-transparent">
-            <ArrowUpDownIcon aria-hidden className="size-3.5 text-fg-3" />
+            className="border-0 px-1.5 text-muted-foreground dark:bg-transparent">
+            <ArrowUpDownIcon
+              aria-hidden
+              className="size-3.5 text-muted-foreground"
+            />
             <SelectValue>{(value: Sort) => SORT_LABEL[value]}</SelectValue>
           </SelectTrigger>
           <SelectContent align="end">
@@ -236,5 +239,9 @@ function Filters(props: {
 }
 
 function Count(props: {children: number}) {
-  return <span className="font-mono text-xs text-fg-3">{props.children}</span>;
+  return (
+    <span className="font-mono text-xs text-muted-foreground">
+      {props.children}
+    </span>
+  );
 }

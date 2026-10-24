@@ -13,25 +13,25 @@ type SwatchProps = {
   className?: string;
 };
 
-/** --color-panel, as a hex for the contrast check. */
-const PANEL = "#191a1e";
+/** --color-card, as a hex for the contrast check. */
+const CARD = "#191a1e";
 
 /**
- * A colour tile; size it with className. Colours close to the panel get a
+ * A colour tile; size it with className. Colours close to the card get a
  * stronger edge so they stay visible, and translucent colours sit on a
  * checkerboard.
  */
 export function Swatch(props: SwatchProps) {
   const {color, changed, warning, selected} = props;
   const hex = parseHex(color) ? color : null;
-  const faint = hex !== null && contrastRatio(hex, PANEL) < 1.6;
+  const faint = hex !== null && contrastRatio(hex, CARD) < 1.6;
   return (
     <span
       title={props.title}
       className={cn(
         "relative block h-7 w-full shrink-0 rounded-md checkerboard",
         selected &&
-          "ring-2 ring-ring ring-offset-2 ring-offset-(--swatch-offset,var(--color-panel))",
+          "ring-2 ring-ring ring-offset-2 ring-offset-(--swatch-offset,var(--color-card))",
         props.className,
       )}>
       <span
@@ -39,15 +39,15 @@ export function Swatch(props: SwatchProps) {
         className={cn(
           "absolute inset-0 rounded-[inherit]",
           faint
-            ? "shadow-[inset_0_0_0_1px_rgb(255_255_255/40%)]"
-            : "shadow-[inset_0_0_0_1px_rgb(255_255_255/8%)]",
+            ? "inset-ring inset-ring-foreground/40"
+            : "inset-ring inset-ring-border",
         )}
       />
       {changed && (
-        <span className="absolute right-1 bottom-1 size-[7px] rounded-full bg-white shadow-[0_0_0_2px_var(--color-primary)]" />
+        <span className="absolute right-1 bottom-1 size-[7px] rounded-full bg-white ring-2 ring-primary" />
       )}
       {warning && (
-        <span className="absolute -top-[5px] -right-[5px] grid size-[15px] place-items-center rounded-full bg-warn text-[10px] leading-none font-bold text-[#1a1205] shadow-[0_0_0_2px_var(--color-panel)]">
+        <span className="absolute -top-[5px] -right-[5px] grid size-[15px] place-items-center rounded-full bg-warn text-[10px] leading-none font-bold text-[#1a1205] ring-2 ring-card">
           !
         </span>
       )}
@@ -60,7 +60,7 @@ export function ColorSquare(props: {color: string}) {
   return (
     <i
       aria-hidden
-      className="size-2.5 shrink-0 rounded-[3px] shadow-[inset_0_0_0_1px_rgb(255_255_255/15%)]"
+      className="size-2.5 shrink-0 rounded-[3px] inset-ring inset-ring-input"
       style={{background: props.color}}
     />
   );
@@ -71,7 +71,7 @@ export function HexChip(props: {color: string}) {
   return (
     <span className="inline-flex items-center gap-1.5">
       <ColorSquare color={props.color} />
-      <code className="text-sm text-fg-2">{props.color}</code>
+      <code className="text-sm text-muted-foreground">{props.color}</code>
     </span>
   );
 }

@@ -8,13 +8,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/14%),0_1px_2px_rgb(0_0_0/30%)] hover:bg-primary-hover",
+          "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/14%),0_1px_2px_rgb(0_0_0/30%)] hover:bg-primary/90",
         outline:
-          "bg-raised text-fg shadow-[inset_0_0_0_1px_var(--color-line-2),inset_0_1px_0_rgb(255_255_255/3%)] hover:bg-hover aria-expanded:bg-hover [&_svg]:text-fg-2",
+          "bg-secondary text-foreground shadow-[inset_0_1px_0_rgb(255_255_255/3%)] inset-ring inset-ring-input hover:bg-accent aria-expanded:bg-accent [&_svg]:text-muted-foreground",
         secondary:
-          "bg-raised text-fg hover:bg-hover aria-expanded:bg-hover [&_svg]:text-fg-2",
+          "bg-secondary text-foreground hover:bg-accent aria-expanded:bg-accent [&_svg]:text-muted-foreground",
         ghost:
-          "text-fg-2 hover:bg-white/5 hover:text-fg aria-expanded:bg-hover aria-expanded:text-fg",
+          "text-muted-foreground hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground",
         destructive:
           "bg-destructive/12 text-destructive hover:bg-destructive/20",
         link: "text-primary-text underline-offset-4 hover:underline",

@@ -61,14 +61,16 @@ function ReadabilityWarnings(props: {warnings: ReadabilityWarning[]}) {
   return (
     <div
       role="note"
-      className="flex gap-2.5 rounded-xl bg-warn-soft p-3 text-sm shadow-[inset_0_0_0_1px_var(--color-warn-line)]">
+      className="flex gap-2.5 rounded-xl bg-warn/12 p-3 text-sm inset-ring inset-ring-warn/28">
       <TriangleAlertIcon
         aria-hidden
         className="mt-px size-3.5 shrink-0 text-warn"
       />
       <div className="flex flex-col gap-0.5">
-        <b className="font-medium text-fg">Some text may be hard to read</b>
-        <span className="text-fg-2">{lines.join(" ")}</span>
+        <b className="font-medium text-foreground">
+          Some text may be hard to read
+        </b>
+        <span className="text-muted-foreground">{lines.join(" ")}</span>
       </div>
     </div>
   );
@@ -81,10 +83,14 @@ function Showing() {
     whyNotShowing(snapshot.state, THEME_PICK_KEYS),
   );
   if (notShowing) {
-    return <p className="text-sm text-fg-2">{NOT_SHOWING_TEXT[notShowing]}</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        {NOT_SHOWING_TEXT[notShowing]}
+      </p>
+    );
   }
   return (
-    <p className="flex items-center gap-2 text-sm text-fg-2">
+    <p className="flex items-center gap-2 text-sm text-muted-foreground">
       <LiveDot />
       Showing in Ghostty
     </p>
@@ -96,7 +102,7 @@ function Colors(props: {colors: ThemeColors; warnings: ReadabilityWarning[]}) {
   const slots = new Set(warnings.map((warning) => warning.slot));
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-fg-3">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           Background <HexChip color={colors.background} />
         </span>
@@ -132,7 +138,7 @@ function PinButton(props: {theme: string}) {
       size="sm"
       variant="ghost"
       aria-pressed={pinned}
-      className="-my-2 -ml-2.5 self-start text-fg-3"
+      className="-my-2 -ml-2.5 self-start text-muted-foreground"
       onClick={() => {
         void send({type: "reference", theme: pinned ? null : theme});
         if (!pinned) {
@@ -149,7 +155,9 @@ function Action(props: {note?: string; children: ReactNode}) {
   return (
     <div className="flex flex-col gap-2 [&>button]:w-full">
       {props.children}
-      {props.note && <p className="text-sm text-fg-3">{props.note}</p>}
+      {props.note && (
+        <p className="text-sm text-muted-foreground">{props.note}</p>
+      )}
     </div>
   );
 }
@@ -182,8 +190,8 @@ export function ThemeDetail(props: ThemeDetailProps) {
     <>
       <header className="flex items-start gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <p className="flex items-center gap-1.5 text-sm text-fg-2">
-            <ModeIcon aria-hidden className="size-3.5 text-fg-3" />
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <ModeIcon aria-hidden className="size-3.5 text-muted-foreground" />
             {theme.dark ? "Dark theme" : "Light theme"}
             {theme.source === "user" && " · My theme"}
           </p>
@@ -220,7 +228,7 @@ export function ThemeDetail(props: ThemeDetailProps) {
         <SaveThemeButton source={{theme: theme.name}} />
       </Action>
 
-      <hr className="border-line" />
+      <hr className="border-border" />
       <PairBuilder key={theme.name} theme={theme} />
     </>
   );
@@ -240,8 +248,8 @@ export function CurrentDetail(props: {
   return (
     <>
       <header className="flex flex-col gap-1.5">
-        <p className="flex items-center gap-1.5 text-sm text-fg-2">
-          <UserIcon aria-hidden className="size-3.5 text-fg-3" />
+        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <UserIcon aria-hidden className="size-3.5 text-muted-foreground" />
           Your colours
         </p>
         <h2 className="text-xl leading-tight font-semibold tracking-[-0.015em]">
@@ -249,11 +257,11 @@ export function CurrentDetail(props: {
         </h2>
         {showing && <Showing />}
         {match && (
-          <p className="text-sm text-fg-2">
+          <p className="text-sm text-muted-foreground">
             {match.exact ? "Same colours as" : "Closest theme:"}{" "}
             <button
               type="button"
-              className="rounded-sm text-fg underline decoration-line-2 underline-offset-[3px] outline-none hover:decoration-fg-2 focus-visible:ring-2 focus-visible:ring-ring"
+              className="rounded-sm text-foreground underline decoration-input underline-offset-[3px] outline-none hover:decoration-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => props.onPick(match.theme)}>
               {match.theme}
             </button>
@@ -326,7 +334,7 @@ function PairBuilder(props: {theme: ThemeSummary}) {
           <span className="font-medium">
             Use a different theme when your system is in {otherMode} mode
           </span>
-          <span className="text-sm text-fg-3">
+          <span className="text-sm text-muted-foreground">
             Ghostty switches by itself when your system does.
           </span>
         </span>
@@ -373,7 +381,7 @@ function PairBuilder(props: {theme: ThemeSummary}) {
             </Button>
           </div>
           {inPair && (
-            <div className="flex items-center justify-between gap-3 text-sm text-fg-2">
+            <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
               Show in Ghostty now
               <ToggleGroup
                 aria-label="Half of the pair Ghostty shows"
@@ -408,7 +416,7 @@ function PairSwatch(props: {theme: ThemeSummary | undefined}) {
   return (
     <span
       aria-hidden
-      className="flex h-[30px] w-11 shrink-0 flex-col justify-between rounded-lg px-1.5 py-1 font-mono text-[10px] leading-none shadow-[inset_0_0_0_1px_rgb(255_255_255/10%)]"
+      className="flex h-[30px] w-11 shrink-0 flex-col justify-between rounded-lg px-1.5 py-1 font-mono text-[10px] leading-none inset-ring inset-ring-border"
       style={{background: colors?.background, color: colors?.foreground}}>
       {colors && (
         <>

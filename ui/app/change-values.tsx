@@ -14,12 +14,14 @@ export function ChangeValues(props: {change: DraftChange; className?: string}) {
   return (
     <span
       className={cn(
-        "flex min-w-0 items-center gap-1.5 text-sm text-fg-3",
+        "flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground",
         className,
       )}>
       {value(change.before)}
       <span aria-label="to">→</span>
-      <span className="flex min-w-0 text-fg">{value(change.after)}</span>
+      <span className="flex min-w-0 text-foreground">
+        {value(change.after)}
+      </span>
     </span>
   );
 }

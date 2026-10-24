@@ -84,7 +84,7 @@ export function ColorEditor(props: {
       aria-label={`Edit ${slot.title}`}
       className={cn("flex flex-col gap-4", className)}>
       <header className="flex items-center gap-3">
-        <span className="flex size-9 shrink-0 overflow-hidden rounded-md shadow-[inset_0_0_0_1px_rgb(255_255_255/12%)]">
+        <span className="flex size-9 shrink-0 overflow-hidden rounded-md inset-ring inset-ring-input">
           {changed && (
             <span className="flex-1" style={{background: saved[id]!.hex}} />
           )}
@@ -92,7 +92,7 @@ export function ColorEditor(props: {
         </span>
         <div className="flex min-w-0 flex-1 flex-col">
           <h2 className="truncate font-semibold">{slot.title}</h2>
-          <p className="truncate text-sm text-fg-3">
+          <p className="truncate text-sm text-muted-foreground">
             {changed && (
               <>
                 Changed · was <code>{saved[id]!.hex}</code>
@@ -164,7 +164,7 @@ function ThemeColor(props: {
   const {id, icon: Icon, theme, hex, current, note} = props;
   const title = describeSlot(id).title;
   return (
-    <p className="flex items-center gap-2 text-sm text-fg-3">
+    <p className="flex items-center gap-2 text-sm text-muted-foreground">
       <Icon aria-label={note} className="size-3 shrink-0" />
       <span className="truncate" title={note}>
         {theme}
@@ -297,7 +297,7 @@ function OklchFields(props: {id: SlotId; hex: string; label: string}) {
         />
       </div>
       {!inSrgbGamut(lch) && (
-        <p className="-mt-1 text-sm text-fg-3">
+        <p className="-mt-1 text-sm text-muted-foreground">
           Past the hatched edge, Ghostty gets the nearest colour it can show.
         </p>
       )}
@@ -323,7 +323,7 @@ function ChannelSlider(props: ChannelSliderProps) {
   const {label, name, value, max, step, track} = props;
   return (
     <div className="grid grid-cols-[12px_minmax(0,1fr)_auto] items-center gap-3">
-      <span aria-hidden className="text-sm font-semibold text-fg-3">
+      <span aria-hidden className="text-sm font-semibold text-muted-foreground">
         {label}
       </span>
       <Slider
@@ -418,7 +418,7 @@ function Readability(props: ReadabilityProps) {
       aria-label="Readability"
       className="flex flex-col gap-3 border-t pt-4">
       <header className="flex items-baseline gap-2">
-        <h3 className="flex-1 text-sm text-fg-2">
+        <h3 className="flex-1 text-sm text-muted-foreground">
           {surface ? "With" : "On"} {againstName}
         </h3>
         <span
@@ -427,11 +427,11 @@ function Readability(props: ReadabilityProps) {
             !meets && "text-warn",
           )}>
           {formatRatio(ratio)}
-          <span className="text-sm text-fg-3">:1</span>
+          <span className="text-sm text-muted-foreground">:1</span>
         </span>
       </header>
       <div className="flex items-center gap-3">
-        <span className="text-sm text-fg-3">Target</span>
+        <span className="text-sm text-muted-foreground">Target</span>
         <ToggleGroup
           variant="segmented"
           aria-label="Target contrast"
@@ -445,7 +445,7 @@ function Readability(props: ReadabilityProps) {
         </ToggleGroup>
       </div>
       <div
-        className="overflow-hidden rounded-lg text-[13px] leading-[20px] shadow-[0_0_0_1px_rgb(255_255_255/6%)]"
+        className="overflow-hidden rounded-lg text-[13px] leading-[20px] ring-1 ring-border"
         style={{fontFamily: font}}>
         <SampleLine style={sample(hex)} tag="now" />
         {fixed && <SampleLine style={sample(fixed)} tag="after" />}
@@ -485,21 +485,21 @@ function ReadabilityNote(props: {
   const {hex, fixed, meets, target, against, againstName} = props;
   if (meets) {
     return (
-      <p className="text-sm text-fg-3">
+      <p className="text-sm text-muted-foreground">
         Readable: meets {target}:1 on {againstName}.
       </p>
     );
   }
   if (!fixed) {
     return (
-      <p className="text-sm text-fg-3">
+      <p className="text-sm text-muted-foreground">
         No lightness reaches {target}:1 on {againstName} with this hue.
       </p>
     );
   }
   const [from, to] = [toOklch(hex).l, toOklch(fixed).l];
   return (
-    <div className="flex flex-col gap-1.5 text-sm text-fg-3">
+    <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
       <p>
         Below {target}:1. Make readable {to > from ? "raises" : "lowers"}{" "}
         lightness {from.toFixed(2)} → {to.toFixed(2)} and keeps the hue.
@@ -525,7 +525,7 @@ function SampleLine(props: {
       <span className="truncate" style={{color: props.style.color}}>
         {SAMPLE}
       </span>
-      <span className="shrink-0 rounded-sm bg-raised px-1.5 font-sans text-2xs text-fg-2">
+      <span className="shrink-0 rounded-sm bg-muted px-1.5 font-sans text-2xs text-muted-foreground">
         {props.tag}
       </span>
     </div>

@@ -28,7 +28,9 @@ export function PageSection(props: {
             className="text-xl font-semibold tracking-[-0.015em]">
             {SECTION_TITLE[id]}
           </h2>
-          {summary !== undefined && <div className="text-fg-2">{summary}</div>}
+          {summary !== undefined && (
+            <div className="text-muted-foreground">{summary}</div>
+          )}
         </div>
         {actions !== undefined && (
           <div className="flex shrink-0 items-center gap-2">{actions}</div>
@@ -53,7 +55,7 @@ export function PageFilter(
   return (
     <label
       className={cn(
-        "flex h-[30px] min-w-40 flex-1 items-center gap-2 rounded-lg bg-raised pr-1.5 pl-2.5 text-fg-3 shadow-[inset_0_0_0_1px_var(--color-line-2)] has-focus-visible:shadow-[inset_0_0_0_1px_var(--ring),0_0_0_3px_rgb(90_114_255/25%)]",
+        "flex h-[30px] min-w-40 flex-1 items-center gap-2 rounded-lg bg-muted pr-1.5 pl-2.5 text-muted-foreground inset-ring inset-ring-input has-focus-visible:ring-3 has-focus-visible:ring-ring/25 has-focus-visible:inset-ring-ring",
         className,
       )}>
       <SearchIcon aria-hidden className="size-3.5 shrink-0" />
@@ -63,7 +65,7 @@ export function PageFilter(
         {...rest}
         data-page-filter
         type="search"
-        className="min-w-0 flex-1 bg-transparent text-base text-fg outline-none placeholder:text-fg-3 [&::-webkit-search-cancel-button]:hidden"
+        className="min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
         onKeyDown={(event) => {

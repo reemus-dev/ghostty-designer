@@ -14,7 +14,7 @@ export function Card(props: {
       <header className="flex flex-col gap-[3px]">
         <h3 className="text-lg font-semibold tracking-[-0.01em]">{label}</h3>
         {aside !== undefined && (
-          <div className="text-sm text-fg-2">{aside}</div>
+          <div className="text-sm text-muted-foreground">{aside}</div>
         )}
       </header>
       {children}

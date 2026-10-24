@@ -110,10 +110,10 @@ function useFirstValue(option: OptionMeta) {
 
 function FocusNote() {
   return (
-    <p className="flex items-start gap-2 border-t pt-3 text-sm text-fg-2">
+    <p className="flex items-start gap-2 border-t pt-3 text-sm text-muted-foreground">
       <MousePointerClickIcon
         aria-hidden
-        className="mt-0.5 size-3.5 shrink-0 text-fg-3"
+        className="mt-0.5 size-3.5 shrink-0 text-muted-foreground"
       />
       Ghostty draws a hollow block in windows that aren't focused. Click into
       Ghostty to see your cursor.
@@ -328,9 +328,9 @@ function SubRow(props: {label: string; note?: string; children: ReactNode}) {
   return (
     <div className="flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1.5 pb-1.5 pl-4">
       <div className="flex flex-1 flex-col gap-px">
-        <span className="text-fg-2">{props.label}</span>
+        <span className="text-muted-foreground">{props.label}</span>
         {props.note && (
-          <small className="text-sm text-fg-3">{props.note}</small>
+          <small className="text-sm text-muted-foreground">{props.note}</small>
         )}
       </div>
       {/* Lines up with the reset buttons of the rows around it. */}

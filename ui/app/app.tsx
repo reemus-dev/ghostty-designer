@@ -21,7 +21,7 @@ export function App() {
     return (
       <main
         role={failure === null ? undefined : "alert"}
-        className="flex h-full items-center justify-center p-6 text-sm text-fg-3">
+        className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">
         {failure ?? "Loading…"}
       </main>
     );
@@ -45,10 +45,10 @@ function Shell() {
   const setup = useStore(showsSetup);
 
   return (
-    <div className="grid h-full grid-cols-[56px_minmax(0,1fr)] grid-rows-[48px_minmax(0,1fr)] bg-chrome">
+    <div className="grid h-full grid-cols-[56px_minmax(0,1fr)] grid-rows-[48px_minmax(0,1fr)] bg-card">
       <Toolbar />
       <Rail />
-      <main className="relative flex min-h-0 flex-col overflow-hidden rounded-tl-xl bg-app">
+      <main className="relative flex min-h-0 flex-col overflow-hidden rounded-tl-xl bg-background">
         <Activity mode={!setup && view === "customise" ? "visible" : "hidden"}>
           <CustomiseView />
         </Activity>

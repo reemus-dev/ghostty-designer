@@ -123,10 +123,10 @@ export function Gallery(props: GalleryProps) {
       onKeyDown={onKeyDown}>
       {sections.map((section, i) => (
         <section key={section.label} className="flex flex-col gap-3">
-          <h2 className="flex items-baseline gap-2 font-medium text-fg-2">
+          <h2 className="flex items-baseline gap-2 font-medium text-muted-foreground">
             {section.label}
             {section.themes.length > 0 && (
-              <span className="font-mono text-xs text-fg-3">
+              <span className="font-mono text-xs text-muted-foreground">
                 {section.themes.length}
               </span>
             )}
@@ -143,8 +143,8 @@ export function Gallery(props: GalleryProps) {
               />
             )}
             {i === 0 && current && section.themes.length === 0 && (
-              <p className="flex flex-col justify-center gap-1 rounded-2xl p-5 text-sm text-fg-3 hairline [background:repeating-linear-gradient(135deg,transparent_0_8px,rgb(255_255_255/1.5%)_8px_16px)]">
-                <b className="font-medium text-fg-2">
+              <p className="flex flex-col justify-center gap-1 rounded-2xl p-5 text-sm text-muted-foreground inset-ring inset-ring-border [background:repeating-linear-gradient(135deg,transparent_0_8px,rgb(255_255_255/1.5%)_8px_16px)]">
+                <b className="font-medium text-muted-foreground">
                   Themes you save show here
                 </b>
                 Use “Save as theme…”, or back up your colours when you save to
@@ -193,7 +193,7 @@ type CardProps = {
 
 /** Your own colours, or the theme's mode. */
 function ModeIcon(props: {dark: boolean | undefined}) {
-  const className = "size-3.5 shrink-0 text-fg-3";
+  const className = "size-3.5 shrink-0 text-muted-foreground";
   if (props.dark === undefined) {
     return <UserIcon aria-hidden className={className} />;
   }
@@ -217,10 +217,10 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
       aria-current={showing || undefined}
       aria-label={choice ?? "Current: your colours"}
       className={cn(
-        "group flex scroll-mt-40 scroll-mb-4 flex-col overflow-hidden card text-left transition-[box-shadow] duration-150 outline-none [contain-intrinsic-size:auto_190px] [content-visibility:auto] hover:shadow-[inset_0_0_0_1px_var(--color-line-2),0_6px_20px_rgb(0_0_0/35%)]",
+        "group flex scroll-mt-40 scroll-mb-4 flex-col overflow-hidden card text-left transition-[box-shadow] duration-150 outline-none [contain-intrinsic-size:auto_190px] [content-visibility:auto] hover:shadow-[0_6px_20px_rgb(0_0_0/35%)] hover:inset-ring-input",
         selected
-          ? "ring-2 ring-ring ring-offset-2 ring-offset-app"
-          : "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-app",
+          ? "ring-2 ring-ring ring-offset-2 ring-offset-background"
+          : "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       )}
       onFocus={() => onFocus(choice)}
       onClick={(event) => {
@@ -236,7 +236,7 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
         />
         {props.match && (
           <span
-            className="absolute right-2.5 bottom-2.5 inline-flex h-5 items-center rounded-full bg-panel/90 px-2 text-xs font-medium text-fg shadow-[inset_0_0_0_1px_var(--color-line-2)]"
+            className="absolute right-2.5 bottom-2.5 inline-flex h-5 items-center rounded-full bg-card/90 px-2 text-xs font-medium text-foreground inset-ring inset-ring-input"
             title={
               props.match.exact
                 ? "The theme with your own colours"
@@ -252,11 +252,13 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
       />
       <span className="flex h-[42px] w-full items-center gap-2 px-4">
         <ModeIcon dark={dark} />
-        <span className="min-w-0 truncate font-medium text-fg">
+        <span className="min-w-0 truncate font-medium text-foreground">
           {choice ?? "Current"}
         </span>
         {choice === null && (
-          <span className="truncate text-sm text-fg-3">Your colours</span>
+          <span className="truncate text-sm text-muted-foreground">
+            Your colours
+          </span>
         )}
         {props.favorite && (
           <StarIcon
@@ -282,13 +284,15 @@ function ShowingBadge() {
   if (notShowing) {
     const text = NOT_SHOWING_TEXT[notShowing];
     return (
-      <span title={text} className="ml-auto shrink-0 text-xs text-fg-3">
+      <span
+        title={text}
+        className="ml-auto shrink-0 text-xs text-muted-foreground">
         {notShowing === "shadowed" ? text : "Not live"}
       </span>
     );
   }
   return (
-    <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-fg">
+    <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-foreground">
       <LiveDot className="size-1.5" />
       Showing
     </span>

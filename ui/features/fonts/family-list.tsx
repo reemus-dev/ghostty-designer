@@ -61,16 +61,18 @@ export function FamilyList(props: FamilyListProps) {
   if (rows === null) {
     return (
       <div aria-busy className="flex flex-col gap-1">
-        <p className="px-4 py-2 text-sm text-fg-2">Scanning installed fonts…</p>
+        <p className="px-4 py-2 text-sm text-muted-foreground">
+          Scanning installed fonts…
+        </p>
         {Array.from({length: SKELETON_ROWS}, (_, i) => (
           <div
             key={i}
             className="flex h-[60px] flex-col justify-center gap-2.5 px-4">
             <span
-              className="h-3.5 rounded-sm bg-white/6 motion-safe:animate-pulse"
+              className="h-3.5 rounded-sm bg-accent motion-safe:animate-pulse"
               style={{width: `${25 + ((i * 37) % 30)}%`}}
             />
-            <span className="h-2.5 w-1/2 rounded-sm bg-white/4 motion-safe:animate-pulse" />
+            <span className="h-2.5 w-1/2 rounded-sm bg-muted motion-safe:animate-pulse" />
           </div>
         ))}
       </div>
@@ -78,7 +80,7 @@ export function FamilyList(props: FamilyListProps) {
   }
   if (rows.length === 0) {
     return (
-      <p className="px-4 py-6 text-sm text-fg-2">
+      <p className="px-4 py-6 text-sm text-muted-foreground">
         No installed font matches. Clear the search or a filter.
       </p>
     );
@@ -134,7 +136,7 @@ export function FamilyList(props: FamilyListProps) {
               id={`${id}-${i}`}
               role="option"
               aria-selected={selected}
-              className="group flex shrink-0 cursor-default scroll-my-2 items-center gap-4 rounded-xl px-4 py-2 hover:bg-white/3 aria-selected:bg-primary-soft in-focus-visible:aria-selected:outline-2 in-focus-visible:aria-selected:-outline-offset-2 in-focus-visible:aria-selected:outline-ring"
+              className="group flex shrink-0 cursor-default scroll-my-2 items-center gap-4 rounded-xl px-4 py-2 hover:bg-accent aria-selected:bg-primary/16 in-focus-visible:aria-selected:outline-2 in-focus-visible:aria-selected:-outline-offset-2 in-focus-visible:aria-selected:outline-ring"
               style={{
                 contentVisibility: "auto",
                 containIntrinsicSize: "auto 60px",
@@ -144,28 +146,28 @@ export function FamilyList(props: FamilyListProps) {
                 className="flex min-w-0 flex-1 flex-col gap-[3px]"
                 style={{fontFamily}}>
                 <span className="flex min-w-0 items-baseline gap-3">
-                  <span className="truncate text-[19px] leading-[1.3] text-fg">
+                  <span className="truncate text-[19px] leading-[1.3] text-foreground">
                     {font?.family ?? DEFAULT_NAME}
                   </span>
-                  <span className="shrink-0 font-sans text-xs text-fg-3">
+                  <span className="shrink-0 font-sans text-xs text-muted-foreground">
                     {tags}
                   </span>
                 </span>
                 <span
                   aria-hidden
-                  className="truncate text-base leading-[1.4] text-fg-2 group-aria-selected:text-fg">
+                  className="truncate text-base leading-[1.4] text-muted-foreground group-aria-selected:text-foreground">
                   {SAMPLE}
                 </span>
               </span>
               {name === saved && (
-                <span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-fg-2">
+                <span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-muted-foreground">
                   <CheckIcon aria-hidden className="size-3" />
                   In your config
                 </span>
               )}
             </div>
             {pinned(name) && i < names.length - 1 && !pinned(names[i + 1]) && (
-              <div role="presentation" className="mx-4 my-2 h-px bg-line" />
+              <div role="presentation" className="mx-4 my-2 h-px bg-border" />
             )}
           </div>
         );

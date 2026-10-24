@@ -141,7 +141,7 @@ function OptionLabel(props: {option: OptionMeta; className?: string}) {
             render={<span />}
             tabIndex={0}
             aria-describedby={helpId}
-            className="truncate rounded-sm font-medium text-fg underline decoration-line-2 decoration-dotted underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            className="truncate rounded-sm font-medium text-foreground underline decoration-input decoration-dotted underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring">
             {option.label}
           </TooltipTrigger>
           <TooltipContent
@@ -149,9 +149,9 @@ function OptionLabel(props: {option: OptionMeta; className?: string}) {
             align="start"
             className="max-w-sm flex-col items-start gap-1.5 whitespace-pre-line">
             <code className="text-xs text-primary-text">{option.key}</code>
-            <span className="line-clamp-[12] text-fg-2">{doc}</span>
+            <span className="line-clamp-[12] text-muted-foreground">{doc}</span>
             {option.reloadNote && (
-              <span className="text-fg">{option.reloadNote}</span>
+              <span className="text-foreground">{option.reloadNote}</span>
             )}
           </TooltipContent>
         </Tooltip>
@@ -162,7 +162,9 @@ function OptionLabel(props: {option: OptionMeta; className?: string}) {
         {changed && <ChangedDot />}
       </span>
       {notes.length > 0 && (
-        <small className="text-sm text-fg-3">{notes.join(" · ")}</small>
+        <small className="text-sm text-muted-foreground">
+          {notes.join(" · ")}
+        </small>
       )}
       {rejected && (
         <small className="text-sm text-warn">
@@ -263,7 +265,7 @@ function EnumInput(props: ControlProps) {
       <SelectTrigger
         size="sm"
         aria-label={option.label}
-        className="min-w-36 bg-raised">
+        className="min-w-36 bg-secondary">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -297,7 +299,7 @@ function NumberInput(props: ControlProps) {
     return (
       <span className="flex items-center gap-1.5">
         {field}
-        {unit && <span className="text-xs text-fg-3">{unit}</span>}
+        {unit && <span className="text-xs text-muted-foreground">{unit}</span>}
       </span>
     );
   }
@@ -349,7 +351,7 @@ export function SliderField(props: {
       />
       <span className="flex items-center gap-1">
         {props.children}
-        {unit && <span className="text-xs text-fg-3">{unit}</span>}
+        {unit && <span className="text-xs text-muted-foreground">{unit}</span>}
       </span>
     </div>
   );

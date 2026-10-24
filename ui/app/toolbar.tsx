@@ -73,7 +73,7 @@ export function Toolbar() {
             count={state.changes}
           />
         ) : (
-          <span className="px-1 text-sm whitespace-nowrap text-fg-3">
+          <span className="px-1 text-sm whitespace-nowrap text-muted-foreground">
             No unsaved changes
           </span>
         )}
@@ -145,7 +145,7 @@ function SearchButton() {
   return (
     <Button
       variant="outline"
-      className="w-72 min-w-10 shrink justify-start gap-2 px-2.5 font-normal text-fg-3"
+      className="w-72 min-w-10 shrink justify-start gap-2 px-2.5 font-normal text-muted-foreground"
       onClick={() => setPaletteOpen(true)}>
       <SearchIcon />
       <span className="truncate">Search settings, themes, fonts</span>
@@ -220,15 +220,18 @@ function ChangeList(props: {changes: DraftChange[]; count: number}) {
   const {changes, count} = props;
   return (
     <Popover>
-      <PopoverTrigger className="flex h-7 shrink-0 items-center gap-2 rounded-md px-1.5 font-semibold whitespace-nowrap outline-none hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring">
+      <PopoverTrigger className="flex h-7 shrink-0 items-center gap-2 rounded-md px-1.5 font-semibold whitespace-nowrap outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring">
         <span
           aria-hidden
-          className="size-[7px] rounded-full bg-primary-text shadow-[0_0_0_3px_var(--color-primary-soft)]"
+          className="size-[7px] rounded-full bg-primary-text ring-3 ring-primary/16"
         />
         <span>
           {count} unsaved {count === 1 ? "change" : "changes"}
         </span>
-        <ChevronDownIcon aria-hidden className="size-3.5 text-fg-3" />
+        <ChevronDownIcon
+          aria-hidden
+          className="size-3.5 text-muted-foreground"
+        />
       </PopoverTrigger>
       <PopoverContent
         side="bottom"
@@ -251,7 +254,7 @@ function ChangeRow(props: {change: DraftChange}) {
       false,
   );
   return (
-    <div className="flex min-h-9 items-center gap-3 rounded-md pr-1 pl-2.5 hover:bg-white/4">
+    <div className="flex min-h-9 items-center gap-3 rounded-md pr-1 pl-2.5 hover:bg-accent">
       <span className="flex min-w-0 flex-1 items-baseline gap-2">
         <span className="truncate font-medium">{change.label}</span>
         {rejected && (
@@ -289,7 +292,7 @@ function OverflowMenu() {
         </Menu.Trigger>
         <Menu.Portal>
           <Menu.Positioner align="end" sideOffset={6} className="z-50">
-            <Menu.Popup className="flex w-[300px] flex-col rounded-xl bg-raised p-1.5 shadow-[inset_0_0_0_1px_var(--color-line-2),0_16px_40px_rgb(0_0_0/50%)] outline-none">
+            <Menu.Popup className="flex w-[300px] flex-col rounded-xl bg-popover p-1.5 shadow-[0_16px_40px_rgb(0_0_0/50%)] inset-ring inset-ring-input outline-none">
               <MenuItem
                 icon={<RotateCcwIcon />}
                 label="Restore original config…"
@@ -320,7 +323,8 @@ function OverflowMenu() {
           <AlertDialogHeader>
             <AlertDialogTitle>Restore your original config?</AlertDialogTitle>
             <AlertDialogDescription>
-              Puts back <code className="text-fg">{tildePath(configPath)}</code>{" "}
+              Puts back{" "}
+              <code className="text-foreground">{tildePath(configPath)}</code>{" "}
               and its included files as they were before Ghostty Designer first
               saved them. Later saves and unsaved changes are discarded.
             </AlertDialogDescription>
@@ -355,12 +359,14 @@ function MenuItem(props: {
   return (
     <Menu.Item
       disabled={props.disabled}
-      className="flex cursor-default items-start gap-2.5 rounded-md px-2.5 py-[7px] outline-none select-none data-disabled:opacity-50 data-highlighted:bg-hover [&_svg]:mt-0.5 [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:text-fg-2"
+      className="flex cursor-default items-start gap-2.5 rounded-md px-2.5 py-[7px] outline-none select-none data-disabled:opacity-50 data-highlighted:bg-accent [&_svg]:mt-0.5 [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground"
       onClick={props.onClick}>
       {props.icon}
       <span className="flex min-w-0 flex-col gap-px">
         {props.label}
-        <small className="text-sm break-all text-fg-3">{props.hint}</small>
+        <small className="text-sm break-all text-muted-foreground">
+          {props.hint}
+        </small>
       </span>
     </Menu.Item>
   );

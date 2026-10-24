@@ -12,12 +12,12 @@ export function Chip(props: TogglePrimitive.Props & {count?: number}) {
     <Toggle
       {...rest}
       className={cn(
-        "h-[30px] shrink-0 gap-1.5 rounded-lg px-2.5 text-sm font-medium text-fg-2 shadow-[inset_0_0_0_1px_var(--color-line-2)] hover:bg-hover hover:text-fg aria-pressed:bg-primary-soft aria-pressed:text-[#c6ceff] aria-pressed:shadow-[inset_0_0_0_1px_var(--color-primary-line)] [&_svg:not([class*='size-'])]:size-3.5",
+        "h-[30px] shrink-0 gap-1.5 rounded-lg px-2.5 text-sm font-medium text-muted-foreground inset-ring inset-ring-input hover:bg-accent hover:text-foreground aria-pressed:bg-primary/16 aria-pressed:text-primary-text aria-pressed:inset-ring-ring/45 [&_svg:not([class*='size-'])]:size-3.5",
         className,
       )}>
       {children}
       {count !== undefined && (
-        <span className="font-mono text-2xs font-normal text-fg-3 group-aria-pressed/toggle:text-primary-text">
+        <span className="font-mono text-2xs font-normal text-muted-foreground group-aria-pressed/toggle:text-primary-text">
           {count}
         </span>
       )}

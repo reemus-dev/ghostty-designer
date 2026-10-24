@@ -119,11 +119,11 @@ function placeItems(snapshot: Snapshot) {
     sections.push({
       value: `section:${section.id}`,
       label: title,
-      hint: <span className="text-xs text-fg-3">Section</span>,
+      hint: <span className="text-xs text-muted-foreground">Section</span>,
       run: () => revealSection(section.id),
     });
     const hint = (card: string | null) => (
-      <span className="text-xs text-fg-3">
+      <span className="text-xs text-muted-foreground">
         {card ? `${title} · ${card}` : title}
       </span>
     );
@@ -164,14 +164,14 @@ const themeItems = (themes: ThemeSummary[]): Item[] =>
     value: `theme:${theme.name}`,
     label: theme.name,
     icon: theme.dark ? (
-      <MoonIcon aria-hidden className="size-3.5 text-fg-3" />
+      <MoonIcon aria-hidden className="size-3.5 text-muted-foreground" />
     ) : (
-      <SunIcon aria-hidden className="size-3.5 text-fg-3" />
+      <SunIcon aria-hidden className="size-3.5 text-muted-foreground" />
     ),
     hint: (
       <PaletteDots
         colors={theme.colors.palette.slice(1, 7)}
-        className="flex h-4 shrink-0 items-center gap-px rounded-sm px-1 shadow-[0_0_0_1px_rgb(255_255_255/8%)]"
+        className="flex h-4 shrink-0 items-center gap-px rounded-sm px-1 ring-1 ring-border"
         dotClassName="size-1.5 rounded-[1px]"
         style={{background: theme.colors.background}}
       />
@@ -187,7 +187,7 @@ const fontItems = (fonts: FontFamily[] | null): Item[] =>
     value: `font:${font.family}`,
     label: font.family,
     hint: font.nerd ? (
-      <span className="text-xs text-fg-3">Nerd Font</span>
+      <span className="text-xs text-muted-foreground">Nerd Font</span>
     ) : undefined,
     run: () =>
       void send({
@@ -236,7 +236,7 @@ export function CommandPalette() {
         <Dialog.Viewport className="fixed inset-0 z-50 flex items-start justify-center px-3 pt-[12vh]">
           <Dialog.Popup
             aria-label="Command palette"
-            className="flex max-h-[min(34rem,calc(100dvh-6rem))] w-full max-w-[540px] flex-col overflow-hidden rounded-3xl bg-panel shadow-[0_24px_64px_rgb(0_0_0/55%)] ring-1 ring-line-2 transition-[scale,opacity] duration-150 outline-none data-ending-style:scale-98 data-ending-style:opacity-0 data-starting-style:scale-98 data-starting-style:opacity-0"
+            className="flex max-h-[min(34rem,calc(100dvh-6rem))] w-full max-w-[540px] flex-col overflow-hidden rounded-3xl bg-card shadow-[0_24px_64px_rgb(0_0_0/55%)] ring-1 ring-input transition-[scale,opacity] duration-150 outline-none data-ending-style:scale-98 data-ending-style:opacity-0 data-starting-style:scale-98 data-starting-style:opacity-0"
             finalFocus={() => {
               const target = chosen.current?.focus;
               chosen.current = null;
@@ -250,17 +250,20 @@ export function CommandPalette() {
               limit={LIMIT}
               autoHighlight="always">
               <label className="flex h-12 shrink-0 items-center gap-2.5 border-b px-4">
-                <SearchIcon aria-hidden className="size-4 text-fg-3" />
+                <SearchIcon
+                  aria-hidden
+                  className="size-4 text-muted-foreground"
+                />
                 <Autocomplete.Input
                   aria-label="Search settings, themes, fonts and actions"
                   placeholder="Search settings, themes, fonts, actions…"
-                  className="h-full min-w-0 flex-1 bg-transparent text-[16px] text-fg outline-none placeholder:text-fg-3"
+                  className="h-full min-w-0 flex-1 bg-transparent text-[16px] text-foreground outline-none placeholder:text-muted-foreground"
                 />
                 <Kbd>esc</Kbd>
               </label>
               <div className="min-h-0 flex-1 [scroll-padding-block:6px] overflow-y-auto overscroll-contain p-1.5">
                 <Autocomplete.Empty>
-                  <p className="px-3 py-6 text-sm text-fg-3">
+                  <p className="px-3 py-6 text-sm text-muted-foreground">
                     Nothing matches. Try a setting such as “padding”, a theme
                     such as “gruvbox”, or a font.
                   </p>
@@ -271,7 +274,7 @@ export function CommandPalette() {
                       key={group.value}
                       items={group.items}
                       className="not-last:mb-1.5">
-                      <Autocomplete.GroupLabel className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-fg-3">
+                      <Autocomplete.GroupLabel className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-muted-foreground">
                         {group.value}
                       </Autocomplete.GroupLabel>
                       <Autocomplete.Collection>
@@ -279,7 +282,7 @@ export function CommandPalette() {
                           <Autocomplete.Item
                             key={item.value}
                             value={item}
-                            className="flex h-8 cursor-default items-center gap-2.5 rounded-lg px-2.5 text-base text-fg-2 outline-none select-none data-highlighted:bg-hover data-highlighted:text-fg"
+                            className="flex h-8 cursor-default items-center gap-2.5 rounded-lg px-2.5 text-base text-muted-foreground outline-none select-none data-highlighted:bg-accent data-highlighted:text-foreground"
                             onClick={() => {
                               chosen.current = {focus: item.run() ?? null};
                               setPaletteOpen(false);

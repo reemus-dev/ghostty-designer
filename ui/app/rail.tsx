@@ -58,7 +58,7 @@ function ViewSwitch(props: {view: View}) {
   return (
     <nav
       aria-label="Views"
-      className="flex flex-col gap-0.5 rounded-lg bg-raised p-0.5 shadow-[inset_0_0_0_1px_var(--color-line-2)]">
+      className="flex flex-col gap-0.5 rounded-lg bg-muted p-0.5 inset-ring inset-ring-input">
       {VIEWS.map((name, i) => {
         const Icon = VIEW_ICON[name];
         return (
@@ -73,9 +73,9 @@ function ViewSwitch(props: {view: View}) {
                 />
               }
               className={cn(
-                "flex size-8 items-center justify-center rounded-md text-fg-2 outline-none hover:text-fg focus-visible:ring-2 focus-visible:ring-ring",
+                "flex size-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
                 name === props.view &&
-                  "bg-selected text-fg shadow-[0_1px_2px_rgb(0_0_0/35%),inset_0_1px_0_rgb(255_255_255/5%)]",
+                  "bg-selected text-foreground shadow-[0_1px_2px_rgb(0_0_0/35%),inset_0_1px_0_rgb(255_255_255/5%)]",
               )}>
               <Icon aria-hidden className="size-4" />
             </TooltipTrigger>
@@ -94,7 +94,7 @@ function Sections() {
   return (
     <nav
       aria-label="Sections"
-      className="flex flex-col gap-1 border-t border-line-2 pt-3">
+      className="flex flex-col gap-1 border-t border-input pt-3">
       {SECTIONS.map(({id, icon: Icon}) => (
         <Tooltip key={id}>
           <TooltipTrigger
@@ -107,8 +107,8 @@ function Sections() {
               />
             }
             className={cn(
-              "flex size-9 items-center justify-center rounded-lg text-fg-3 outline-none hover:bg-white/5 hover:text-fg focus-visible:ring-2 focus-visible:ring-ring",
-              id === current && "bg-primary-soft text-primary-text",
+              "flex size-9 items-center justify-center rounded-lg text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+              id === current && "bg-primary/16 text-primary-text",
             )}>
             <Icon aria-hidden className="size-[18px]" />
           </TooltipTrigger>

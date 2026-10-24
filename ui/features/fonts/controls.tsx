@@ -122,7 +122,7 @@ export function FontMetricsAndStyles() {
 function Group(props: {label: string; aside?: string; children: ReactNode}) {
   return (
     <div className="flex flex-col">
-      <h3 className="flex items-baseline gap-2 pb-1 text-sm text-fg-3">
+      <h3 className="flex items-baseline gap-2 pb-1 text-sm text-muted-foreground">
         {props.label}
         {props.aside && <span className="text-xs">{props.aside}</span>}
       </h3>
@@ -174,10 +174,10 @@ function FontSize(props: {option: OptionMeta}) {
             sendLive({type: "set", key: option.key, values: [String(next)]})
           }
         />
-        <span className="text-xs text-fg-3">pt</span>
+        <span className="text-xs text-muted-foreground">pt</span>
       </OptionRow>
       {resetsZoom && (
-        <p className="pb-1.5 text-sm text-fg-3">
+        <p className="pb-1.5 text-sm text-muted-foreground">
           Changing it resets each Ghostty window's zoom ({MOD}+ / {MOD}−).
         </p>
       )}
@@ -310,7 +310,7 @@ function Features(props: {family: FontFamily}) {
         <div className="flex min-h-11 items-center gap-4 py-1.5">
           <span className="flex min-w-0 flex-1 flex-col gap-px">
             <span className="font-medium">Ligatures</span>
-            <small className="text-sm text-fg-3">
+            <small className="text-sm text-muted-foreground">
               Joins symbols like -&gt; and != into one shape
             </small>
           </span>
@@ -329,7 +329,7 @@ function Features(props: {family: FontFamily}) {
           <div
             key={group.label}
             className="flex flex-col gap-1.5 border-t pt-2.5 first:border-t-0">
-            <h4 className="flex items-center gap-1.5 text-sm text-fg-2">
+            <h4 className="flex items-center gap-1.5 text-sm text-muted-foreground">
               {group.label}
               <span className="font-mono text-2xs">
                 {on > 0 ? `${on} on · ${group.tags.length}` : group.tags.length}
@@ -364,7 +364,9 @@ function Axis(props: {axis: FontAxis}) {
     <div className="flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1.5 py-1.5 not-first:border-t">
       <span className="flex min-w-28 flex-1 items-baseline gap-1.5 font-medium">
         <span className="truncate">{axis.name}</span>
-        <code className="text-xs font-normal text-fg-3">{axis.tag}</code>
+        <code className="text-xs font-normal text-muted-foreground">
+          {axis.tag}
+        </code>
       </span>
       <div className="ml-auto flex shrink-0 items-center gap-1.5">
         <SliderField
@@ -445,7 +447,7 @@ function FallbackFonts() {
   const [primary, ...fallbacks] = chain;
   if (primary === undefined) {
     return (
-      <p className="py-2 text-sm text-fg-3">
+      <p className="py-2 text-sm text-muted-foreground">
         Choose a font first. Fallbacks follow it.
       </p>
     );

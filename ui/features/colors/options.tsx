@@ -53,7 +53,7 @@ export function ColorOptions(props: {
           ))}
         </div>
         {minimum > 1 && (
-          <p className="text-sm text-fg-3">
+          <p className="text-sm text-muted-foreground">
             Ghostty moves the text of {lifted} of the {ratios.length} pairs in
             the table toward black or white to reach {minimum}:1.
           </p>
@@ -62,7 +62,7 @@ export function ColorOptions(props: {
           label="Contrast table"
           aside="Each text colour on each background">
           <div className="flex flex-col gap-2">
-            <p className="text-sm text-fg-3">
+            <p className="text-sm text-muted-foreground">
               The contrast ratio of each pair. 4.5 and up reads well.
             </p>
             <ContrastTable colors={colors} />
@@ -112,7 +112,7 @@ function ContrastTable(props: {colors: Colors}) {
                 key={bg}
                 scope="col"
                 title={describeSlot(bg).title}
-                className="truncate pb-1 font-normal text-fg-3">
+                className="truncate pb-1 font-normal text-muted-foreground">
                 {describeSlot(bg).title}
               </th>
             ))}
@@ -123,19 +123,19 @@ function ContrastTable(props: {colors: Colors}) {
             <tr key={text}>
               <th
                 scope="row"
-                className="pr-2 text-left font-sans font-normal whitespace-nowrap text-fg-3">
+                className="pr-2 text-left font-sans font-normal whitespace-nowrap text-muted-foreground">
                 {describeSlot(text).title}
               </th>
               {BACKGROUND_SLOTS.map((bg) => {
                 if (bg === text) {
-                  return <td key={bg} className="rounded-[3px] bg-white/3" />;
+                  return <td key={bg} className="rounded-[3px] bg-muted" />;
                 }
                 const ratio = contrastRatio(hex(text), hex(bg));
                 return (
                   <td
                     key={bg}
                     title={`${describeSlot(text).title} on ${describeSlot(bg).title.toLowerCase()}: ${ratio.toFixed(2)}:1`}
-                    className="h-6 rounded-[3px] text-center tabular-nums shadow-[inset_0_0_0_1px_rgb(255_255_255/6%)]"
+                    className="h-6 rounded-[3px] text-center tabular-nums inset-ring inset-ring-border"
                     style={{background: hex(bg), color: hex(text)}}>
                     {ratio.toFixed(1)}
                   </td>
@@ -176,7 +176,7 @@ function ExtendedPreview(props: {
         {Array.from({length: 6}, (_, slice) => (
           <div
             key={slice}
-            className="grid grid-cols-6 overflow-hidden rounded-[4px] shadow-[0_0_0_1px_rgb(255_255_255/8%)]">
+            className="grid grid-cols-6 overflow-hidden rounded-[4px] ring-1 ring-border">
             {extended.slice(slice * 36, slice * 36 + 36).map((hex, i) => (
               <span
                 // oxlint-disable-next-line react/no-array-index-key -- a cell's index is its palette slot
@@ -189,7 +189,7 @@ function ExtendedPreview(props: {
           </div>
         ))}
       </div>
-      <div className="grid h-4 grid-cols-24 overflow-hidden rounded-[4px] shadow-[0_0_0_1px_rgb(255_255_255/8%)]">
+      <div className="grid h-4 grid-cols-24 overflow-hidden rounded-[4px] ring-1 ring-border">
         {extended.slice(216).map((hex, i) => (
           // oxlint-disable-next-line react/no-array-index-key -- a cell's index is its palette slot
           <span key={i} title={`${232 + i} ${hex}`} style={{background: hex}} />

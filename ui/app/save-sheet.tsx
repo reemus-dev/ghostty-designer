@@ -122,12 +122,14 @@ function SaveFlow(props: {
       <PlanHeader />
       <div className="-mx-6 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6">
         {phase.type === "loading" && (
-          <p className="text-sm text-fg-3">Working out what changes…</p>
+          <p className="text-sm text-muted-foreground">
+            Working out what changes…
+          </p>
         )}
         {alert !== undefined && (
           <p
             role="alert"
-            className="flex gap-2 rounded-xl bg-warn-soft p-3 text-sm text-warn shadow-[inset_0_0_0_1px_var(--color-warn-line)]">
+            className="flex gap-2 rounded-xl bg-warn/12 p-3 text-sm text-warn inset-ring inset-ring-warn/28">
             <TriangleAlertIcon
               aria-hidden
               className="mt-0.5 size-3.5 shrink-0"
@@ -144,11 +146,11 @@ function SaveFlow(props: {
           <button
             type="button"
             aria-expanded={showDiff}
-            className="group/diff flex h-7 items-center gap-1.5 rounded-md font-medium text-fg-2 outline-none hover:text-fg focus-visible:ring-2 focus-visible:ring-ring"
+            className="group/diff flex h-7 items-center gap-1.5 rounded-md font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
             onClick={() => setShowDiff(!showDiff)}>
             <ChevronRightIcon
               aria-hidden
-              className="size-3 text-fg-3 transition-transform group-aria-expanded/diff:rotate-90"
+              className="size-3 text-muted-foreground transition-transform group-aria-expanded/diff:rotate-90"
             />
             Show exact changes
           </button>
@@ -176,7 +178,7 @@ function PlanHeader() {
     <DialogHeader className="gap-3">
       <DialogTitle className="text-[19px] leading-snug">
         Save {count} {count === 1 ? "change" : "changes"} to{" "}
-        <span className="mt-1 block font-mono text-sm font-normal break-all text-fg-2">
+        <span className="mt-1 block font-mono text-sm font-normal break-all text-muted-foreground">
           {tildePath(configPath)}?
         </span>
       </DialogTitle>
@@ -195,7 +197,7 @@ function ChangeTable() {
   const colorDefaults = useSnapshot((snapshot) => snapshot.colorDefaults);
   const changes = draftChanges(state, options, colorDefaults);
   return (
-    <ul className="flex flex-col rounded-xl shadow-[inset_0_0_0_1px_var(--color-line-2)]">
+    <ul className="flex flex-col rounded-xl inset-ring inset-ring-input">
       {changes.map((change) => (
         <li
           key={change.key}
@@ -218,12 +220,12 @@ function Notes(props: {
   const settings = plan.themeSettings.length;
   if (lines === 0 && settings === 0 && !plan.replacesColors) return null;
   return (
-    <div className="flex flex-col gap-4 text-sm leading-normal text-fg-2">
+    <div className="flex flex-col gap-4 text-sm leading-normal text-muted-foreground">
       {(lines > 0 || plan.replacesColors) && (
         <div className="flex gap-3">
           <PaletteIcon
             aria-hidden
-            className="mt-0.5 size-4 shrink-0 text-fg-3"
+            className="mt-0.5 size-4 shrink-0 text-muted-foreground"
           />
           <div className="flex flex-col gap-3">
             {lines > 0 && (
@@ -243,10 +245,10 @@ function Notes(props: {
                   onChange={(event) => onBackup(event.target.checked)}
                 />
                 <span className="flex flex-col gap-0.5">
-                  <b className="text-base font-medium text-fg">
+                  <b className="text-base font-medium text-foreground">
                     Back up my current colours as a theme
                   </b>
-                  <small className="text-sm text-fg-3">
+                  <small className="text-sm text-muted-foreground">
                     It appears under My themes, so you can switch back any time.
                   </small>
                 </span>
@@ -259,7 +261,7 @@ function Notes(props: {
         <div className="flex gap-3">
           <SlidersHorizontalIcon
             aria-hidden
-            className="mt-0.5 size-4 shrink-0 text-fg-3"
+            className="mt-0.5 size-4 shrink-0 text-muted-foreground"
           />
           <div className="flex min-w-0 flex-col gap-2">
             <p>
@@ -272,7 +274,7 @@ function Notes(props: {
               {plan.themeSettings.map(({key, value}, i) => (
                 // oxlint-disable-next-line react/no-array-index-key -- the plan's settings never reorder
                 <li key={i}>
-                  <code className="rounded bg-white/6 px-1.5 py-px text-xs break-all text-fg">
+                  <code className="rounded bg-muted px-1.5 py-px text-xs break-all text-foreground">
                     {key} = {value}
                   </code>
                 </li>
@@ -292,7 +294,7 @@ function Diffs(props: {plan: SavePlan}) {
       {props.plan.files.map((file) => (
         <section key={file.path} className="flex flex-col gap-1.5">
           <h3
-            className="truncate font-mono text-xs text-fg-3"
+            className="truncate font-mono text-xs text-muted-foreground"
             title={file.path}>
             {tildePath(file.path)}
           </h3>
@@ -305,7 +307,7 @@ function Diffs(props: {plan: SavePlan}) {
 
 const DIFF_LINE: Record<string, string> = {
   "+": "bg-live/10 text-added",
-  "-": "bg-danger/10 text-removed",
+  "-": "bg-destructive/10 text-removed",
   "@": "text-primary-text",
 };
 
@@ -315,12 +317,15 @@ function DiffView(props: {diff: string}) {
     .split("\n")
     .filter((line) => !line.startsWith("---") && !line.startsWith("+++"));
   return (
-    <pre className="overflow-x-auto rounded-xl bg-app py-2 font-mono text-xs leading-[18px] hairline">
+    <pre className="overflow-x-auto rounded-xl bg-background py-2 font-mono text-xs leading-[18px] inset-ring inset-ring-border">
       {lines.map((line, i) => (
         <div
           // oxlint-disable-next-line react/no-array-index-key -- diff lines never reorder
           key={i}
-          className={cn("px-3", DIFF_LINE[line[0] ?? ""] ?? "text-fg-3")}>
+          className={cn(
+            "px-3",
+            DIFF_LINE[line[0] ?? ""] ?? "text-muted-foreground",
+          )}>
           {line || " "}
         </div>
       ))}
@@ -341,7 +346,7 @@ function Saved(props: {result: SaveResult}) {
           <span>
             Ghostty now loads your saved settings. Until your next save, the
             previous version is kept in{" "}
-            <code className="text-sm break-all text-fg">
+            <code className="text-sm break-all text-foreground">
               {tildePath(backupDir)}
             </code>
             .
@@ -349,8 +354,8 @@ function Saved(props: {result: SaveResult}) {
           {backupTheme && (
             <span>
               Your previous colours are saved as the theme{" "}
-              <b className="font-medium text-fg">{backupTheme}</b>, under My
-              themes.
+              <b className="font-medium text-foreground">{backupTheme}</b>,
+              under My themes.
             </span>
           )}
         </DialogDescription>

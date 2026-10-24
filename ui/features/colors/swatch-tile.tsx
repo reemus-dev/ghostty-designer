@@ -38,7 +38,7 @@ export function SwatchTile(props: {
           aria-pressed={selected}
           aria-label={`${title} ${hex}`}
           tabIndex={selected ? 0 : -1}
-          className="block rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-panel">
+          className="block rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card">
           <Swatch
             color={hex}
             changed={props.changed}
@@ -48,7 +48,7 @@ export function SwatchTile(props: {
               named && "size-8",
               props.dropTarget &&
                 !selected &&
-                "ring-2 ring-fg-3 ring-offset-2 ring-offset-panel",
+                "ring-2 ring-muted-foreground ring-offset-2 ring-offset-card",
             )}
           />
         </button>
@@ -70,13 +70,16 @@ export function SwatchTile(props: {
           <span
             className={cn(
               "max-w-full truncate text-base",
-              selected ? "text-fg" : "text-fg-2",
+              selected ? "text-foreground" : "text-muted-foreground",
             )}>
             {title}
           </span>
         )}
         <code
-          className={cn("px-px text-2xs", selected ? "text-fg" : "text-fg-3")}>
+          className={cn(
+            "px-px text-2xs",
+            selected ? "text-foreground" : "text-muted-foreground",
+          )}>
           {hex.slice(1)}
         </code>
       </span>
@@ -99,7 +102,7 @@ function ReferenceStrip(props: {
     return (
       <span
         title={`${reference.name} leaves ${title.toLowerCase()} unset`}
-        className="h-2 rounded-[3px] hairline"
+        className="h-2 rounded-[3px] inset-ring inset-ring-border"
       />
     );
   }
@@ -108,7 +111,7 @@ function ReferenceStrip(props: {
       type="button"
       tabIndex={-1}
       title={`Use ${reference.name}'s ${title.toLowerCase()}, ${hex}`}
-      className="h-2 cursor-pointer rounded-[3px] shadow-[inset_0_0_0_1px_rgb(255_255_255/8%)] outline-none hover:shadow-[0_0_0_1.5px_var(--color-fg-3)]"
+      className="h-2 cursor-pointer rounded-[3px] inset-ring inset-ring-border outline-none hover:ring-[1.5px] hover:ring-muted-foreground"
       style={{background: hex}}
       onClick={() =>
         void send(setSlot(id, hex, `${title} from ${reference.name}`))

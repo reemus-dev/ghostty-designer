@@ -32,15 +32,15 @@ export function SetupCard() {
       <section
         aria-labelledby="setup-title"
         className="mx-auto flex max-w-[720px] flex-col gap-6 card p-10 text-lg">
-        <div className="flex items-center gap-3 text-base text-fg-2">
+        <div className="flex items-center gap-3 text-base text-muted-foreground">
           <PaletteDots
             colors={colors.palette.slice(0, 8)}
-            className="flex shrink-0 gap-0.5 rounded-md p-1.5 shadow-[inset_0_0_0_1px_rgb(255_255_255/8%)]"
+            className="flex shrink-0 gap-0.5 rounded-md p-1.5 inset-ring inset-ring-border"
             dotClassName="size-3 rounded-xs"
             style={{background: colors.background}}
           />
           <span>
-            <b className="font-medium text-fg">Found your config</b>
+            <b className="font-medium text-foreground">Found your config</b>
             <br />
             {summary} · {font}
             {size && `, ${size} pt`}
@@ -53,40 +53,47 @@ export function SetupCard() {
             className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">
             See your changes live in Ghostty
           </h1>
-          <p className="text-fg-2">
+          <p className="text-muted-foreground">
             To update your open Ghostty windows as you try things, Ghostty
             Designer adds these lines to the end of your config:
           </p>
         </div>
 
         <div className="flex flex-col gap-3">
-          <figure className="overflow-hidden rounded-xl bg-app hairline">
-            <figcaption className="border-b px-4 py-2 font-mono text-sm wrap-anywhere text-fg-3">
+          <figure className="overflow-hidden rounded-xl bg-background inset-ring inset-ring-border">
+            <figcaption className="border-b px-4 py-2 font-mono text-sm wrap-anywhere text-muted-foreground">
               {tildePath(configPath)}
             </figcaption>
             <pre className="overflow-x-auto px-4 py-3 font-mono text-sm leading-relaxed">
-              <span className="text-fg-3">… end of your config{"\n"}</span>
+              <span className="text-muted-foreground">
+                … end of your config{"\n"}
+              </span>
               {PREVIEW_INCLUDE_LINES.map((line) => (
                 <span
                   key={line}
-                  className={line.startsWith("#") ? "text-fg-3" : "text-added"}>
+                  className={
+                    line.startsWith("#")
+                      ? "text-muted-foreground"
+                      : "text-added"
+                  }>
                   {line}
                   {"\n"}
                 </span>
               ))}
             </pre>
           </figure>
-          <p className="text-base text-fg-2">
+          <p className="text-base text-muted-foreground">
             They point Ghostty at a small file that Ghostty Designer looks
-            after. The <code className="text-fg">?</code> tells Ghostty to skip
-            that file if it's ever missing, so the lines can't break anything.
+            after. The <code className="text-foreground">?</code> tells Ghostty
+            to skip that file if it's ever missing, so the lines can't break
+            anything.
           </p>
         </div>
 
-        <p className="flex gap-3 text-base text-fg-2">
+        <p className="flex gap-3 text-base text-muted-foreground">
           <ShieldCheckIcon
             aria-hidden
-            className="mt-1 size-4 shrink-0 text-fg-3"
+            className="mt-1 size-4 shrink-0 text-muted-foreground"
           />
           A backup of your config is kept first. Remove the lines or restore the
           original any time.
@@ -113,7 +120,7 @@ export function SetupCard() {
               Enable live preview
             </Button>
           </div>
-          <p className="text-right text-base text-fg-3">
+          <p className="text-right text-base text-muted-foreground">
             With “Not now” you can still change and save settings. Ghostty then
             updates only when you save.
           </p>

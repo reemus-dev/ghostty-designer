@@ -13,7 +13,7 @@ const toggleVariants = cva(
         outline: "border border-input bg-transparent hover:bg-muted",
         /** Native's segmented control: the pressed item is a raised chip. */
         segmented:
-          "font-medium text-fg-2 hover:bg-transparent hover:text-fg aria-pressed:bg-selected aria-pressed:text-fg aria-pressed:shadow-[0_1px_2px_rgb(0_0_0/35%),inset_0_1px_0_rgb(255_255_255/5%)]",
+          "font-medium text-muted-foreground hover:bg-transparent hover:text-foreground aria-pressed:bg-selected aria-pressed:text-foreground aria-pressed:shadow-[0_1px_2px_rgb(0_0_0/35%),inset_0_1px_0_rgb(255_255_255/5%)]",
       },
       size: {
         default:
