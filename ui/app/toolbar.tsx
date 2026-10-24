@@ -223,7 +223,7 @@ function ChangeList(props: {changes: DraftChange[]; count: number}) {
       <PopoverTrigger className="flex h-7 shrink-0 items-center gap-2 rounded-md px-1.5 font-semibold whitespace-nowrap outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring">
         <span
           aria-hidden
-          className="size-[7px] rounded-full bg-primary-text ring-3 ring-primary/16"
+          className="size-[7px] rounded-full bg-changed ring-3 ring-changed/16"
         />
         <span>
           {count} unsaved {count === 1 ? "change" : "changes"}

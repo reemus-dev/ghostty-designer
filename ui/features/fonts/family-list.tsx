@@ -136,7 +136,7 @@ export function FamilyList(props: FamilyListProps) {
               id={`${id}-${i}`}
               role="option"
               aria-selected={selected}
-              className="group flex shrink-0 cursor-default scroll-my-2 items-center gap-4 rounded-xl px-4 py-2 hover:bg-accent aria-selected:bg-primary/16 in-focus-visible:aria-selected:outline-2 in-focus-visible:aria-selected:-outline-offset-2 in-focus-visible:aria-selected:outline-ring"
+              className="group flex shrink-0 cursor-default scroll-my-2 items-center gap-4 rounded-xl px-4 py-2 hover:bg-accent aria-selected:bg-selected in-focus-visible:aria-selected:outline-2 in-focus-visible:aria-selected:-outline-offset-2 in-focus-visible:aria-selected:outline-ring"
               style={{
                 contentVisibility: "auto",
                 containIntrinsicSize: "auto 60px",

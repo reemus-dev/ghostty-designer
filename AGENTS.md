@@ -60,6 +60,9 @@ session in TypeScript.
 - Add shadcn components (Base UI variant) with
   `bunx shadcn@<version> add <name>`. `components.json` is hand-written because
   `shadcn init` does not support Bun projects.
+- The panel's chrome stays grey so it does not tint the user's colours. Use only
+  the colour tokens in `ui/styles.css`. Its header comment sets the bar for
+  adding one.
 
 ## Development
 

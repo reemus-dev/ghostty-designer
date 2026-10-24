@@ -232,7 +232,7 @@ export function CommandPalette() {
   return (
     <Dialog.Root open={open} onOpenChange={setPaletteOpen}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/50 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Backdrop className="fixed inset-0 z-50 bg-background/60 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Viewport className="fixed inset-0 z-50 flex items-start justify-center px-3 pt-[12vh]">
           <Dialog.Popup
             aria-label="Command palette"

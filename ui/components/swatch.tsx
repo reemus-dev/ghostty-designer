@@ -4,7 +4,7 @@ import {contrastRatio, parseHex} from "@/core/color";
 type SwatchProps = {
   /** Any CSS colour. */
   color: string;
-  /** A blue-ringed dot: the colour has an unsaved change. */
+  /** A dot: the colour has an unsaved change. */
   changed?: boolean;
   /** An amber badge: the colour is hard to read on the background. */
   warning?: boolean;
@@ -14,7 +14,7 @@ type SwatchProps = {
 };
 
 /** --color-card, as a hex for the contrast check. */
-const CARD = "#191a1e";
+const CARD = "#131313";
 
 /**
  * A colour tile; size it with className. Colours close to the card get a
@@ -44,10 +44,10 @@ export function Swatch(props: SwatchProps) {
         )}
       />
       {changed && (
-        <span className="absolute right-1 bottom-1 size-[7px] rounded-full bg-white ring-2 ring-primary" />
+        <span className="absolute right-1 bottom-1 size-[7px] rounded-full bg-changed ring-2 ring-card" />
       )}
       {warning && (
-        <span className="absolute -top-[5px] -right-[5px] grid size-[15px] place-items-center rounded-full bg-warn text-[10px] leading-none font-bold text-[#1a1205] ring-2 ring-card">
+        <span className="absolute -top-[5px] -right-[5px] grid size-[15px] place-items-center rounded-full bg-warn text-[10px] leading-none font-bold text-background ring-2 ring-card">
           !
         </span>
       )}

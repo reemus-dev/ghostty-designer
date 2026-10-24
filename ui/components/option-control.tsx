@@ -148,7 +148,7 @@ function OptionLabel(props: {option: OptionMeta; className?: string}) {
             side="bottom"
             align="start"
             className="max-w-sm flex-col items-start gap-1.5 whitespace-pre-line">
-            <code className="text-xs text-primary-text">{option.key}</code>
+            <code className="text-xs text-foreground">{option.key}</code>
             <span className="line-clamp-[12] text-muted-foreground">{doc}</span>
             {option.reloadNote && (
               <span className="text-foreground">{option.reloadNote}</span>
@@ -182,7 +182,7 @@ function ChangedDot() {
       role="img"
       aria-label="Changed"
       title="Changed, not saved yet"
-      className="size-1.5 shrink-0 rounded-full bg-primary-text"
+      className="size-1.5 shrink-0 rounded-full bg-changed"
     />
   );
 }

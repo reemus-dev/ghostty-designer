@@ -308,7 +308,7 @@ function Diffs(props: {plan: SavePlan}) {
 const DIFF_LINE: Record<string, string> = {
   "+": "bg-live/10 text-added",
   "-": "bg-destructive/10 text-removed",
-  "@": "text-primary-text",
+  "@": "text-muted-foreground",
 };
 
 /** A unified diff: file headers dropped, added and removed lines tinted. */

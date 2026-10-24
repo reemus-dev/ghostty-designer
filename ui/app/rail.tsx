@@ -108,7 +108,7 @@ function Sections() {
             }
             className={cn(
               "flex size-9 items-center justify-center rounded-lg text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
-              id === current && "bg-primary/16 text-primary-text",
+              id === current && "bg-selected text-foreground",
             )}>
             <Icon aria-hidden className="size-[18px]" />
           </TooltipTrigger>

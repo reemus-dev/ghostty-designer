@@ -38,6 +38,8 @@
 }
 
 @theme inline {
+  /* Only the roles below exist as colours: Tailwind's palette is gone. */
+  --color-*: initial;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -57,7 +59,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-selected: var(--selected);
-  --color-primary-text: var(--primary-text);
+  --color-changed: var(--changed);
   --color-warn: var(--warn);
   --color-live: var(--live);
   --color-added: var(--added);
@@ -66,54 +68,58 @@
 }
 
 /*
- * shadcn's roles, dark only. The panel keeps quiet grey chrome: the only
- * saturated pixels are theme content (swatches, theme cards), blue for focus,
- * selection, changes and the one primary action, and the status colours.
+ * shadcn's roles, dark only. The panel is a canvas for the user's colours, so
+ * its chrome is grey: the only saturated pixels are theme content (swatches,
+ * theme cards) and the status colours.
  *
  * Three opaque surfaces, darkest first. Everything that sits on a surface
  * (fills, hover, selection, edges) is translucent white, so it reads the same
  * on any of them.
+ *
+ * The panel takes its colours only from these tokens, never from literals. Add
+ * a token only for a role that no token covers, not for a new shade or one
+ * component. It must meet the contrast minimums noted here on every surface,
+ * and anything that is not grey must be a status colour.
  */
 :root {
   color-scheme: dark;
 
-  --background: #101115;
+  --background: #0b0b0b;
   /* Cards, dialogs, and the toolbar and rail around the content. */
-  --card: #191a1e;
-  --popover: #222327;
-  --foreground: #eaebee;
+  --card: #131313;
+  --popover: #1b1b1b;
+  --foreground: #ededed;
   --card-foreground: var(--foreground);
   --popover-foreground: var(--foreground);
 
   /* Filled controls and wells. */
-  --muted: rgb(255 255 255 / 4%);
+  --muted: rgb(255 255 255 / 3.5%);
   --secondary: var(--muted);
   --secondary-foreground: var(--foreground);
   /* ≥ 4.5:1 on every surface, under hover too. */
-  --muted-foreground: #9c9ea5;
+  --muted-foreground: #989898;
   /* Hover and highlighted items. */
-  --accent: rgb(255 255 255 / 8%);
+  --accent: rgb(255 255 255 / 7%);
   --accent-foreground: var(--foreground);
-  /* Pressed segments and the current view. */
-  --selected: rgb(255 255 255 / 10%);
-  --border: rgb(255 255 255 / 8%);
-  --input: rgb(255 255 255 / 14%);
+  /* Pressed segments, chips and the current view. */
+  --selected: rgb(255 255 255 / 9%);
+  --border: rgb(255 255 255 / 7%);
+  --input: rgb(255 255 255 / 13%);
 
-  /* White text on it is 5.5:1. */
-  --primary: #3d57f0;
-  --primary-foreground: #fff;
-  /* Blue text and marks: primary itself is too dark to read on the surfaces. */
-  --primary-text: #8c9cff;
+  --primary: #d9d9d9;
+  --primary-foreground: var(--background);
   /* ≥ 3:1 on every surface, under hover too. */
-  --ring: #5a72ff;
+  --ring: #8d8887;
 
-  --destructive: #f2786b;
-  --warn: #e8a948;
-  --live: #4cc38a;
+  /* Unsaved changes. */
+  --changed: var(--foreground);
+  --destructive: #f3767a;
+  --warn: #e9c378;
+  --live: #85c691;
   /* Diff lines and config text. */
-  --added: #a6e5c4;
-  --removed: #f6b1a8;
-  --star: #f5c451;
+  --added: #9be19e;
+  --removed: #f5999b;
+  --star: #eec06c;
 }
 
 @utility card {
@@ -147,7 +153,7 @@
     outline-offset: 2px;
   }
   ::selection {
-    @apply bg-primary/16;
+    @apply bg-ring/25;
   }
 }
 
