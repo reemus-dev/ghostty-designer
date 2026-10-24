@@ -17,6 +17,7 @@ session in TypeScript.
 | `crates/app/src/instance.rs`     | One designer per state folder, focus requests from later launches      |
 | `crates/app/src/launch.rs`       | Detach from the terminal, startup report, error dialog                 |
 | `crates/app/src/fonts.rs`        | `font://` protocol that serves font faces to the panel                 |
+| `crates/app/icons/`              | App icons, written by `mise run icon` from `scripts/app-icon.ts`       |
 | `crates/host/`                   | The native side, no Tauri or GUI dependency:                           |
 | `crates/host/src/host.rs`        | Host: commands, watches, instance poll, write limit, shutdown fence    |
 | `crates/host/src/api.rs`         | Host contract and commands, generates `ui/core/bindings.ts` with ts-rs |

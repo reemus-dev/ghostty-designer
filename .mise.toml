@@ -36,6 +36,10 @@ description = "Launch the Linux window under Xvfb in a sandbox and close it with
 depends = ["ui:build"]
 run = "scripts/smoke-linux.sh"
 
+[tasks.icon]
+description = "Draw the app icon and write its PNGs, icon.icns and Icon Composer document to crates/app/icons"
+run = "bun scripts/app-icon.ts"
+
 # ── UI bundle ───────────────────────────────────────────────────────────────
 
 [tasks."ui:build"]

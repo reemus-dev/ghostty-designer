@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs>
+<linearGradient id="tokyo-night-frame" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f8ff7"/><stop offset="1" stop-color="#2f6fe0"/></linearGradient>
+<linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".08"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+</defs>
+<g transform="translate(512 512) scale(1.2427184466019416) translate(-512 -512)">
+<g transform="translate(605 735) rotate(-28)">
+<rect x="-218" y="-528" width="262" height="572" rx="30" fill="url(#tokyo-night-frame)"/>
+<rect x="-216.5" y="-526.5" width="259" height="569" rx="28.5" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3"/>
+<rect x="-202" y="-512" width="230" height="392" rx="20" fill="#16192b"/>
+<rect x="-202" y="-512" width="230" height="392" rx="20" fill="url(#sheen)"/>
+<circle cx="-172" cy="-482" r="8.5" fill="#ff5f57"/>
+<circle cx="-146" cy="-482" r="8.5" fill="#febc2e"/>
+<circle cx="-120" cy="-482" r="8.5" fill="#28c840"/>
+<path d="M-176 -434l18 16-18 16" fill="none" stroke="#9ece6a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="-142" y="-438" width="22" height="40" rx="4" fill="#7dcfff"/>
+<rect x="-176" y="-370" width="53" height="14" rx="7" fill="#7aa2f7"/>
+<rect x="-113" y="-370" width="98.3" height="14" rx="7" fill="#2e3552"/>
+<rect x="-154" y="-336" width="32.8" height="14" rx="7" fill="#bb9af7"/>
+<rect x="-111.2" y="-336" width="60.8" height="14" rx="7" fill="#2e3552"/>
+<rect x="-154" y="-302" width="49.1" height="14" rx="7" fill="#9ece6a"/>
+<rect x="-94.9" y="-302" width="91.3" height="14" rx="7" fill="#2e3552"/>
+<rect x="-176" y="-268" width="31.2" height="14" rx="7" fill="#f7768e"/>
+<rect x="-134.8" y="-268" width="57.9" height="14" rx="7" fill="#2e3552"/>
+<rect x="-176" y="-234" width="46.7" height="14" rx="7" fill="#7dcfff"/>
+<rect x="-119.3" y="-234" width="86.8" height="14" rx="7" fill="#2e3552"/>
+<rect x="-202" y="-104" width="40.7" height="40.7" rx="10" fill="#f7768e"/>
+<rect x="-151.3" y="-104" width="40.7" height="40.7" rx="10" fill="#9ece6a"/>
+<rect x="-100.7" y="-104" width="40.7" height="40.7" rx="10" fill="#e0af68"/>
+</g>
+</g>
+</svg>

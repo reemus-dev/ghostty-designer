@@ -1,0 +1,37 @@
+{
+  "fill": {
+    "linear-gradient": [
+      "srgb:0.98431,0.98039,0.97255,1.00000",
+      "srgb:0.89412,0.88235,0.86275,1.00000"
+    ]
+  },
+  "groups": [
+    {
+      "layers": [{"image-name": "rivet.svg", "name": "rivet", "glass": false}],
+      "shadow": {"kind": "neutral", "opacity": 0.5},
+      "translucency": {"enabled": false, "value": 0.5}
+    },
+    {
+      "layers": [
+        {"image-name": "tokyo-night.svg", "name": "tokyo-night", "glass": false}
+      ],
+      "shadow": {"kind": "neutral", "opacity": 0.5},
+      "translucency": {"enabled": false, "value": 0.5}
+    },
+    {
+      "layers": [
+        {"image-name": "gruvbox.svg", "name": "gruvbox", "glass": false}
+      ],
+      "shadow": {"kind": "neutral", "opacity": 0.5},
+      "translucency": {"enabled": false, "value": 0.5}
+    },
+    {
+      "layers": [
+        {"image-name": "dracula.svg", "name": "dracula", "glass": false}
+      ],
+      "shadow": {"kind": "neutral", "opacity": 0.5},
+      "translucency": {"enabled": false, "value": 0.5}
+    }
+  ],
+  "supported-platforms": {"squares": ["macOS"]}
+}

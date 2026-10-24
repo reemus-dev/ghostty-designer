@@ -100,6 +100,23 @@ launches: no prompt ever. Desktop launches still prompt as Ghostty Designer.
   `com.apple.security.automation.apple-events` entitlement. Whether it is needed
   when the sender is `osascript` is unverified.
 
+### App icon
+
+The bundle ships `icons/icon.icns`. macOS 27 masks its plate to the system
+squircle without the grey backing it gives icons off the template, checked with
+`NSWorkspace.iconForFile` on the built app.
+
+`icons/AppIcon.icon` adds macOS's dark, clear and tinted looks. Listed in
+`bundle.icon`, it makes the bundler compile it into `Assets.car` with `actool`
+and set `CFBundleIconName` (`tauri-bundler/src/bundle/macos/icon.rs`). That
+fails the whole bundle with Xcode 27.0: `actool` stops with "Bad file
+descriptor" on any standalone `.icon`, Ghostty's included, while Xcode's own
+build compiles the same documents. `ictool` renders it in every look.
+
+[UNTIL] `actool` compiles a standalone `.icon`: add `icons/AppIcon.icon` to
+`bundle.icon`. https://github.com/ibiscite/ibis/issues/663 reports the same
+failure.
+
 ### Signing
 
 - Homebrew formula: Homebrew sets the quarantine attribute only for casks
