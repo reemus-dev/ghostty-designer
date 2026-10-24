@@ -14,7 +14,7 @@ type SwatchProps = {
 };
 
 /** --color-card, as a hex for the contrast check. */
-const CARD = "#131313";
+const CARD = "#151515";
 
 /**
  * A colour tile; size it with className. Colours close to the card get a

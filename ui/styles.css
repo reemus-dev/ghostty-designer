@@ -92,42 +92,42 @@
 :root {
   color-scheme: dark;
 
-  --background: #0b0b0b;
+  --background: #0d0d0d;
   /* Cards, dialogs, and the toolbar and rail around the content. */
-  --card: #131313;
-  --popover: #1b1b1b;
-  --foreground: #ededed;
+  --card: #151515;
+  --popover: #1e1e1e;
+  --foreground: #f2f2f2;
   --card-foreground: var(--foreground);
   --popover-foreground: var(--foreground);
 
   /* Filled controls and wells. */
-  --muted: rgb(255 255 255 / 3.5%);
+  --muted: rgb(255 255 255 / 4%);
   --secondary: var(--muted);
   --secondary-foreground: var(--foreground);
   /* ≥ 4.5:1 on every surface, under hover too. */
-  --muted-foreground: #989898;
+  --muted-foreground: #9b9b9b;
   /* Hover and highlighted items. */
-  --accent: rgb(255 255 255 / 7%);
+  --accent: rgb(255 255 255 / 7.5%);
   --accent-foreground: var(--foreground);
   /* Pressed segments, chips and the current view. */
-  --selected: rgb(255 255 255 / 9%);
-  --border: rgb(255 255 255 / 7%);
-  --input: rgb(255 255 255 / 13%);
+  --selected: rgb(255 255 255 / 9.5%);
+  --border: rgb(255 255 255 / 7.5%);
+  --input: rgb(255 255 255 / 13.5%);
 
-  --primary: #d9d9d9;
+  --primary: #dfdfdf;
   --primary-foreground: var(--background);
   /* ≥ 3:1 on every surface, under hover too. */
-  --ring: #8d8887;
+  --ring: #8e8a89;
 
   /* Unsaved changes. */
   --changed: var(--foreground);
-  --destructive: #f3767a;
-  --warn: #e9c378;
-  --live: #85c691;
+  --destructive: #f97379;
+  --warn: #ecc474;
+  --live: #83c890;
   /* Diff lines and config text. */
-  --added: #9be19e;
-  --removed: #f5999b;
-  --star: #eec06c;
+  --added: #99e49d;
+  --removed: #fa999a;
+  --star: #f2c166;
 }
 
 @utility card {
