@@ -8,10 +8,6 @@ function Dialog({...props}: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
 
-function DialogTrigger({...props}: DialogPrimitive.Trigger.Props) {
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
-}
-
 function DialogPortal({...props}: DialogPrimitive.Portal.Props) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
@@ -25,7 +21,7 @@ function DialogOverlay({className, ...props}: DialogPrimitive.Backdrop.Props) {
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-background/60 duration-150 data-closed:animate-out data-closed:fade-out-0 data-open:animate-in data-open:fade-in-0",
+        "fixed inset-0 isolate z-50 bg-background/60 transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0",
         className,
       )}
       {...props}
@@ -47,7 +43,7 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-3xl bg-card p-6 text-base text-foreground shadow-[0_24px_64px_rgb(0_0_0/55%)] ring-1 ring-input duration-150 outline-none data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 sm:max-w-sm",
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 popup-motion gap-4 rounded-3xl bg-card p-6 text-base text-foreground popup outline-none sm:max-w-sm",
           className,
         )}
         {...props}>
@@ -92,7 +88,10 @@ function DialogFooter({
   return (
     <div
       data-slot="dialog-footer"
-      className={cn("mt-1 flex items-center justify-end gap-2", className)}
+      className={cn(
+        "-mx-6 -mb-6 flex items-center justify-end gap-2 rounded-b-3xl border-t bg-muted px-6 py-4",
+        className,
+      )}
       {...props}>
       {children}
       {showCloseButton && (
@@ -140,8 +139,5 @@ export {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogOverlay,
-  DialogPortal,
   DialogTitle,
-  DialogTrigger,
 };

@@ -38,7 +38,7 @@ export function SwatchTile(props: {
           aria-pressed={selected}
           aria-label={`${title} ${hex}`}
           tabIndex={selected ? 0 : -1}
-          className="block rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card">
+          className="block rounded-md">
           <Swatch
             color={hex}
             changed={props.changed}

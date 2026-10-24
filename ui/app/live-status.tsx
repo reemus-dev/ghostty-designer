@@ -150,7 +150,7 @@ function StatusTrigger(props: {
         }
         aria-label={props["aria-label"]}
         className={cn(
-          "flex shrink-0 items-center whitespace-nowrap text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "flex shrink-0 items-center whitespace-nowrap text-muted-foreground",
           status.warn && "text-warn",
           action && "hover:bg-accent",
           className,

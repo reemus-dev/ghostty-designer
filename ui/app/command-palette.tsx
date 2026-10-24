@@ -232,11 +232,11 @@ export function CommandPalette() {
   return (
     <Dialog.Root open={open} onOpenChange={setPaletteOpen}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-50 bg-background/60 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Backdrop className="fixed inset-0 z-50 bg-background/60 transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Viewport className="fixed inset-0 z-50 flex items-start justify-center px-3 pt-[12vh]">
           <Dialog.Popup
             aria-label="Command palette"
-            className="flex max-h-[min(34rem,calc(100dvh-6rem))] w-full max-w-[540px] flex-col overflow-hidden rounded-3xl bg-card shadow-[0_24px_64px_rgb(0_0_0/55%)] ring-1 ring-input transition-[scale,opacity] duration-150 outline-none data-ending-style:scale-98 data-ending-style:opacity-0 data-starting-style:scale-98 data-starting-style:opacity-0"
+            className="flex max-h-[min(34rem,calc(100dvh-6rem))] w-full max-w-[540px] popup-motion flex-col overflow-hidden rounded-3xl bg-card popup outline-none"
             finalFocus={() => {
               const target = chosen.current?.focus;
               chosen.current = null;
@@ -257,7 +257,7 @@ export function CommandPalette() {
                 <Autocomplete.Input
                   aria-label="Search settings, themes, fonts and actions"
                   placeholder="Search settings, themes, fonts, actions…"
-                  className="h-full min-w-0 flex-1 bg-transparent text-[16px] text-foreground outline-none placeholder:text-muted-foreground"
+                  className="h-full min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"
                 />
                 <Kbd>esc</Kbd>
               </label>

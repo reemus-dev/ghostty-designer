@@ -423,7 +423,6 @@ function SyntheticStyles(props: {option: OptionMeta}) {
           <Chip
             key={style}
             pressed={!flags.has(`no-${style}`)}
-            className="h-[26px] rounded-md px-2"
             onPressedChange={(on) =>
               void send({
                 type: "set-flag",

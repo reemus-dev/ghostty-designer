@@ -18,7 +18,7 @@ export function Disclosure(props: {
   const {label, aside, children} = props;
   return (
     <Collapsible>
-      <CollapsibleTrigger className="group/trigger flex h-7 items-center gap-1.5 rounded-md text-left font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+      <CollapsibleTrigger className="group/trigger flex h-7 items-center gap-1.5 rounded-md text-left font-medium text-muted-foreground hover:text-foreground">
         <ChevronRightIcon
           aria-hidden
           className="size-3 text-muted-foreground transition-transform group-data-panel-open/trigger:rotate-90"

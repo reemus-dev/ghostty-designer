@@ -7,12 +7,9 @@ import {
 } from "react";
 import {cn} from "cn";
 import {MinusIcon, PlusIcon} from "lucide-react";
+import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
-import {
-  InputGroup,
-  InputGroupButton,
-  InputGroupInput,
-} from "@/components/ui/input-group";
+import {InputGroup, InputGroupInput} from "@/components/ui/input-group";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 
 type CommitInputProps = Omit<
@@ -181,7 +178,8 @@ export function CommitInput(props: CommitInputProps) {
   // It steps on press and repeats while held. A click without a pointer, such
   // as from a screen reader, steps once.
   const button = (by: 1 | -1) => (
-    <InputGroupButton
+    <Button
+      variant="ghost"
       size="icon-xs"
       tabIndex={-1}
       aria-label={by > 0 ? "Step up" : "Step down"}
@@ -203,10 +201,10 @@ export function CommitInput(props: CommitInputProps) {
         stepBy(event.shiftKey ? by * 10 : by);
       }}>
       {by > 0 ? <PlusIcon /> : <MinusIcon />}
-    </InputGroupButton>
+    </Button>
   );
   return (
-    <InputGroup className="h-[26px] w-fit">
+    <InputGroup className="w-fit">
       {button(-1)}
       {field}
       {button(1)}

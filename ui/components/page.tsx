@@ -55,7 +55,7 @@ export function PageFilter(
   return (
     <label
       className={cn(
-        "flex h-[30px] min-w-40 flex-1 items-center gap-2 rounded-lg bg-muted pr-1.5 pl-2.5 text-muted-foreground inset-ring inset-ring-input has-focus-visible:ring-3 has-focus-visible:ring-ring/25 has-focus-visible:inset-ring-ring",
+        "flex h-[30px] min-w-40 flex-1 items-center gap-2 rounded-lg bg-muted pr-1.5 pl-2.5 text-muted-foreground inset-ring inset-ring-input has-focus-visible:ring-2 has-focus-visible:ring-ring/50 has-focus-visible:inset-ring-ring",
         className,
       )}>
       <SearchIcon aria-hidden className="size-3.5 shrink-0" />

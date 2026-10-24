@@ -50,7 +50,7 @@ export function SetupCard() {
         <div className="flex flex-col gap-3">
           <h1
             id="setup-title"
-            className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">
+            className="text-xl leading-tight font-semibold tracking-[-0.02em]">
             See your changes live in Ghostty
           </h1>
           <p className="text-muted-foreground">

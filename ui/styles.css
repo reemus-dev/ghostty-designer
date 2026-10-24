@@ -35,6 +35,14 @@
 
   --default-transition-duration: 140ms;
   --default-transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Shadows are black so they read the same on every surface. */
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 35%);
+  --shadow-popup:
+    0 0 0 1px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 24%),
+    0 16px 40px rgb(0 0 0 / 36%);
+  /* The lit top edge of a raised surface. */
+  --inset-shadow-highlight: inset 0 1px 0 var(--border);
 }
 
 @theme inline {
@@ -123,7 +131,17 @@
 }
 
 @utility card {
-  @apply rounded-2xl bg-card inset-ring inset-ring-border;
+  @apply rounded-2xl bg-card inset-shadow-highlight inset-ring inset-ring-border;
+}
+
+/* The edge and shadow of anything that floats over the panel. */
+@utility popup {
+  @apply shadow-popup inset-shadow-highlight inset-ring inset-ring-input/75;
+}
+
+/* Floating surfaces fade in and settle from just below full size. */
+@utility popup-motion {
+  @apply transition-[opacity,scale] data-ending-style:scale-98 data-ending-style:opacity-0 data-starting-style:scale-98 data-starting-style:opacity-0;
 }
 
 @layer base {

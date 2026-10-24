@@ -217,10 +217,8 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
       aria-current={showing || undefined}
       aria-label={choice ?? "Current: your colours"}
       className={cn(
-        "group flex scroll-mt-40 scroll-mb-4 flex-col overflow-hidden card text-left transition-[box-shadow] duration-150 outline-none [contain-intrinsic-size:auto_190px] [content-visibility:auto] hover:shadow-[0_6px_20px_rgb(0_0_0/35%)] hover:inset-ring-input",
-        selected
-          ? "ring-2 ring-ring ring-offset-2 ring-offset-background"
-          : "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "group flex scroll-mt-40 scroll-mb-4 flex-col overflow-hidden card text-left transition-[box-shadow] duration-150 [contain-intrinsic-size:auto_190px] [content-visibility:auto] hover:shadow-[0_6px_20px_rgb(0_0_0/35%)] hover:inset-ring-input",
+        selected && "ring-2 ring-ring ring-offset-2 ring-offset-background",
       )}
       onFocus={() => onFocus(choice)}
       onClick={(event) => {

@@ -261,7 +261,7 @@ export function CurrentDetail(props: {
             {match.exact ? "Same colours as" : "Closest theme:"}{" "}
             <button
               type="button"
-              className="rounded-sm text-foreground underline decoration-input underline-offset-[3px] outline-none hover:decoration-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              className="rounded-sm text-foreground underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
               onClick={() => props.onPick(match.theme)}>
               {match.theme}
             </button>
@@ -385,7 +385,6 @@ function PairBuilder(props: {theme: ThemeSummary}) {
               Show in Ghostty now
               <ToggleGroup
                 aria-label="Half of the pair Ghostty shows"
-                variant="segmented"
                 value={[appearance]}
                 onValueChange={(next) =>
                   next[0] &&

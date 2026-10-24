@@ -82,13 +82,7 @@ export function Toolbar() {
             <CompareButton />
             <Tooltip>
               <TooltipTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    className="px-2"
-                    onClick={revertAll}
-                  />
-                }>
+                render={<Button variant="ghost" onClick={revertAll} />}>
                 Discard
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -97,6 +91,7 @@ export function Toolbar() {
             </Tooltip>
           </>
         )}
+        <div aria-hidden className="mx-1 h-4 w-px bg-border" />
         <HistoryButton
           shortcut={`${MOD}Z`}
           disabled={history.undo.length === 0}
@@ -119,14 +114,11 @@ export function Toolbar() {
           onClick={() => stepHistory("redo")}>
           <Redo2Icon />
         </HistoryButton>
+        <div aria-hidden className="mx-1 h-4 w-px bg-border" />
         <Tooltip>
           <TooltipTrigger
             render={
-              <Button
-                disabled={!dirty}
-                className="ml-1"
-                onClick={() => setSaveOpen(true)}
-              />
+              <Button disabled={!dirty} onClick={() => setSaveOpen(true)} />
             }>
             Save to config…
           </TooltipTrigger>
@@ -145,7 +137,7 @@ function SearchButton() {
   return (
     <Button
       variant="outline"
-      className="w-72 min-w-10 shrink justify-start gap-2 px-2.5 font-normal text-muted-foreground"
+      className="w-72 min-w-10 shrink justify-start gap-2 font-normal text-muted-foreground"
       onClick={() => setPaletteOpen(true)}>
       <SearchIcon />
       <span className="truncate">Search settings, themes, fonts</span>
@@ -193,7 +185,7 @@ function CompareButton() {
         render={
           <Button
             variant="ghost"
-            className="px-2 select-none"
+            className="select-none"
             onPointerDown={() => setPeek(true)}
             onPointerUp={() => setPeek(false)}
             onPointerLeave={() => setPeek(false)}
@@ -220,7 +212,7 @@ function ChangeList(props: {changes: DraftChange[]; count: number}) {
   const {changes, count} = props;
   return (
     <Popover>
-      <PopoverTrigger className="flex h-7 shrink-0 items-center gap-2 rounded-md px-1.5 font-semibold whitespace-nowrap outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring">
+      <PopoverTrigger className="flex h-7 shrink-0 items-center gap-2 rounded-md px-1.5 font-semibold whitespace-nowrap hover:bg-accent">
         <span
           aria-hidden
           className="size-[7px] rounded-full bg-changed ring-3 ring-changed/16"
@@ -254,7 +246,7 @@ function ChangeRow(props: {change: DraftChange}) {
       false,
   );
   return (
-    <div className="flex min-h-9 items-center gap-3 rounded-md pr-1 pl-2.5 hover:bg-accent">
+    <div className="flex min-h-9 items-center gap-3 rounded-sm pr-1 pl-2.5 hover:bg-accent">
       <span className="flex min-w-0 flex-1 items-baseline gap-2">
         <span className="truncate font-medium">{change.label}</span>
         {rejected && (
@@ -291,8 +283,8 @@ function OverflowMenu() {
           <EllipsisIcon className="size-4" />
         </Menu.Trigger>
         <Menu.Portal>
-          <Menu.Positioner align="end" sideOffset={6} className="z-50">
-            <Menu.Popup className="flex w-[300px] flex-col rounded-xl bg-popover p-1.5 shadow-[0_16px_40px_rgb(0_0_0/50%)] inset-ring inset-ring-input outline-none">
+          <Menu.Positioner align="end" sideOffset={4} className="z-50">
+            <Menu.Popup className="flex w-[300px] origin-(--transform-origin) popup-motion flex-col rounded-xl bg-popover p-1.5 popup outline-none">
               <MenuItem
                 icon={<RotateCcwIcon />}
                 label="Restore original config…"
@@ -359,7 +351,7 @@ function MenuItem(props: {
   return (
     <Menu.Item
       disabled={props.disabled}
-      className="flex cursor-default items-start gap-2.5 rounded-md px-2.5 py-[7px] outline-none select-none data-disabled:opacity-50 data-highlighted:bg-accent [&_svg]:mt-0.5 [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground"
+      className="flex cursor-default items-start gap-2.5 rounded-sm px-2.5 py-[7px] outline-none select-none data-disabled:opacity-64 data-highlighted:bg-accent [&_svg]:mt-0.5 [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground"
       onClick={props.onClick}>
       {props.icon}
       <span className="flex min-w-0 flex-col gap-px">

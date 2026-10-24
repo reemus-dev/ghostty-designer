@@ -179,18 +179,17 @@ function Filters(props: {
       />
       <ToggleGroup
         aria-label="Dark or light"
-        variant="segmented"
         value={[mode]}
         onValueChange={(next) =>
           next[0] && setThemeFilters({mode: next[0] as ThemeFilters["mode"]})
         }>
         <ToggleGroupItem value="all">All</ToggleGroupItem>
         <ToggleGroupItem value="dark">
-          <MoonIcon aria-hidden className="size-3 text-muted-foreground" />
+          <MoonIcon aria-hidden className="size-3" />
           Dark <Count>{counts.dark}</Count>
         </ToggleGroupItem>
         <ToggleGroupItem value="light">
-          <SunIcon aria-hidden className="size-3 text-muted-foreground" />
+          <SunIcon aria-hidden className="size-3" />
           Light <Count>{counts.light}</Count>
         </ToggleGroupItem>
       </ToggleGroup>
@@ -216,9 +215,8 @@ function Filters(props: {
         </Chip>
         <Select value={sort} onValueChange={(next) => next && onSort(next)}>
           <SelectTrigger
-            size="sm"
             aria-label="Sort"
-            className="border-0 px-1.5 text-muted-foreground dark:bg-transparent">
+            className="border-0 bg-transparent px-1.5 text-muted-foreground">
             <ArrowUpDownIcon
               aria-hidden
               className="size-3.5 text-muted-foreground"

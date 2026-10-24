@@ -433,7 +433,6 @@ function Readability(props: ReadabilityProps) {
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground">Target</span>
         <ToggleGroup
-          variant="segmented"
           aria-label="Target contrast"
           value={[String(target)]}
           onValueChange={(next) => next[0] && setTarget(Number(next[0]))}>

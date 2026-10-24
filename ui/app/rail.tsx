@@ -73,9 +73,9 @@ function ViewSwitch(props: {view: View}) {
                 />
               }
               className={cn(
-                "flex size-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+                "flex size-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground",
                 name === props.view &&
-                  "bg-selected text-foreground shadow-[0_1px_2px_rgb(0_0_0/35%),inset_0_1px_0_rgb(255_255_255/5%)]",
+                  "bg-selected text-foreground shadow-raised inset-shadow-highlight",
               )}>
               <Icon aria-hidden className="size-4" />
             </TooltipTrigger>
@@ -94,7 +94,7 @@ function Sections() {
   return (
     <nav
       aria-label="Sections"
-      className="flex flex-col gap-1 border-t border-input pt-3">
+      className="flex flex-col gap-1 border-t border-border pt-3">
       {SECTIONS.map(({id, icon: Icon}) => (
         <Tooltip key={id}>
           <TooltipTrigger
@@ -107,7 +107,7 @@ function Sections() {
               />
             }
             className={cn(
-              "flex size-9 items-center justify-center rounded-lg text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+              "flex size-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground",
               id === current && "bg-selected text-foreground",
             )}>
             <Icon aria-hidden className="size-[18px]" />

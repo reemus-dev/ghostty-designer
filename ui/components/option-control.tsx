@@ -141,7 +141,7 @@ function OptionLabel(props: {option: OptionMeta; className?: string}) {
             render={<span />}
             tabIndex={0}
             aria-describedby={helpId}
-            className="truncate rounded-sm font-medium text-foreground underline decoration-input decoration-dotted underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            className="truncate rounded-sm font-medium text-foreground underline decoration-input decoration-dotted underline-offset-4">
             {option.label}
           </TooltipTrigger>
           <TooltipContent
@@ -247,7 +247,6 @@ function EnumInput(props: ControlProps) {
     return (
       <ToggleGroup
         aria-label={option.label}
-        variant="segmented"
         value={[value]}
         onValueChange={(next) => next[0] !== undefined && commit(next[0])}>
         {values.map((item) => (
@@ -262,10 +261,7 @@ function EnumInput(props: ControlProps) {
     <Select
       value={value}
       onValueChange={(next) => next !== null && commit(next)}>
-      <SelectTrigger
-        size="sm"
-        aria-label={option.label}
-        className="min-w-36 bg-secondary">
+      <SelectTrigger aria-label={option.label} className="min-w-36">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -392,7 +388,7 @@ function TextInput(
       placeholder={props.placeholder}
       value={value}
       live={live}
-      className={cn("h-[26px] w-40", props.className)}
+      className={cn("w-40", props.className)}
       onCommit={(text) => commit(text, live !== undefined)}
     />
   );
@@ -406,8 +402,8 @@ function ColorInput(props: ControlProps) {
     option.control.kind === "color" ? (option.control.keywords ?? []) : [];
   return (
     <div className="flex items-center gap-2">
-      <label className="relative size-[26px] cursor-pointer rounded-lg has-focus-visible:ring-2 has-focus-visible:ring-ring">
-        <Swatch color={hex ?? "transparent"} className="size-[26px]" />
+      <label className="relative size-[30px] cursor-pointer rounded-md has-focus-visible:outline-2 has-focus-visible:outline-offset-2">
+        <Swatch color={hex ?? "transparent"} className="size-[30px]" />
         <input
           type="color"
           aria-label={`Pick ${option.label}`}
@@ -444,7 +440,7 @@ function FontFamilyInput(props: ControlProps) {
       onValueChange={(next: string | null) => next !== null && commit(next)}>
       <ComboboxInput
         aria-label={option.label}
-        className="h-[26px] w-52"
+        className="w-52"
         placeholder={fonts ? "Search fonts" : "Scanning fonts…"}
       />
       <ComboboxContent>

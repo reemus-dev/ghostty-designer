@@ -129,10 +129,10 @@ function SaveFlow(props: {
         {alert !== undefined && (
           <p
             role="alert"
-            className="flex gap-2 rounded-xl bg-warn/12 p-3 text-sm text-warn inset-ring inset-ring-warn/28">
+            className="flex gap-2 rounded-xl bg-warn/12 p-3 text-sm text-foreground inset-ring inset-ring-warn/28">
             <TriangleAlertIcon
               aria-hidden
-              className="mt-0.5 size-3.5 shrink-0"
+              className="mt-0.5 size-3.5 shrink-0 text-warn"
             />
             {alert}
           </p>
@@ -146,7 +146,7 @@ function SaveFlow(props: {
           <button
             type="button"
             aria-expanded={showDiff}
-            className="group/diff flex h-7 items-center gap-1.5 rounded-md font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="group/diff flex h-7 items-center gap-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground"
             onClick={() => setShowDiff(!showDiff)}>
             <ChevronRightIcon
               aria-hidden
@@ -176,7 +176,7 @@ function PlanHeader() {
   const configPath = useSnapshot((snapshot) => snapshot.ghostty.configPath);
   return (
     <DialogHeader className="gap-3">
-      <DialogTitle className="text-[19px] leading-snug">
+      <DialogTitle className="leading-snug">
         Save {count} {count === 1 ? "change" : "changes"} to{" "}
         <span className="mt-1 block font-mono text-sm font-normal break-all text-muted-foreground">
           {tildePath(configPath)}?
@@ -338,7 +338,7 @@ function Saved(props: {result: SaveResult}) {
   return (
     <>
       <DialogHeader className="gap-3">
-        <DialogTitle className="flex items-center gap-2.5 text-[19px]">
+        <DialogTitle className="flex items-center gap-2.5">
           <CircleCheckIcon aria-hidden className="size-5 text-live" />
           Saved to your config
         </DialogTitle>

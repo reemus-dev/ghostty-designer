@@ -48,7 +48,7 @@ function Shell() {
     <div className="grid h-full grid-cols-[56px_minmax(0,1fr)] grid-rows-[48px_minmax(0,1fr)] bg-card">
       <Toolbar />
       <Rail />
-      <main className="relative flex min-h-0 flex-col overflow-hidden rounded-tl-xl bg-background">
+      <main className="relative flex min-h-0 flex-col overflow-hidden rounded-tl-xl bg-background after:pointer-events-none after:absolute after:inset-0 after:z-30 after:rounded-tl-xl after:shadow-[inset_1px_1px_0_var(--color-border)]">
         <Activity mode={!setup && view === "customise" ? "visible" : "hidden"}>
           <CustomiseView />
         </Activity>

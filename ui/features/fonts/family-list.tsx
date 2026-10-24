@@ -113,7 +113,7 @@ export function FamilyList(props: FamilyListProps) {
       tabIndex={0}
       aria-label="Installed fonts"
       aria-activedescendant={index === -1 ? undefined : `${id}-${index}`}
-      className="flex flex-col gap-0.5 rounded-xl outline-none"
+      className="flex flex-col gap-0.5 outline-none"
       onKeyDown={onKeyDown}>
       {rows.map((font, i) => {
         const name = names[i]!;
@@ -136,7 +136,7 @@ export function FamilyList(props: FamilyListProps) {
               id={`${id}-${i}`}
               role="option"
               aria-selected={selected}
-              className="group flex shrink-0 cursor-default scroll-my-2 items-center gap-4 rounded-xl px-4 py-2 hover:bg-accent aria-selected:bg-selected in-focus-visible:aria-selected:outline-2 in-focus-visible:aria-selected:-outline-offset-2 in-focus-visible:aria-selected:outline-ring"
+              className="group flex shrink-0 cursor-default scroll-my-2 items-center gap-4 rounded-md px-4 py-2 hover:bg-accent aria-selected:bg-selected in-focus-visible:aria-selected:outline-2 in-focus-visible:aria-selected:-outline-offset-2 in-focus-visible:aria-selected:outline-ring"
               style={{
                 contentVisibility: "auto",
                 containIntrinsicSize: "auto 60px",

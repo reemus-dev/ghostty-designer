@@ -48,7 +48,7 @@ export function ColorSummary(props: {state: SessionState}) {
                 <button
                   type="button"
                   title="Show it in Ghostty and on Themes"
-                  className="rounded-sm underline decoration-input underline-offset-[3px] outline-none hover:decoration-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-sm underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
                   onClick={() => {
                     revealTheme(colorMatch.theme)?.focus({
                       preventScroll: true,

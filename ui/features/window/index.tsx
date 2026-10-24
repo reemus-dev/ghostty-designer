@@ -211,7 +211,6 @@ function BlinkOption(props: {option: OptionMeta}) {
     <OptionRow option={option}>
       <ToggleGroup
         aria-label={option.label}
-        variant="segmented"
         value={pressed ? [pressed] : []}
         onValueChange={(next) => {
           const choice = BLINK.find((item) => item.value === next[0]);
@@ -270,7 +269,6 @@ function BlurOption(props: {option: OptionMeta}) {
       <OptionRow option={option}>
         <ToggleGroup
           aria-label={option.label}
-          variant="segmented"
           value={[mode]}
           onValueChange={(next) => {
             const write = next[0] && BLUR_MODES[next[0]];
@@ -309,7 +307,6 @@ function BlurOption(props: {option: OptionMeta}) {
         <SubRow label="Glass" note="macOS 26 and later · fully in new windows">
           <ToggleGroup
             aria-label="Glass style"
-            variant="segmented"
             value={[value]}
             onValueChange={(next) => next[0] && set(next[0])}>
             <ToggleGroupItem value="macos-glass-regular">
@@ -380,7 +377,6 @@ function CursorShapeToggle() {
   const value = useEffective("cursor-style")?.[0] ?? "block";
   return (
     <ToggleGroup
-      variant="segmented"
       aria-label="Cursor shape"
       value={[value]}
       onValueChange={(next) =>
