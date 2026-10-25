@@ -1,5 +1,6 @@
 import {cn} from "cn";
 import {Swatch} from "@/components/swatch";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import type {ThemeSummary} from "@/core/types";
 import {describeSlot, setSlot, type SlotId, themeSlot} from "@/lib/slots";
 import {send, setColor} from "@/lib/store";
@@ -27,12 +28,12 @@ export function SwatchTile(props: {
   return (
     <div
       {...props.dragProps}
-      title={title}
       className="flex min-w-0 cursor-pointer flex-col gap-[3px]"
       onClick={() => setColor(id)}>
       <button
         type="button"
         data-color={id}
+        title={title}
         aria-pressed={selected}
         aria-label={`${title} ${hex}`}
         tabIndex={selected ? 0 : -1}
@@ -78,24 +79,31 @@ function ReferenceStrip(props: {
   title: string;
 }) {
   const {reference, id, hex, title} = props;
-  if (hex === undefined) {
-    return (
-      <span
-        title={`${reference.name} leaves ${title.toLowerCase()} unset`}
-        className="h-2 rounded-[3px] inset-ring inset-ring-border"
-      />
-    );
-  }
+  const name = title.toLowerCase();
   return (
-    <button
-      type="button"
-      tabIndex={-1}
-      title={`Use ${reference.name}'s ${title.toLowerCase()}, ${hex}`}
-      className="h-2 cursor-pointer rounded-[3px] inset-ring inset-ring-border outline-none hover:ring-[1.5px] hover:ring-muted-foreground"
-      style={{background: hex}}
-      onClick={() =>
-        void send(setSlot(id, hex, `${title} from ${reference.name}`))
-      }
-    />
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          hex === undefined ? (
+            <span className="h-2 rounded-[3px] inset-ring inset-ring-border" />
+          ) : (
+            <button
+              type="button"
+              tabIndex={-1}
+              className="h-2 cursor-pointer rounded-[3px] inset-ring inset-ring-border outline-none hover:ring-[1.5px] hover:ring-muted-foreground"
+              style={{background: hex}}
+              onClick={() =>
+                void send(setSlot(id, hex, `${title} from ${reference.name}`))
+              }
+            />
+          )
+        }
+      />
+      <TooltipContent>
+        {hex === undefined
+          ? `${reference.name} leaves ${name} unset`
+          : `Use ${reference.name}'s ${name}, ${hex}`}
+      </TooltipContent>
+    </Tooltip>
   );
 }

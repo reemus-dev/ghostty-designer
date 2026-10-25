@@ -1,13 +1,6 @@
 import {type CSSProperties, useMemo, useState} from "react";
 import {cn} from "cn";
-import {
-  ArrowRightIcon,
-  CheckIcon,
-  CopyIcon,
-  type LucideIcon,
-  PaletteIcon,
-  PinIcon,
-} from "lucide-react";
+import {ArrowRightIcon, CheckIcon, CopyIcon, PinIcon} from "lucide-react";
 import {CommitInput, NumberField} from "@/components/commit-input";
 import {HexChip} from "@/components/swatch";
 import {Button} from "@/components/ui/button";
@@ -59,7 +52,6 @@ export function ColorEditor(props: {
 }) {
   const {slot: id, reference, className} = props;
   const state = useSnapshot((snapshot) => snapshot.state);
-  const themes = useSnapshot((snapshot) => snapshot.themes);
   const colorDefaults = useSnapshot((snapshot) => snapshot.colorDefaults);
   const colors = useMemo(
     () => slotColors(state.effective, colorDefaults),
@@ -70,8 +62,6 @@ export function ColorEditor(props: {
     [state.saved, colorDefaults],
   );
   const themeName = state.themePair?.[state.appearance];
-  const theme = themes.find((summary) => summary.name === themeName);
-  const themeHex = theme && themeSlot(theme.colors, id);
 
   const slot = describeSlot(id);
   const hex = colors[id]!.hex;
@@ -112,32 +102,14 @@ export function ColorEditor(props: {
           </Button>
         )}
       </header>
-      <div className="-mt-1 flex flex-col gap-1 empty:hidden">
-        {provenance === "config" &&
-          themeName &&
-          themeHex !== undefined &&
-          themeHex !== hex &&
-          themeName !== reference?.name && (
-            <ThemeColor
-              id={id}
-              icon={PaletteIcon}
-              theme={themeName}
-              hex={themeHex}
-              current={hex}
-              note="The theme your config names"
-            />
-          )}
-        {reference && referenceHex && (
-          <ThemeColor
-            id={id}
-            icon={PinIcon}
-            theme={reference.name}
-            hex={referenceHex}
-            current={hex}
-            note="Your pinned reference"
-          />
-        )}
-      </div>
+      {reference && referenceHex && (
+        <ReferenceColor
+          id={id}
+          theme={reference.name}
+          hex={referenceHex}
+          current={hex}
+        />
+      )}
       <OklchFields key={id} id={id} hex={hex} label={slot.title} />
       <Readability
         key={`${id}:readability`}
@@ -151,24 +123,20 @@ export function ColorEditor(props: {
   );
 }
 
-/** Another theme's colour for the slot, with Use to copy it as one undo step. */
-function ThemeColor(props: {
+/** The pinned theme's colour for the slot, with Use to copy it as one undo step. */
+function ReferenceColor(props: {
   id: SlotId;
-  icon: LucideIcon;
   theme: string;
   hex: string;
   /** The slot's colour now: "Same" replaces Use when they match. */
   current: string;
-  note: string;
 }) {
-  const {id, icon: Icon, theme, hex, current, note} = props;
+  const {id, theme, hex, current} = props;
   const title = describeSlot(id).title;
   return (
-    <p className="flex items-center gap-2 text-sm text-muted-foreground">
-      <Icon aria-label={note} className="size-3 shrink-0" />
-      <span className="truncate" title={note}>
-        {theme}
-      </span>
+    <p className="-mt-1 flex h-6 items-center gap-2 text-sm text-muted-foreground">
+      <PinIcon aria-label="Your pinned reference" className="size-3 shrink-0" />
+      <span className="truncate">{theme}</span>
       <HexChip color={hex} />
       <span className="flex-1" />
       {hex === current ? (
@@ -176,7 +144,7 @@ function ThemeColor(props: {
       ) : (
         <Button
           size="xs"
-          variant="ghost"
+          variant="outline"
           aria-label={`Use ${theme}'s ${title.toLowerCase()}`}
           onClick={() => void send(setSlot(id, hex, `${title} from ${theme}`))}>
           Use
@@ -421,9 +389,13 @@ function Readability(props: ReadabilityProps) {
         <h3 className="flex-1 text-sm text-muted-foreground">
           {surface ? "With" : "On"} {againstName}
         </h3>
-        <span className={cn("text-lg tabular-nums", !meets && "text-warn")}>
+        <span
+          className={cn(
+            "text-sm font-medium tabular-nums",
+            !meets && "text-warn",
+          )}>
           {formatRatio(ratio)}
-          <span className="text-sm text-muted-foreground">:1</span>
+          <span className="font-normal text-muted-foreground">:1</span>
         </span>
       </header>
       <div className="flex items-center gap-3">

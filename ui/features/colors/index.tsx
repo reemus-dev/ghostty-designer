@@ -1,6 +1,6 @@
 import {type KeyboardEvent, useEffect, useMemo} from "react";
 import {cn} from "cn";
-import {ArrowRightIcon, PinIcon, XIcon} from "lucide-react";
+import {LayoutGridIcon, PinIcon, XIcon} from "lucide-react";
 import {PageSection} from "@/components/page";
 import {Button} from "@/components/ui/button";
 import {
@@ -12,10 +12,12 @@ import {
   ComboboxList,
   ComboboxTrigger,
 } from "@/components/ui/combobox";
+import {Kbd} from "@/components/ui/kbd";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {slotColors} from "@/core/theme";
 import type {ThemeSummary} from "@/core/types";
 import {SWATCH_ORDER} from "@/lib/customise";
-import {ALT, type Direction, isEditable, neighbour} from "@/lib/keys";
+import {ALT_KEY, type Direction, isEditable, neighbour} from "@/lib/keys";
 import {
   describeSlot,
   type SlotId,
@@ -141,7 +143,11 @@ export function ColorsSection() {
     <div
       key={bottom}
       className={cn("flex min-w-0 flex-col", reference && "gap-1.5")}>
-      {top ? tile(top, reference ? undefined : "top") : <span className="flex-1" />}
+      {top ? (
+        tile(top, reference ? undefined : "top")
+      ) : (
+        <span className="flex-1" />
+      )}
       {tile(bottom, reference || !top ? undefined : "bottom")}
       <span className="mt-1.5 flex justify-center text-2xs whitespace-nowrap text-muted-foreground">
         {name}
@@ -158,23 +164,30 @@ export function ColorsSection() {
           <Button variant="ghost" onClick={() => openSaveTheme("shown")}>
             Save as theme…
           </Button>
-          <Button variant="ghost" onClick={() => showView("themes")}>
-            Browse themes <ArrowRightIcon />
-          </Button>
+          <ReferencePicker reference={reference} />
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Browse themes"
+                  onClick={() => showView("themes")}
+                />
+              }>
+              <LayoutGridIcon />
+            </TooltipTrigger>
+            <TooltipContent>Browse themes</TooltipContent>
+          </Tooltip>
         </>
       }>
       <div className="grid grid-cols-1 items-start gap-5 split:editor-columns split:grid-rows-[auto_1fr]">
         <div className="flex flex-col gap-5 card p-4 sm:p-6 split:contents">
           <div className="flex flex-col gap-5 split:card split:p-6">
             <Warnings warnings={state.warnings} />
-            <div className="-my-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-              <p className="text-sm text-muted-foreground">
-                {reference
-                  ? `Under each colour is ${reference.name}'s. Click one to use it.`
-                  : `Click to edit · drag to swap · ${ALT}-drag to copy`}
-              </p>
-              <ReferencePicker reference={reference} />
-            </div>
+            <p className="-mb-1 text-2xs text-muted-foreground">
+              Drag to swap · hold <Kbd>{ALT_KEY}</Kbd> to copy
+            </p>
             <div
               role="group"
               aria-label="Colours"
@@ -227,15 +240,25 @@ export function ColorsSection() {
 }
 
 /**
- * "Pin a theme for reference" until one is pinned, then its name to change it
- * and × to unpin.
+ * A pin until a theme is pinned, then its name to change it and × to unpin. The
+ * theme the config names leads the list.
  */
 function ReferencePicker(props: {reference: ThemeSummary | undefined}) {
   const {reference} = props;
   const themes = useSnapshot((snapshot) => snapshot.themes);
-  const names = useMemo(() => themes.map((theme) => theme.name), [themes]);
+  const named = useSnapshot((snapshot) =>
+    snapshot.state.draft.theme === null
+      ? snapshot.state.themePair?.[snapshot.state.appearance]
+      : undefined,
+  );
+  const names = useMemo(() => {
+    const all = themes.map((theme) => theme.name);
+    return named !== undefined && all.includes(named)
+      ? [named, ...all.filter((name) => name !== named)]
+      : all;
+  }, [themes, named]);
   return (
-    <div className="flex shrink-0 items-center gap-0.5">
+    <div className="flex items-center gap-0.5">
       <Combobox
         autoHighlight
         items={names}
@@ -243,24 +266,31 @@ function ReferencePicker(props: {reference: ThemeSummary | undefined}) {
         onValueChange={(next: string | null) => {
           if (next) void send({type: "reference", theme: next});
         }}>
-        <ComboboxTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground [&>svg:last-child]:hidden"
-            />
-          }>
-          <PinIcon
-            aria-hidden
-            className={reference && "text-muted-foreground"}
-          />
-          {reference ? (
-            <span className="text-muted-foreground">{reference.name}</span>
-          ) : (
-            "Pin a theme for reference"
-          )}
-        </ComboboxTrigger>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <ComboboxTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size={reference ? "default" : "icon"}
+                    aria-label={reference ? undefined : "Pin a theme"}
+                    className="[&>svg:last-child]:hidden"
+                  />
+                }
+              />
+            }>
+            <PinIcon aria-hidden />
+            {reference && (
+              <span className="max-w-36 truncate">{reference.name}</span>
+            )}
+          </TooltipTrigger>
+          <TooltipContent>
+            {reference
+              ? "Change the pinned theme"
+              : "Pin a theme for reference"}
+          </TooltipContent>
+        </Tooltip>
         <ComboboxContent align="end" className="w-64">
           <ComboboxInput
             showTrigger={false}
@@ -271,7 +301,12 @@ function ReferencePicker(props: {reference: ThemeSummary | undefined}) {
           <ComboboxList>
             {(name: string) => (
               <ComboboxItem key={name} value={name}>
-                {name}
+                <span className="truncate">{name}</span>
+                {name === named && (
+                  <span className="ml-auto shrink-0 text-2xs text-muted-foreground">
+                    In your config
+                  </span>
+                )}
               </ComboboxItem>
             )}
           </ComboboxList>
@@ -279,11 +314,10 @@ function ReferencePicker(props: {reference: ThemeSummary | undefined}) {
       </Combobox>
       {reference && (
         <Button
-          size="icon-sm"
+          size="icon"
           variant="ghost"
           aria-label="Unpin reference"
           title="Unpin"
-          className="text-muted-foreground"
           onClick={() => void send({type: "reference", theme: null})}>
           <XIcon />
         </Button>

@@ -5,6 +5,8 @@ const MAC = navigator.platform.startsWith("Mac");
  */
 export const MOD = MAC ? "⌘" : "Ctrl+";
 export const ALT = MAC ? "⌥" : "Alt+";
+/** The Alt key on its own, as in "hold ⌥". */
+export const ALT_KEY = MAC ? "⌥" : "Alt";
 export const SHIFT_MOD = MAC ? "⇧⌘" : "Ctrl+Shift+";
 
 export const isEditable = (target: EventTarget | null) =>

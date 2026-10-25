@@ -5,8 +5,9 @@ import {Kbd} from "@/components/ui/kbd";
 import {SECTION_TITLE, type SectionId} from "@/lib/customise";
 
 /**
- * One of Customise's stacked sections: a heading row with its title, a
- * plain-words summary and actions, then its cards. The id is the ⌘K target.
+ * One of Customise's stacked sections: a heading row with its title and
+ * actions, a plain-words summary under it, then its cards. The id is the ⌘K
+ * target.
  */
 export function PageSection(props: {
   id: SectionId;
@@ -21,19 +22,20 @@ export function PageSection(props: {
       tabIndex={-1}
       aria-labelledby={`${id}-title`}
       className="flex scroll-mt-6 flex-col gap-4 outline-none">
-      <header className="flex flex-wrap items-start gap-x-4 gap-y-2">
-        <div className="flex min-w-60 flex-1 flex-col gap-1">
+      <header className="flex flex-col gap-1">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <h2
             id={`${id}-title`}
-            className="text-xl font-semibold tracking-[-0.015em]">
+            className="flex-1 text-xl font-semibold tracking-[-0.015em]">
             {SECTION_TITLE[id]}
           </h2>
-          {summary !== undefined && (
-            <div className="text-muted-foreground">{summary}</div>
+          {actions !== undefined && (
+            <div className="flex shrink-0 items-center gap-1">{actions}</div>
           )}
         </div>
-        {actions !== undefined && (
-          <div className="flex shrink-0 items-center gap-2">{actions}</div>
+        {/* Pretty, not balanced: a summary line fills the width before it wraps. */}
+        {summary !== undefined && (
+          <div className="text-pretty text-muted-foreground">{summary}</div>
         )}
       </header>
       {children}

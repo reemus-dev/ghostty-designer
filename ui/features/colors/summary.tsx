@@ -1,3 +1,4 @@
+import type {ReactNode} from "react";
 import {Button} from "@/components/ui/button";
 import {THEME_COLOR_KEYS} from "@/core/theme";
 import type {ReadabilityWarning, SessionState} from "@/core/types";
@@ -15,53 +16,56 @@ import {revealTheme} from "@/lib/views";
 const COLOUR_SLOTS = [...THEME_COLOR_KEYS, ...TERMINAL_SLOTS];
 
 /**
- * "Theme: Rose Pine", or "Your own colours · closest theme: …", and what hides
- * a named theme.
+ * "Theme: Rose Pine", "Rose Pine, with some of your own colours", or "Your own
+ * colours · closest theme: …", and what hides a theme picked in the draft.
  */
 export function ColorSummary(props: {state: SessionState}) {
   const {colorMatch, draft, themePair, appearance, provenance} = props.state;
   const named = themePair?.[appearance];
-  const hidden = COLOUR_SLOTS.filter((id) => provenance[id] === "config");
-  const part =
-    hidden.length === COLOUR_SLOTS.length ? "it" : "some of its colours";
+  const sources = COLOUR_SLOTS.map((id) => provenance[id]);
+  const hidden = sources.filter((source) => source === "config").length;
 
-  let hide: string | null = null;
-  if (named && hidden.length > 0) {
-    hide =
-      draft.theme === null
-        ? `Your config also names ${named}, but your own colours replace ${part}.`
-        : `Colours set in your config hide ${part === "it" ? named : `some of ${named}`}. Saving comments them out.`;
+  let colours: ReactNode;
+  if (colorMatch?.exact) {
+    colours = `Theme: ${colorMatch.theme}`;
+  } else if (
+    named &&
+    sources.includes("theme") &&
+    sources.some((source) => source === "config" || source === "draft")
+  ) {
+    colours = `${named}, with some of your own colours`;
+  } else {
+    colours = (
+      <>
+        Your own colours
+        {colorMatch && (
+          <>
+            {" "}
+            · closest theme:{" "}
+            <button
+              type="button"
+              title="Show it in Ghostty and on Themes"
+              className="rounded-sm underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
+              onClick={() => {
+                revealTheme(colorMatch.theme)?.focus({preventScroll: true});
+                pickTheme(colorMatch.theme, 0);
+              }}>
+              {colorMatch.theme}
+            </button>
+          </>
+        )}
+      </>
+    );
   }
+
+  const hide =
+    draft.theme !== null && named && hidden > 0
+      ? `Colours set in your config hide ${hidden === COLOUR_SLOTS.length ? named : `some of ${named}`}. Saving comments them out.`
+      : null;
 
   return (
     <div className="flex flex-col gap-0.5">
-      <span>
-        {colorMatch?.exact ? (
-          `Theme: ${colorMatch.theme}`
-        ) : (
-          <>
-            Your own colours
-            {colorMatch && (
-              <>
-                {" "}
-                · closest theme:{" "}
-                <button
-                  type="button"
-                  title="Show it in Ghostty and on Themes"
-                  className="rounded-sm underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
-                  onClick={() => {
-                    revealTheme(colorMatch.theme)?.focus({
-                      preventScroll: true,
-                    });
-                    pickTheme(colorMatch.theme, 0);
-                  }}>
-                  {colorMatch.theme}
-                </button>
-              </>
-            )}
-          </>
-        )}
-      </span>
+      <span>{colours}</span>
       {hide && <span className="text-muted-foreground">{hide}</span>}
     </div>
   );
