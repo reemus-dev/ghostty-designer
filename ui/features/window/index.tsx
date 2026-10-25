@@ -324,14 +324,13 @@ function BlurOption(props: {option: OptionMeta}) {
 function SubRow(props: {label: string; note?: string; children: ReactNode}) {
   return (
     <div className="flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1.5 pb-1.5 pl-4">
-      <div className="flex flex-1 flex-col gap-px">
+      <div className="flex flex-1 flex-col gap-px text-pretty">
         <span className="text-muted-foreground">{props.label}</span>
         {props.note && (
           <small className="text-sm text-muted-foreground">{props.note}</small>
         )}
       </div>
-      {/* Lines up with the reset buttons of the rows around it. */}
-      <div className="ml-auto flex items-center gap-1.5 pr-[30px]">
+      <div className="ml-auto flex items-center gap-1.5">
         {props.children}
       </div>
     </div>

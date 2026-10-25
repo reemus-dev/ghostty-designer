@@ -100,7 +100,7 @@ export function OptionRow(props: {
       )}>
       {/* Beside the control, the label takes nearly all the free width. Wrapped
           onto its own line, the control takes it all, and a segmented control
-          stretches to fill it. */}
+          or slider stretches to fill it. */}
       <OptionLabel
         option={option}
         note={note}
@@ -383,11 +383,11 @@ export function SliderField(props: {
 }) {
   const {label, min, max, value, unit} = props;
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex grow items-center gap-3">
       <Slider
         data-edits
         aria-label={label}
-        className="w-[clamp(5rem,8vw,8rem)]!"
+        className="w-[clamp(5rem,8vw,8rem)]! grow"
         min={min}
         max={max}
         step={props.step}

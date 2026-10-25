@@ -310,15 +310,13 @@ function Features(props: {family: FontFamily}) {
     <Group label="Features">
       {ligatures && (
         <div className="flex min-h-11 items-center gap-4 py-1.5">
-          <span className="flex min-w-0 flex-1 flex-col gap-px">
+          <span className="flex min-w-0 flex-1 flex-col gap-px text-pretty">
             <span className="font-medium">Ligatures</span>
             <small className="text-sm text-muted-foreground">
               Joins symbols like -&gt; and != into one shape
             </small>
           </span>
-          {/* The margin lines it up with the reset buttons of the rows above. */}
           <Switch
-            className="mr-[30px]"
             aria-label="Ligatures"
             checked={featureOn(features, ligatures)}
             onCheckedChange={() => toggle(ligatures)}
@@ -364,7 +362,7 @@ function Axis(props: {axis: FontAxis}) {
 
   return (
     <div className="flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1.5 py-1.5 not-first:border-t">
-      <span className="flex min-w-28 flex-1 items-center gap-2">
+      <span className="flex min-w-28 grow-999 basis-0 items-center gap-2">
         <span className="flex min-w-0 items-baseline gap-1.5 font-medium">
           <span className="truncate">{axis.name}</span>
           <code className="text-xs font-normal text-muted-foreground">
@@ -380,7 +378,7 @@ function Axis(props: {axis: FontAxis}) {
           </IconButton>
         )}
       </span>
-      <div className="ml-auto shrink-0">
+      <div className="flex shrink-0 grow justify-end">
         <SliderField
           label={axis.name}
           min={axis.min}
