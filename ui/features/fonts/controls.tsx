@@ -171,16 +171,18 @@ function FontSize(props: {option: OptionMeta}) {
       note={
         resetsZoom ? `Resets each window's zoom (${MOD}+ / ${MOD}−)` : undefined
       }>
-      <NumberField
-        aria-label="Font size"
-        value={value}
-        min={min}
-        max={max}
-        onCommit={(next) =>
-          sendLive({type: "set", key: option.key, values: [String(next)]})
-        }
-      />
-      <span className="text-xs text-muted-foreground">pt</span>
+      <span className="flex items-center gap-1.5">
+        <NumberField
+          aria-label="Font size"
+          value={value}
+          min={min}
+          max={max}
+          onCommit={(next) =>
+            sendLive({type: "set", key: option.key, values: [String(next)]})
+          }
+        />
+        <span className="text-xs text-muted-foreground">pt</span>
+      </span>
     </OptionRow>
   );
 }
