@@ -21,6 +21,8 @@ const ALL_PLATFORMS: Platform[] = ["macos", "linux"];
 const KEY_VALUE = /^([a-z0-9-]+) = ?(.*)$/;
 const NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)$/;
 const METRIC = /^(.+?)(%?)$/;
+/** A line break that a doc comment's hard wrap made, not a list item's. */
+const WRAP = /\n(?![ \t]*[*-] )[ \t]*/g;
 /**
  * Enough digits for any value a control sets, few enough to drop float noise
  * such as 10.000000000000009.
@@ -32,6 +34,7 @@ const NUMBER_PRECISION = 12;
  * key on several lines, an empty value as an empty list. With `--docs`, the
  * comment block above a key documents it, and keys that follow without a block
  * of their own (font-family-bold after font-family) share the previous one.
+ * Docs keep their paragraphs and list items, with the hard wraps joined.
  */
 export function parseShowConfig(text: string) {
   const values: Values = {};
@@ -59,7 +62,12 @@ export function parseShowConfig(text: string) {
     const [, key, value] = match as unknown as [string, string, string];
 
     if (block.length > 0) {
-      doc = block.join("\n").trimEnd();
+      doc = block
+        .join("\n")
+        .trimEnd()
+        .split("\n\n")
+        .map((paragraph) => paragraph.replace(WRAP, " "))
+        .join("\n\n");
       block = [];
     }
     if (key !== previousKey) {

@@ -1,6 +1,6 @@
-import {type ReactNode, useId} from "react";
+import {type ReactNode, useId, useState} from "react";
 import {cn} from "cn";
-import {AppleIcon, RotateCcwIcon} from "lucide-react";
+import {AppleIcon, InfoIcon, RotateCcwIcon} from "lucide-react";
 import {
   Combobox,
   ComboboxContent,
@@ -20,7 +20,6 @@ import {Slider} from "@/components/ui/slider";
 import {Switch} from "@/components/ui/switch";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
-import type {Platform} from "@/core/bindings";
 import {FULL_HEX, parseHex} from "@/core/color";
 import type {OptionMeta, Reload} from "@/core/types";
 import {parseMetric} from "@/core/values";
@@ -112,8 +111,9 @@ export function OptionRow(props: {
 }
 
 /**
- * The option's name with its doc tooltip, the changed marker and when it
- * applies.
+ * The option's name and an icon that open its doc tooltip, the changed marker
+ * and when it applies. A setting only this platform has shows the platform's
+ * icon in place of the info icon.
  */
 function OptionLabel(props: {
   option: OptionMeta;
@@ -135,36 +135,69 @@ function OptionLabel(props: {
       : null,
   );
   const notes = [note, RELOAD_NOTE[option.reload]].filter(Boolean);
-  const [summary = ""] = option.doc.split("\n\n", 1);
+  const [first = "", next] = option.doc.split("\n\n", 2);
+  // A summary that ends "Valid values:" needs the list that follows it.
+  const summary = first.endsWith(":") && next ? `${first}\n${next}` : first;
   const doc = summary || "No documentation.";
+  // Ghostty's docs mark code with backticks.
+  const docParts = doc.split("`").map((part, index) =>
+    index % 2 === 1 ? (
+      // oxlint-disable-next-line react/no-array-index-key -- parts never reorder
+      <code key={index} className="text-sm">
+        {part}
+      </code>
+    ) : (
+      part
+    ),
+  );
+  const platformNote = onlyHere && `${PLATFORM_LABEL[onlyHere]} only`;
+  const docNotes = [option.reloadNote, platformNote].filter(Boolean);
+  const Icon = onlyHere ? PLATFORM_ICON[onlyHere] : InfoIcon;
   const helpId = `${useId()}-help`;
+  // A click opens the doc at once, without waiting out the hover delay.
+  const [docOpen, setDocOpen] = useState(false);
   return (
     <div className={cn("flex min-w-0 flex-col gap-px", className)}>
       <span className="flex min-w-0 items-center gap-2">
-        <Tooltip>
+        <Tooltip open={docOpen} onOpenChange={setDocOpen}>
           <TooltipTrigger
             render={<span />}
             tabIndex={0}
+            closeOnClick={false}
+            onClick={() => setDocOpen(true)}
             aria-describedby={helpId}
-            className="truncate rounded-sm font-medium text-foreground underline decoration-input decoration-dotted underline-offset-4">
-            {option.label}
+            className="group/doc flex min-w-0 items-center gap-1.5 rounded-sm">
+            <span className="truncate font-medium text-foreground">
+              {option.label}
+            </span>
+            <Icon
+              className={cn(
+                "size-3.5 shrink-0 text-muted-foreground transition-colors group-hover/doc:text-foreground group-focus-visible/doc:text-foreground",
+                onlyHere && "fill-current",
+              )}
+            />
           </TooltipTrigger>
           <TooltipContent
             side="bottom"
             align="start"
-            className="max-w-sm flex-col items-start gap-1.5 whitespace-pre-line">
-            <code className="text-xs text-foreground">{option.key}</code>
-            <span className="line-clamp-[12] text-muted-foreground">{doc}</span>
-            {option.reloadNote && (
-              <span className="text-foreground">{option.reloadNote}</span>
+            className="max-w-md flex-col items-start gap-2.5 px-3.5 py-3 text-base whitespace-pre-line">
+            <code className="rounded-md bg-selected px-2 py-0.5 text-base font-medium">
+              {option.key}
+            </code>
+            <span>{docParts}</span>
+            {docNotes.length > 0 && (
+              <span className="flex flex-col gap-1 self-stretch border-t border-border pt-2.5">
+                {docNotes.map((docNote) => (
+                  <span key={docNote}>{docNote}</span>
+                ))}
+              </span>
             )}
           </TooltipContent>
         </Tooltip>
         {/* The tooltip only exists while open; this is what assistive tech reads. */}
         <span id={helpId} className="sr-only">
-          {[option.key, doc, option.reloadNote].filter(Boolean).join(". ")}
+          {[option.key, doc.replaceAll("`", ""), ...docNotes].join(". ")}
         </span>
-        {onlyHere && <PlatformMark platform={onlyHere} />}
         {changed && <OptionReset option={option} />}
       </span>
       {notes.length > 0 && (
@@ -199,24 +232,6 @@ function TuxIcon(props: {className?: string}) {
 }
 
 const PLATFORM_ICON = {macos: AppleIcon, linux: TuxIcon};
-
-/** Marks a setting only this platform has, named in its tooltip. */
-function PlatformMark(props: {platform: Platform}) {
-  const Icon = PLATFORM_ICON[props.platform];
-  const label = `${PLATFORM_LABEL[props.platform]} only`;
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={<span />}
-        role="img"
-        aria-label={label}
-        className="-ml-0.5 shrink-0 text-muted-foreground">
-        <Icon className="size-3.5 fill-current" />
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  );
-}
 
 /**
  * The unsaved-change marker beside a setting's name. It turns into a reset that
