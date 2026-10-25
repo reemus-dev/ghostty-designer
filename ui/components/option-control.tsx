@@ -9,6 +9,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -20,11 +21,19 @@ import {Slider} from "@/components/ui/slider";
 import {Switch} from "@/components/ui/switch";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
-import {FULL_HEX, parseHex} from "@/core/color";
+import {FULL_HEX, normalizeHex} from "@/core/color";
 import type {OptionMeta, Reload} from "@/core/types";
 import {parseMetric} from "@/core/values";
 import {PLATFORM_LABEL} from "@/lib/customise";
-import {send, sendLive, useEffective, useSnapshot} from "@/lib/store";
+import {
+  send,
+  sendLive,
+  setOptionColorModel,
+  useEffective,
+  useSnapshot,
+  useStore,
+} from "@/lib/store";
+import {ColorPicker} from "./color-picker";
 import {CommitInput, NumberField} from "./commit-input";
 import {IconButton} from "./icon-button";
 import {Swatch} from "./swatch";
@@ -447,24 +456,40 @@ function TextInput(
   );
 }
 
-/** A swatch that opens the system colour picker, plus a hex or keyword field. */
+/**
+ * A swatch that opens the colour picker, plus a hex or keyword field. A keyword
+ * or unset colour starts the picker at the background colour.
+ */
 function ColorInput(props: ControlProps) {
-  const {option, value, commit} = props;
-  const hex = parseHex(value) ? value : null;
+  const {option, value} = props;
+  const background = useEffective("background")?.[0] ?? "";
+  const saved = useSnapshot(
+    (snapshot) => snapshot.state.saved[option.key]?.[0],
+  );
+  const model = useStore((store) => store.optionColorModel);
+  const hex = normalizeHex(value);
+  const start = hex ?? normalizeHex(background) ?? "#000000";
   const keywords =
     option.control.kind === "color" ? (option.control.keywords ?? []) : [];
   return (
     <div className="flex items-center gap-2">
-      <label className="relative size-[30px] cursor-pointer rounded-md has-focus-visible:outline-2 has-focus-visible:outline-offset-2">
-        <Swatch color={hex ?? "transparent"} className="size-[30px]" />
-        <input
-          type="color"
+      <Popover>
+        <PopoverTrigger
           aria-label={`Pick ${option.label}`}
-          className="absolute inset-0 cursor-pointer opacity-0"
-          value={hex ?? "#000000"}
-          onChange={(event) => commit(event.target.value, true)}
-        />
-      </label>
+          className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-2">
+          <Swatch color={hex ?? "transparent"} className="size-[30px]" />
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-96 p-4">
+          <ColorPicker
+            id={option.key}
+            title={option.label}
+            hex={start}
+            saved={saved && normalizeHex(saved)}
+            model={model}
+            onModelChange={setOptionColorModel}
+          />
+        </PopoverContent>
+      </Popover>
       <TextInput
         {...props}
         className="w-28"

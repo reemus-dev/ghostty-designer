@@ -1,6 +1,7 @@
 import {useMemo, useState} from "react";
 import {cn} from "cn";
 import {ArrowRightIcon, PinIcon} from "lucide-react";
+import {ColorPicker} from "@/components/color-picker";
 import {HexChip} from "@/components/swatch";
 import {Button} from "@/components/ui/button";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
@@ -23,15 +24,13 @@ import {
   warningSlot,
 } from "@/lib/slots";
 import {send, useSnapshot} from "@/lib/store";
-import {ChannelFields, ModelSelect} from "./channel-fields";
 
 const TARGETS = [3, 4.5, 7];
 const SAMPLE = "~/code ❯ git status  # 0Oo 1lI";
 
 /**
- * Edits one colour: where it comes from, sliders in a chosen colour model that
- * preview while dragging (OKLCH chroma hatched past sRGB), hex and CSS fields,
- * reset, and how readable it is against the colour it is read with.
+ * Edits one slot's colour in the picker, with the pinned theme's colour for it
+ * and how readable it is against the colour it is read with.
  */
 export function ColorEditor(props: {
   slot: SlotId;
@@ -50,64 +49,32 @@ export function ColorEditor(props: {
     () => slotColors(state.saved, colorDefaults),
     [state.saved, colorDefaults],
   );
-  const themeName = state.themePair?.[state.appearance];
   const [model, setModel] = useState<ColorModel>("oklch");
 
   const slot = describeSlot(id);
   const hex = colors[id]!.hex;
-  const provenance = state.provenance[id] ?? "default";
-  const changed = provenance === "draft";
   const referenceHex = reference && themeSlot(reference.colors, id);
 
   return (
     <section
       aria-label={`Edit ${slot.title}`}
       className={cn("flex flex-col gap-4", className)}>
-      <header className="flex items-center gap-3">
-        <span className="flex size-9 shrink-0 overflow-hidden rounded-md inset-ring inset-ring-input">
-          {changed && (
-            <span className="flex-1" style={{background: saved[id]!.hex}} />
-          )}
-          <span className="flex-1" style={{background: hex}} />
-        </span>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <h2 className="truncate font-semibold">{slot.title}</h2>
-          <p className="truncate text-sm text-muted-foreground">
-            {changed && (
-              <>
-                Changed · was <code>{saved[id]!.hex}</code>
-              </>
-            )}
-            {provenance === "config" && "From your config"}
-            {provenance === "theme" && `From theme ${themeName ?? ""}`}
-            {provenance === "default" && "Ghostty's default"}
-          </p>
-        </div>
-        {changed && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => void send({type: "reset", key: id})}>
-            Reset
-          </Button>
-        )}
-        <ModelSelect value={model} onChange={setModel} />
-      </header>
-      {reference && referenceHex && (
-        <ReferenceColor
-          id={id}
-          theme={reference.name}
-          hex={referenceHex}
-          current={hex}
-        />
-      )}
-      <ChannelFields
-        key={id}
+      <ColorPicker
         id={id}
+        title={slot.title}
         hex={hex}
+        saved={saved[id]!.hex}
         model={model}
-        label={slot.title}
-      />
+        onModelChange={setModel}>
+        {reference && referenceHex && (
+          <ReferenceColor
+            id={id}
+            theme={reference.name}
+            hex={referenceHex}
+            current={hex}
+          />
+        )}
+      </ColorPicker>
       <Readability
         key={`${id}:readability`}
         id={id}

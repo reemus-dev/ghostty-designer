@@ -1,5 +1,6 @@
-import {type CSSProperties, useState} from "react";
+import {type CSSProperties, type ReactNode, useState} from "react";
 import {CommitInput, NumberField} from "@/components/commit-input";
+import {Button} from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -20,7 +21,7 @@ import {
   toChannels,
 } from "@/core/color";
 import {setSlot, type SlotId} from "@/lib/slots";
-import {send, sendLive} from "@/lib/store";
+import {send, sendLive, useSnapshot} from "@/lib/store";
 
 const C_MAX = 0.37;
 
@@ -120,7 +121,73 @@ function srgbTracks(model: ColorModel, values: Channels) {
   });
 }
 
-export function ModelSelect(props: {
+/**
+ * Edits one colour: where it comes from, reset, and sliders in a chosen colour
+ * model that preview while dragging (OKLCH chroma hatched past sRGB), with hex
+ * and CSS fields.
+ */
+export function ColorPicker(props: {
+  id: SlotId;
+  title: string;
+  hex: string;
+  /** The saved colour, shown beside a changed one when it is a hex. */
+  saved: string | undefined;
+  model: ColorModel;
+  onModelChange: (model: ColorModel) => void;
+  /** Shown between the header and the sliders. */
+  children?: ReactNode;
+}) {
+  const {id, title, hex, saved, model} = props;
+  const provenance = useSnapshot(
+    (snapshot) => snapshot.state.provenance[id] ?? "default",
+  );
+  const themeName = useSnapshot(
+    (snapshot) => snapshot.state.themePair?.[snapshot.state.appearance],
+  );
+  const changed = provenance === "draft";
+  const before = changed ? saved : undefined;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <header className="flex items-center gap-3">
+        <span className="flex size-9 shrink-0 overflow-hidden rounded-md inset-ring inset-ring-input">
+          {before !== undefined && (
+            <span className="flex-1" style={{background: before}} />
+          )}
+          <span className="flex-1" style={{background: hex}} />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <h2 className="truncate font-semibold">{title}</h2>
+          <p className="truncate text-sm text-muted-foreground">
+            {changed && "Changed"}
+            {before !== undefined && (
+              <>
+                {" "}
+                · was <code>{before}</code>
+              </>
+            )}
+            {provenance === "config" && "From your config"}
+            {provenance === "theme" && `From theme ${themeName ?? ""}`}
+            {provenance === "default" && "Ghostty's default"}
+          </p>
+        </div>
+        {changed && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void send({type: "reset", key: id})}>
+            Reset
+          </Button>
+        )}
+        <ModelSelect value={model} onChange={props.onModelChange} />
+      </header>
+      {props.children}
+      <ChannelFields key={id} id={id} hex={hex} model={model} label={title} />
+    </div>
+  );
+}
+
+function ModelSelect(props: {
   value: ColorModel;
   onChange: (model: ColorModel) => void;
 }) {
@@ -146,7 +213,7 @@ export function ModelSelect(props: {
  * A colour's channels in one model as sliders that preview while dragging, with
  * hex and CSS fields that take any colour.
  */
-export function ChannelFields(props: {
+function ChannelFields(props: {
   id: SlotId;
   hex: string;
   model: ColorModel;

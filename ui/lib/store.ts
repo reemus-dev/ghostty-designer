@@ -1,4 +1,5 @@
 import {useSyncExternalStore} from "react";
+import type {ColorModel} from "@/core/color";
 import {errorText} from "@/core/errors";
 import {isLive} from "@/core/preview";
 import {type Session, startSession} from "@/core/session";
@@ -50,6 +51,8 @@ type Store = {
   saveTheme: {source: SaveThemeSource; name: string} | null;
   /** The colour in Customise's editor. */
   color: SlotId;
+  /** The model the option colour popovers share. */
+  optionColorModel: ColorModel;
   /** The theme in Themes' detail panel. */
   theme: ThemeChoice;
   themeFilters: ThemeFilters;
@@ -68,6 +71,7 @@ const current: {store: Store; session?: Session} = {
     saveOpen: false,
     saveTheme: null,
     color: "background",
+    optionColorModel: "oklch",
     theme: null,
     themeFilters: NO_FILTERS,
     pin: "off",
@@ -333,6 +337,9 @@ export const openSaveTheme = (source: SaveThemeSource) =>
 export const closeSaveTheme = () => update({saveTheme: null});
 
 export const setColor = (color: SlotId) => update({color});
+
+export const setOptionColorModel = (optionColorModel: ColorModel) =>
+  update({optionColorModel});
 
 export const setTheme = (theme: ThemeChoice) => update({theme});
 
