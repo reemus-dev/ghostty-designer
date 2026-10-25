@@ -12,12 +12,11 @@ import {
   ComboboxList,
   ComboboxTrigger,
 } from "@/components/ui/combobox";
-import {Kbd} from "@/components/ui/kbd";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {slotColors} from "@/core/theme";
 import type {ThemeSummary} from "@/core/types";
 import {SWATCH_ORDER} from "@/lib/customise";
-import {ALT_KEY, type Direction, isEditable, neighbour} from "@/lib/keys";
+import {type Direction, isEditable, neighbour} from "@/lib/keys";
 import {
   describeSlot,
   type SlotId,
@@ -36,7 +35,7 @@ import {showView} from "@/lib/views";
 import {ColorEditor} from "./color-editor";
 import {ColorOptions} from "./options";
 import {useSlotDrag} from "./slot-drag";
-import {ColorSummary, Warnings} from "./summary";
+import {ColorSummary, SwatchHint} from "./summary";
 import {SwatchTile} from "./swatch-tile";
 
 const ARROWS: Partial<Record<string, Direction>> = {
@@ -184,10 +183,7 @@ export function ColorsSection() {
       <div className="grid grid-cols-1 items-start gap-5 split:editor-columns split:grid-rows-[auto_1fr]">
         <div className="flex flex-col gap-5 card p-4 sm:p-6 split:contents">
           <div className="flex flex-col gap-5 split:card split:p-6">
-            <Warnings warnings={state.warnings} />
-            <p className="-mb-1 text-2xs text-muted-foreground">
-              Drag to swap · hold <Kbd>{ALT_KEY}</Kbd> to copy
-            </p>
+            <SwatchHint warnings={state.warnings} />
             <div
               role="group"
               aria-label="Colours"

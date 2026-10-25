@@ -1,16 +1,17 @@
 import type {ReactNode} from "react";
 import {Button} from "@/components/ui/button";
+import {Kbd} from "@/components/ui/kbd";
 import {THEME_COLOR_KEYS} from "@/core/theme";
 import type {ReadabilityWarning, SessionState} from "@/core/types";
 import {colorValues} from "@/core/values";
+import {ALT_KEY} from "@/lib/keys";
 import {pickTheme} from "@/lib/pick";
 import {
   describeSlot,
-  formatRatio,
   TERMINAL_SLOTS,
   warningSlot,
 } from "@/lib/slots";
-import {send} from "@/lib/store";
+import {send, setColor} from "@/lib/store";
 import {revealTheme} from "@/lib/views";
 
 const COLOUR_SLOTS = [...THEME_COLOR_KEYS, ...TERMINAL_SLOTS];
@@ -71,18 +72,13 @@ export function ColorSummary(props: {state: SessionState}) {
   );
 }
 
-export function Warnings(props: {warnings: ReadabilityWarning[]}) {
+/**
+ * The line over the swatches: which colours are hard to read, or else how to
+ * drag them. It keeps one height either way, so the swatches never move.
+ */
+export function SwatchHint(props: {warnings: ReadabilityWarning[]}) {
   const {warnings} = props;
-  if (warnings.length === 0) return null;
-
-  const names = warnings.map(
-    (warning) => describeSlot(warningSlot(warning)).title,
-  );
-  const first = warnings[0]!;
-  const text =
-    warnings.length === 1
-      ? `${names[0]} is hard to read on the background (${formatRatio(first.ratio)}:1, needs ${first.target}:1).`
-      : `${warnings.length} colours are hard to read on the background: ${names.slice(0, -1).join(", ")} and ${names.at(-1)}.`;
+  const first = warnings[0];
   const makeReadable = () => {
     const values = colorValues(
       warnings.map((warning) => [warningSlot(warning), warning.fix] as const),
@@ -91,19 +87,42 @@ export function Warnings(props: {warnings: ReadabilityWarning[]}) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-warn/12 py-3 pr-3 pl-4 inset-ring inset-ring-warn/28">
-      <div className="flex min-w-48 flex-1 flex-col gap-0.5">
-        <span>{text}</span>
-        <small className="text-sm text-muted-foreground">
-          Make readable changes only their lightness.
-        </small>
-      </div>
-      <Button
-        variant="outline"
-        className="text-warn inset-ring inset-ring-warn/28"
-        onClick={makeReadable}>
-        Make readable
-      </Button>
+    <div className="-my-1 flex h-6 items-center gap-2 text-2xs whitespace-nowrap text-muted-foreground">
+      {first ? (
+        <>
+          <span
+            aria-hidden
+            className="grid size-[15px] shrink-0 place-items-center rounded-full bg-warn text-[10px] leading-none font-bold text-background">
+            !
+          </span>
+          <span className="min-w-0 truncate">
+            {warnings.length === 1 ? (
+              <>
+                <button
+                  type="button"
+                  className="rounded-sm underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
+                  onClick={() => setColor(warningSlot(first))}>
+                  {describeSlot(warningSlot(first)).title}
+                </button>{" "}
+                is hard to read
+              </>
+            ) : (
+              `${warnings.length} colours are hard to read`
+            )}
+          </span>
+          <Button
+            variant="ghost"
+            size="xs"
+            className="text-warn"
+            onClick={makeReadable}>
+            Make readable
+          </Button>
+        </>
+      ) : (
+        <span>
+          Drag to swap · hold <Kbd>{ALT_KEY}</Kbd> to copy
+        </span>
+      )}
     </div>
   );
 }
