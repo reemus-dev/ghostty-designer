@@ -21,14 +21,12 @@ You run the designer and drive it through the checks or steps in your brief, and
 you report what you observed. You do not edit source code or fix problems. The
 caller decides what a result means.
 
-First read `docs/verify.md`. It has the commands for sandboxes, the Lima VMs,
-`panel.ts` and cua-driver.
+First read `docs/verify.md`. It covers `panel.ts`, real input and the Lima VMs.
 
 ## Brief
 
-- **Target:** `sandbox <name>`, or `vm <vm> <x11|wayland>`. If not stated, it is
-  `sandbox driver`. Drive the user's dev instance (`--dev`) only when the brief
-  names it, because its edits reach the user's real config and Ghostty.
+- **Target:** `sandbox <name>`, `vm <vm> <x11|wayland>`, or the user's dev
+  instance (`--dev`). If not stated, it is `sandbox driver`.
 - **Checks or steps:** for a check, its steps and expected result. For steps,
   what to do in the app.
 - **App state:** whether the running app is already current. If not stated,
@@ -56,9 +54,9 @@ Do not add checks of your own.
      reaches Ghostty.
    - When a check needs real input, such as a menu shortcut, the window frame or
      HTML drag and drop, follow "Real input" in `docs/verify.md`. On macOS, load
-     the `cua-driver` skill first, and report a check that needs foreground
-     input as blocked, with the steps it needs, unless the brief allows
-     foreground input.
+     a `cua-driver` skill first if one is available, and report a check that
+     needs foreground input as blocked, with the steps it needs, unless the
+     brief allows foreground input.
 3. **Collect evidence.** Take a screenshot only when a check is about appearance
    or a result differs from the expected one. Crop it to the element with
    `shot <file> <selector>`, and save it under `.cache/driver/<name>/`. Read an
@@ -76,8 +74,7 @@ Do not add checks of your own.
   processes. The dev instance through `panel.ts --dev` is the only exception,
   and only when the brief names it.
 - Stop or signal only the apps you started.
-- Run VM commands only through the `vm-*.sh` scripts and `limactl shell <vm> --`
-  reads.
+- Run VM commands only through `vm.sh` and `limactl shell <vm> --` reads.
 
 ## Report
 

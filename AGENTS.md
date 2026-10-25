@@ -18,7 +18,7 @@ session in TypeScript.
 | `crates/app/src/launch.rs`       | Detach from the terminal, startup report, error dialog                 |
 | `crates/app/src/fonts.rs`        | `font://` protocol that serves font faces to the panel                 |
 | `crates/app/icons/`              | App icons, written by `app-icon.ts` from `scripts/`                    |
-| `crates/host/`                   | The native side, no Tauri or GUI dependency:                           |
+| `crates/host/`                   | The native side, in these files:                                       |
 | `crates/host/src/host.rs`        | Host: commands, watches, instance poll, write limit, shutdown fence    |
 | `crates/host/src/api.rs`         | Host contract and commands, generates `ui/core/bindings.ts` with ts-rs |
 | `crates/host/src/preview.rs`     | Preview file engine, crash recovery, include status                    |
@@ -68,7 +68,9 @@ session in TypeScript.
 
 Install the pinned toolchain with `mise install` and dependencies with
 `mise run install`. `.mise.toml` is the authority for commands and tool
-versions, and puts the commands in `scripts/` on the PATH.
+versions, and puts the commands in `scripts/` on the PATH. CI installs the same
+toolchain and runs the same tasks, so do not introduce independent version
+sources.
 
 ```sh
 mise run check            # typecheck, lint, bun test, clippy, Rust tests and format check, read-only
@@ -90,9 +92,9 @@ are mostly noise.
 
 `mise run dev` and the built binary edit the real config and reload the user's
 Ghostty, so only the user runs them. Never run the designer or Ghostty CLI
-actions against the real config. Ghostty resolves Application Support through
-Foundation, which ignores `HOME`, so a changed `XDG_CONFIG_HOME` alone still
-reaches the real one. Use a sandbox instead:
+actions against the real config. Ghostty finds Application Support through
+Foundation, which ignores `HOME`, so changing `HOME` or `XDG_CONFIG_HOME` does
+not isolate it. Use a sandbox instead:
 
 ```sh
 sandbox.ts --name <name> start [--dev]       # build, then run the app in the background
@@ -107,17 +109,15 @@ task, so parallel sessions never share one. The app targets a stand-in process
 instead of Ghostty, so nothing reloads. Check previews in the sandbox's config
 and preview files.
 
-Drive the panel with `panel.ts`, not with screenshots or cua-driver:
+Drive the panel with `panel.ts`:
 
 - Check results with `js`, `text` and the sandbox's files. Take a `shot`,
   cropped to an element, only to judge appearance.
 - Use real input, with cua-driver or xdotool, only for what `panel.ts` cannot
-  reach.
+  reach: native menus and their shortcuts, the window frame, HTML drag and drop,
+  and hover styles.
 - Drive the user's dev instance (`--dev`) only as the user allows. Otherwise use
   a sandbox.
 
-`docs/verify.md` has the commands to run and drive the app, in sandboxes and the
-Lima VMs, and what needs real input.
-
-CI installs the tracked mise toolchain and invokes the same mise tasks used
-locally. Do not introduce independent version sources.
+Before you run or drive the app, read `docs/verify.md`. It covers how `start`
+behaves, `panel.ts`, real input and the Lima VMs.

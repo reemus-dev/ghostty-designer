@@ -1,21 +1,16 @@
 # Run and drive the app
 
 Run the app in a sandbox or a Lima VM, and drive its panel to answer a specific
-question about your change. Never run the app or Ghostty CLI actions against the
-real config or the user's running Ghostty.
+question about your change.
 
 ## Sandbox
 
-```sh
-sandbox.ts --name <name> start   # build, then run the app in the background
-sandbox.ts --name <name> stop
-```
+`AGENTS.md` lists the `sandbox.ts` commands.
 
 - `start` returns once the panel answers, and refuses while the sandbox runs.
   The app's output goes to `.cache/sandboxes/<name>/run.log`.
 - `start --dev` serves the UI with hot reloading. It also restarts the app on
   every Rust edit, including another session's, so the app loses its state.
-- Name the sandbox after your task, so parallel sessions never share one.
 
 ## Drive the panel
 
@@ -86,8 +81,9 @@ every outcome with `panel.ts js` or the sandbox's files.
 rerun. When a script reports a missing tool, run it, not ad hoc installs, so the
 VMs stay reproducible. Add new requirements to its `provision` action.
 
-Work in a VM only through these scripts. They keep everything under `~/gd` and
-`~/gd-pkg`, and anything else in a VM home is disposable.
+Work in a VM only through `vm.sh`, plus `limactl shell <vm> --` for reads and
+`limactl stop <vm>`. The script keeps everything under `~/gd` and `~/gd-pkg`,
+and anything else in a VM home is disposable.
 
 ### Window
 
@@ -118,5 +114,5 @@ vm.sh gd-ubuntu-2204 packages check ubuntu:22.04 ubuntu:24.04 fedora:44
 
 ### Resources
 
-Each VM takes 4 GiB of RAM. The scripts start a stopped VM automatically, so
-stop VMs when you finish: `limactl stop <vm>`.
+Each VM takes 4 GiB of RAM. `vm.sh` starts a VM that is shut down, so shut down
+VMs when you finish: `limactl stop <vm>`.
