@@ -34,10 +34,10 @@ export function App() {
 }
 
 /**
- * The toolbar across the top and the rail down the left, on one surface that
- * meets the content at a rounded corner. The content shows the two views or the
- * live preview setup. Both views stay mounted, also behind the setup, so each
- * keeps its scroll and its own state, such as the font search.
+ * The app shell: the toolbar across the top and the rail down the left, on one
+ * surface that meets the content at a rounded corner. The content shows the two
+ * views or the live preview setup. Both views stay mounted, also behind the
+ * setup, so each keeps its scroll and its own state, such as the font search.
  */
 function Shell() {
   useGlobalKeys();
