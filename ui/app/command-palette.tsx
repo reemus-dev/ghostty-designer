@@ -3,6 +3,7 @@ import {MoonIcon, SearchIcon, SunIcon} from "lucide-react";
 import {Autocomplete} from "@base-ui/react/autocomplete";
 import {Dialog} from "@base-ui/react/dialog";
 import {PaletteDots} from "@/components/palette-dots";
+import {Truncate} from "@/components/truncate";
 import {Kbd} from "@/components/ui/kbd";
 import type {FontFamily} from "@/core/bindings";
 import type {SessionState, Snapshot, ThemeSummary} from "@/core/types";
@@ -298,9 +299,9 @@ export function CommandPalette() {
                               setPaletteOpen(false);
                             }}>
                             {item.icon}
-                            <span className="min-w-0 flex-1 truncate">
+                            <Truncate className="min-w-0 flex-1">
                               {item.label}
-                            </span>
+                            </Truncate>
                             {item.hint}
                           </Autocomplete.Item>
                         )}

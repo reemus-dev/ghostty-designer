@@ -1,5 +1,6 @@
 import type {ReactNode} from "react";
 import {ChevronRightIcon} from "lucide-react";
+import {Truncate} from "@/components/truncate";
 import {
   Collapsible,
   CollapsibleContent,
@@ -25,9 +26,9 @@ export function Disclosure(props: {
         />
         {label}
         {aside !== undefined && (
-          <span className="truncate text-sm font-normal text-muted-foreground">
+          <Truncate className="text-sm font-normal text-muted-foreground">
             {aside}
-          </span>
+          </Truncate>
         )}
       </CollapsibleTrigger>
       <CollapsibleContent>

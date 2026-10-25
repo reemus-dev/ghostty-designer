@@ -3,6 +3,7 @@ import {cn} from "cn";
 import {MoonIcon, StarIcon, SunIcon, UserIcon} from "lucide-react";
 import {LiveDot} from "@/components/live-dot";
 import {PaletteDots} from "@/components/palette-dots";
+import {Truncate} from "@/components/truncate";
 import {whyNotShowing} from "@/core/preview";
 import {THEME_PICK_KEYS} from "@/core/theme";
 import type {ColorMatch, ThemeColors, ThemeSummary} from "@/core/types";
@@ -250,13 +251,13 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
       />
       <span className="flex h-[42px] w-full items-center gap-2 px-4">
         <ModeIcon dark={dark} />
-        <span className="min-w-0 truncate font-medium text-foreground">
+        <Truncate className="min-w-0 font-medium text-foreground">
           {choice ?? "Current"}
-        </span>
+        </Truncate>
         {choice === null && (
-          <span className="truncate text-sm text-muted-foreground">
+          <Truncate className="text-sm text-muted-foreground">
             Your colours
-          </span>
+          </Truncate>
         )}
         {props.favorite && (
           <StarIcon

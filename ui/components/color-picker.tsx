@@ -1,5 +1,6 @@
 import {type CSSProperties, type ReactNode, useState} from "react";
 import {CommitInput, NumberField} from "@/components/commit-input";
+import {Truncate} from "@/components/truncate";
 import {Button} from "@/components/ui/button";
 import {
   Select,
@@ -157,18 +158,22 @@ export function ColorPicker(props: {
           <span className="flex-1" style={{background: hex}} />
         </span>
         <div className="flex min-w-0 flex-1 flex-col">
-          <h2 className="truncate font-semibold">{title}</h2>
-          <p className="truncate text-sm text-muted-foreground">
-            {changed && "Changed"}
-            {before !== undefined && (
-              <>
-                {" "}
-                · was <code>{before}</code>
-              </>
-            )}
-            {provenance === "config" && "From your config"}
-            {provenance === "theme" && `From theme ${themeName ?? ""}`}
-            {provenance === "default" && "Ghostty's default"}
+          <h2 className="font-semibold">
+            <Truncate className="block">{title}</Truncate>
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            <Truncate className="block">
+              {changed && "Changed"}
+              {before !== undefined && (
+                <>
+                  {" "}
+                  · was <code>{before}</code>
+                </>
+              )}
+              {provenance === "config" && "From your config"}
+              {provenance === "theme" && `From theme ${themeName ?? ""}`}
+              {provenance === "default" && "Ghostty's default"}
+            </Truncate>
           </p>
         </div>
         {changed && (

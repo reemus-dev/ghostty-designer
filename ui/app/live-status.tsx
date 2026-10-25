@@ -1,5 +1,6 @@
 import {useRef, useState} from "react";
 import {cn} from "cn";
+import {Truncate} from "@/components/truncate";
 import {Button} from "@/components/ui/button";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Switch} from "@/components/ui/switch";
@@ -110,7 +111,7 @@ export function LiveStatus() {
           status.warn && "text-warn",
         )}>
         <Dot status={status} />
-        <span className="truncate max-lg:sr-only">{status.label}</span>
+        <Truncate className="max-w-56 max-lg:sr-only">{status.label}</Truncate>
       </PopoverTrigger>
       <PopoverContent
         align="end"

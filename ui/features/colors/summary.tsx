@@ -1,4 +1,5 @@
 import type {ReactNode} from "react";
+import {Truncate} from "@/components/truncate";
 import {Button} from "@/components/ui/button";
 import {Kbd} from "@/components/ui/kbd";
 import {THEME_COLOR_KEYS} from "@/core/theme";
@@ -6,11 +7,7 @@ import type {ReadabilityWarning, SessionState} from "@/core/types";
 import {colorValues} from "@/core/values";
 import {ALT_KEY} from "@/lib/keys";
 import {pickTheme} from "@/lib/pick";
-import {
-  describeSlot,
-  TERMINAL_SLOTS,
-  warningSlot,
-} from "@/lib/slots";
+import {describeSlot, TERMINAL_SLOTS, warningSlot} from "@/lib/slots";
 import {send, setColor} from "@/lib/store";
 import {revealTheme} from "@/lib/views";
 
@@ -95,21 +92,21 @@ export function SwatchHint(props: {warnings: ReadabilityWarning[]}) {
             className="grid size-[15px] shrink-0 place-items-center rounded-full bg-warn text-[10px] leading-none font-bold text-background">
             !
           </span>
-          <span className="min-w-0 truncate">
-            {warnings.length === 1 ? (
-              <>
-                <button
-                  type="button"
-                  className="rounded-sm underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
-                  onClick={() => setColor(warningSlot(first))}>
-                  {describeSlot(warningSlot(first)).title}
-                </button>{" "}
-                is hard to read
-              </>
-            ) : (
-              `${warnings.length} colours are hard to read`
-            )}
-          </span>
+          {warnings.length === 1 ? (
+            <span className="flex min-w-0 gap-1">
+              <button
+                type="button"
+                className="shrink-0 rounded-sm underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
+                onClick={() => setColor(warningSlot(first))}>
+                {describeSlot(warningSlot(first)).title}
+              </button>
+              <Truncate>is hard to read</Truncate>
+            </span>
+          ) : (
+            <Truncate className="min-w-0">
+              {warnings.length} colours are hard to read
+            </Truncate>
+          )}
           <Button
             variant="ghost"
             size="xs"

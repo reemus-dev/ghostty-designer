@@ -1,5 +1,6 @@
 import {cn} from "cn";
 import {ColorSquare} from "@/components/swatch";
+import {Truncate} from "@/components/truncate";
 import type {DraftChange} from "@/lib/changes";
 
 /** "16 → 17", with a small square before each colour. */
@@ -8,7 +9,7 @@ export function ChangeValues(props: {change: DraftChange; className?: string}) {
   const value = (text: string) => (
     <span className="inline-flex min-w-0 items-center gap-1.5">
       {change.color && <ColorSquare color={text} />}
-      <span className="truncate">{text}</span>
+      <Truncate>{text}</Truncate>
     </span>
   );
   return (

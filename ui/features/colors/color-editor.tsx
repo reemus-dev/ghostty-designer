@@ -3,6 +3,7 @@ import {cn} from "cn";
 import {ArrowRightIcon, PinIcon} from "lucide-react";
 import {ColorPicker} from "@/components/color-picker";
 import {HexChip} from "@/components/swatch";
+import {Truncate} from "@/components/truncate";
 import {Button} from "@/components/ui/button";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {
@@ -100,7 +101,7 @@ function ReferenceColor(props: {
   return (
     <p className="-mt-1 flex h-6 items-center gap-2 text-sm text-muted-foreground">
       <PinIcon aria-label="Your pinned reference" className="size-3 shrink-0" />
-      <span className="truncate">{theme}</span>
+      <Truncate>{theme}</Truncate>
       <HexChip color={hex} />
       <span className="flex-1" />
       {hex === current ? (

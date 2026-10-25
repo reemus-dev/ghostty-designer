@@ -4,6 +4,7 @@ import {Chip} from "@/components/chip";
 import {IconButton} from "@/components/icon-button";
 import {LiveDot} from "@/components/live-dot";
 import {PageFilter, PageSection} from "@/components/page";
+import {Truncate} from "@/components/truncate";
 import {Kbd} from "@/components/ui/kbd";
 import type {FontFamily} from "@/core/bindings";
 import {ligatureTag} from "@/core/font-settings";
@@ -260,7 +261,7 @@ function FontHeader(props: {
           }>
           {name}
         </h3>
-        <span className="truncate text-sm text-muted-foreground">{facts}</span>
+        <Truncate className="text-sm text-muted-foreground">{facts}</Truncate>
       </div>
     </header>
   );

@@ -2,6 +2,7 @@ import {type KeyboardEvent, useEffect, useMemo} from "react";
 import {cn} from "cn";
 import {LayoutGridIcon, PinIcon, XIcon} from "lucide-react";
 import {PageSection} from "@/components/page";
+import {Truncate} from "@/components/truncate";
 import {Button} from "@/components/ui/button";
 import {
   Combobox,
@@ -283,7 +284,7 @@ function ReferencePicker(props: {reference: ThemeSummary | undefined}) {
           </TooltipTrigger>
           <TooltipContent>
             {reference
-              ? "Change the pinned theme"
+              ? `Change the pinned theme, ${reference.name}`
               : "Pin a theme for reference"}
           </TooltipContent>
         </Tooltip>
@@ -297,7 +298,7 @@ function ReferencePicker(props: {reference: ThemeSummary | undefined}) {
           <ComboboxList>
             {(name: string) => (
               <ComboboxItem key={name} value={name}>
-                <span className="truncate">{name}</span>
+                <Truncate>{name}</Truncate>
                 {name === named && (
                   <span className="ml-auto shrink-0 text-2xs text-muted-foreground">
                     In your config

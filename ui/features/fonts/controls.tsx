@@ -9,6 +9,7 @@ import {
   OptionRow,
   SliderField,
 } from "@/components/option-control";
+import {Truncate} from "@/components/truncate";
 import {
   Combobox,
   ComboboxContent,
@@ -364,7 +365,7 @@ function Axis(props: {axis: FontAxis}) {
     <div className="flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1.5 py-1.5 not-first:border-t">
       <span className="flex min-w-28 grow-999 basis-0 items-center gap-2">
         <span className="flex min-w-0 items-baseline gap-1.5 font-medium">
-          <span className="truncate">{axis.name}</span>
+          <Truncate>{axis.name}</Truncate>
           <code className="text-xs font-normal text-muted-foreground">
             {axis.tag}
           </code>
@@ -533,9 +534,9 @@ function FallbackRow(props: {family: string; children: ReactNode}) {
   const fontFamily = useFontStack([props.family]);
   return (
     <li className="flex h-9 items-center gap-2.5 not-first:border-t">
-      <span className="min-w-0 flex-1 truncate text-base" style={{fontFamily}}>
+      <Truncate className="min-w-0 flex-1 text-base" style={{fontFamily}}>
         {props.family}
-      </span>
+      </Truncate>
       <span className="flex">{props.children}</span>
     </li>
   );

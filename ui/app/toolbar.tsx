@@ -13,6 +13,7 @@ import {
   XIcon,
 } from "lucide-react";
 import {Menu} from "@base-ui/react/menu";
+import {Truncate} from "@/components/truncate";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -273,7 +274,7 @@ function ChangeRow(props: {change: DraftChange}) {
   return (
     <div className="flex min-h-9 items-center gap-3 rounded-sm pr-1 pl-2.5 hover:bg-accent">
       <span className="flex min-w-0 flex-1 items-baseline gap-2">
-        <span className="truncate font-medium">{change.label}</span>
+        <Truncate className="font-medium">{change.label}</Truncate>
         {rejected && (
           <small className="shrink-0 text-sm text-warn">Not applied</small>
         )}

@@ -6,6 +6,7 @@ import {
   useRef,
 } from "react";
 import {CheckIcon} from "lucide-react";
+import {Truncate} from "@/components/truncate";
 import type {FontFamily} from "@/core/bindings";
 import {ligatureTag} from "@/core/font-settings";
 import {fontFace} from "@/lib/fonts";
@@ -146,9 +147,9 @@ export function FamilyList(props: FamilyListProps) {
                 className="flex min-w-0 flex-1 flex-col gap-[3px]"
                 style={{fontFamily}}>
                 <span className="flex min-w-0 items-baseline gap-3">
-                  <span className="truncate text-[19px] leading-[1.3] text-foreground">
+                  <Truncate className="text-[19px] leading-[1.3] text-foreground">
                     {font?.family ?? DEFAULT_NAME}
-                  </span>
+                  </Truncate>
                   <span className="shrink-0 font-sans text-xs text-muted-foreground">
                     {tags}
                   </span>

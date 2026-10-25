@@ -1,5 +1,6 @@
 import type {ReactNode} from "react";
 import {PanelRightOpenIcon} from "lucide-react";
+import {Truncate} from "@/components/truncate";
 import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
 import {MD, useMediaQuery} from "@/lib/media";
 
@@ -35,7 +36,7 @@ export function Page(props: {
             <SheetTrigger
               aria-label={`${focused} details`}
               className="sticky bottom-0 flex h-12 w-full items-center gap-3 border-t bg-card/95 px-4 backdrop-blur-sm hover:bg-accent sm:px-8">
-              <span className="min-w-0 truncate font-medium">{focused}</span>
+              <Truncate className="min-w-0 font-medium">{focused}</Truncate>
               <span className="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
                 Details
                 <PanelRightOpenIcon aria-hidden className="size-4" />

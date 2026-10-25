@@ -1,4 +1,4 @@
-import {type ReactNode, useId, useState} from "react";
+import {type ReactNode, useId, useRef, useState} from "react";
 import {cn} from "cn";
 import {AppleIcon, InfoIcon, RotateCcwIcon} from "lucide-react";
 import {
@@ -170,12 +170,21 @@ function OptionLabel(props: {
   const helpId = `${useId()}-help`;
   // A click opens the doc at once, without waiting out the hover delay.
   const [docOpen, setDocOpen] = useState(false);
+  // The doc leads with the label when the row cuts it short.
+  const label = useRef<HTMLSpanElement>(null);
+  const [labelCut, setLabelCut] = useState(false);
   return (
     // A balanced note leaves a gap before the control, a pretty one fills more
     // of its line.
     <div className={cn("flex min-w-0 flex-col gap-px text-pretty", className)}>
       <span className="flex min-w-0 items-center gap-2">
-        <Tooltip open={docOpen} onOpenChange={setDocOpen}>
+        <Tooltip
+          open={docOpen}
+          onOpenChange={(open) => {
+            const text = label.current!;
+            setLabelCut(text.scrollWidth > text.clientWidth);
+            setDocOpen(open);
+          }}>
           <TooltipTrigger
             render={<span />}
             tabIndex={0}
@@ -183,7 +192,7 @@ function OptionLabel(props: {
             onClick={() => setDocOpen(true)}
             aria-describedby={helpId}
             className="group/doc flex min-w-0 items-center gap-1.5 rounded-sm">
-            <span className="truncate font-medium text-foreground">
+            <span ref={label} className="truncate font-medium text-foreground">
               {option.label}
             </span>
             <Icon
@@ -197,6 +206,7 @@ function OptionLabel(props: {
             side="bottom"
             align="start"
             className="max-w-md flex-col items-start gap-2.5 px-3.5 py-3 text-base whitespace-pre-line">
+            {labelCut && <span className="font-medium">{option.label}</span>}
             <code className="rounded-md bg-selected px-2 py-0.5 text-base font-medium">
               {option.key}
             </code>
