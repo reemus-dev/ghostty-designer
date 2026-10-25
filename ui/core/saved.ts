@@ -196,7 +196,7 @@ export function savedConfig(
     async writeTheme(name: string, colors: Values) {
       const text = themeText(colors, catalog.colorDefaults.palette!);
       const written = await host.writeTheme(name, text);
-      if (!written) throw inputError(`A theme named ${name} exists`);
+      if (!written) throw inputError(`A theme named ${name} already exists`);
       await themeReads.request("load").catch(on.fail);
       return written;
     },
@@ -278,7 +278,8 @@ export function saveReviews(
       return async (): Promise<SavePlan> => {
         // Saved files are not validated on reload, so check the draft first.
         const error = await host.validateConfig(text);
-        if (error) throw inputError(`Invalid draft: ${error}`);
+        if (error)
+          throw inputError(`Ghostty didn't accept your changes: ${error}`);
         const {plan: summary, edits} = await plan();
         const id = crypto.randomUUID();
         if (seq === planned) reviewed = {id, draft, plan: summary, edits};
@@ -293,18 +294,20 @@ export function saveReviews(
     async confirm(id: string, draft: () => Draft) {
       const review = reviewed;
       if (review?.id !== id) {
-        throw inputError("This save is out of date; review it again");
+        throw inputError("This save is out of date. Review it again.");
       }
       // Any loaded file, not only those the plan edits, can move the lines it targets.
       const current = await planning(review.draft)();
       if (!sameDraft(draft(), review.draft)) {
-        throw inputError("The draft changed; review the save again");
+        throw inputError(
+          "You made changes since the review. Review the save again.",
+        );
       }
       if (
         JSON.stringify([current.plan, current.edits]) !==
         JSON.stringify([review.plan, review.edits])
       ) {
-        throw inputError("Your config changed; review the save again");
+        throw inputError("Your config changed. Review the save again.");
       }
       return review;
     },

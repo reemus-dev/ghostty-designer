@@ -127,7 +127,7 @@ export function editDraft(
       const kept = withoutTag(key, effectiveValues(key), tag);
       const values = value === null ? kept : [...kept, value];
       return {
-        change: {label: `${labelOf(key)} ${tag}`, key: `${key}:${tag}`, edit},
+        change: {label: `${labelOf(key)}: ${tag}`, key: `${key}:${tag}`, edit},
         next: withValues({[key]: values}),
       };
     }
@@ -167,7 +167,7 @@ export function editDraft(
       if (intent.theme !== null) checkTheme(sources.library, intent.theme);
       // Picking the saved theme again changes nothing on save, so it is no draft.
       const theme = intent.theme === savedTheme(sources) ? null : intent.theme;
-      const label = theme === null ? "Saved theme" : `Theme ${theme}`;
+      const label = theme === null ? "Back to saved theme" : `Theme: ${theme}`;
       return {
         change: {label, key: THEME_KEY, pick: intent.pick},
         next: {theme, values: draft.values},

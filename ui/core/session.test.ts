@@ -347,7 +347,7 @@ describe("themes", () => {
     expect(await refusal("a,b")).toMatchObject({kind: "input"});
     expect(await refusal("dark")).toMatchObject({
       kind: "input",
-      message: "A theme named dark exists",
+      message: "A theme named dark already exists",
     });
   });
 });

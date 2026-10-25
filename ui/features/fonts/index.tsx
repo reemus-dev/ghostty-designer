@@ -101,7 +101,7 @@ export function FontSection() {
         type: "set",
         key: "font-family",
         values: name ? withPrimary(getStore().snapshot!.state, name) : [],
-        label: name ? `Font ${name}` : DEFAULT_NAME,
+        label: name ? `Font: ${name}` : DEFAULT_NAME,
         pick: true,
       }).then(() => setCursor((at) => (at === name ? null : at)));
     };

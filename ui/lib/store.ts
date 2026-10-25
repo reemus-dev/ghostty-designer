@@ -275,15 +275,13 @@ export function stepHistory(direction: "undo" | "redo") {
   moveHistory({type: direction}, (state) => {
     const step = state.history[direction].at(-1);
     if (!step) return null;
-    return `${direction === "undo" ? "Undid" : "Redid"}: ${step.label}`;
+    return `${direction === "undo" ? "Undo" : "Redo"}: ${step.label}`;
   });
 }
 
 export function revertAll() {
   moveHistory({type: "revert"}, (state) =>
-    state.changes > 0
-      ? `Discarded all changes · ${MOD}Z brings them back`
-      : null,
+    state.changes > 0 ? `Discarded all changes · ${MOD}Z to undo` : null,
   );
 }
 

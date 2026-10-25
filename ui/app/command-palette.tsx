@@ -207,7 +207,7 @@ const fontItems = (fonts: FontFamily[] | null): Item[] =>
         type: "set",
         key: "font-family",
         values: withPrimary(getStore().snapshot!.state, font.family),
-        label: `Font ${font.family}`,
+        label: `Font: ${font.family}`,
         pick: true,
       }),
   }));

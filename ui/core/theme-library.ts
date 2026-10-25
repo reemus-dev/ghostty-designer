@@ -322,6 +322,6 @@ export function checkThemeName(library: ThemeLibrary, name: string) {
     throw inputError(`Invalid theme name: ${name}`);
   }
   if (hasThemeName(library, name)) {
-    throw inputError(`A theme named ${name} exists`);
+    throw inputError(`A theme named ${name} already exists`);
   }
 }

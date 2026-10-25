@@ -437,7 +437,7 @@
           "history": {
             "undo": [
               {
-                "label": "Theme light:GitHub Light Default,dark:GitHub Dark Default"
+                "label": "Theme: light:GitHub Light Default,dark:GitHub Dark Default"
               }
             ],
             "redo": []
@@ -1686,7 +1686,7 @@
           "history": {
             "undo": [
               {
-                "label": "Theme light:GitHub Light Default,dark:GitHub Dark Default"
+                "label": "Theme: light:GitHub Light Default,dark:GitHub Dark Default"
               },
               {"label":"Set Background"}
             ],
@@ -3580,7 +3580,7 @@
       "reply": {
         "state": {
           "draft": {"theme":"Nord","values":{}},
-          "history": {"undo":[{"label":"Theme Nord"}],"redo":[]},
+          "history": {"undo":[{"label":"Theme: Nord"}],"redo":[]},
           "changes": 1,
           "themeSetting": "Nord",
           "themePair": {"light":"Nord","dark":"Nord"},

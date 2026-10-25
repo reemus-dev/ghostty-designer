@@ -268,7 +268,7 @@ pub fn apply_save(edits: &[FileEdit], state_dir: &Path) -> Result<SavedFiles, Er
         let current = current.as_deref().map(String::from_utf8_lossy);
         if current.as_deref() != edit.before.as_deref() {
             return Err(Error::Input(format!(
-                "{path} changed on disk; plan the save again"
+                "{path} changed. Review the save again."
             )));
         }
     }

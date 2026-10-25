@@ -142,7 +142,7 @@ function PinButton(props: {theme: string}) {
       onClick={() => {
         void send({type: "reference", theme: pinned ? null : theme});
         if (!pinned) {
-          notify(`Pinned ${theme}: its colours show under yours in Customise.`);
+          notify(`Pinned ${theme} · its colours show under yours in Customise`);
         }
       }}>
       {pinned ? <PinOffIcon /> : <PinIcon />}

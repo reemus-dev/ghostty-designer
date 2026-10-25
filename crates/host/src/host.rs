@@ -282,7 +282,7 @@ impl Host {
                 &host.env.home,
                 &host.ghostty.preview_path,
             )
-            .map_err(|error| internal(format!("cannot read the config: {error}")))?;
+            .map_err(|error| internal(format!("Could not read the config: {error}")))?;
             *lock(&host.loaded) = set.files.iter().map(|file| file.path.clone()).collect();
             let can_restore_original =
                 save::has_original(&host.env.state_dir, &host.loaded_files());
@@ -313,8 +313,12 @@ impl Host {
             .preview
             .without_preview(|| host.ghostty.run(&host.env, args))
             .await
-            .map_err(|error| internal(format!("cannot set the preview aside: {error}")))?
-            .map_err(|error| internal(format!("cannot run ghostty +show-config: {error}")))?;
+            .map_err(|error| {
+                internal(format!(
+                    "Could not hide the preview to read your saved config: {error}"
+                ))
+            })?
+            .map_err(|error| internal(format!("Could not run ghostty +show-config: {error}")))?;
         if !shown.status.success() {
             return Err(internal(format!(
                 "ghostty +show-config failed: {}",
@@ -401,7 +405,7 @@ impl Host {
         let path = self.0.env.state_dir.join(STATE_FILE);
         blocking(move || {
             preview::replace_own_file(&path, &text)
-                .map_err(|error| internal(format!("cannot write {}: {error}", path.display())))
+                .map_err(|error| internal(format!("Could not write {}: {error}", path.display())))
         })
         .await?
     }
@@ -464,7 +468,7 @@ impl Shared {
             &self.env.home,
             &self.ghostty.preview_path,
         )
-        .map_err(|error| internal(format!("cannot read the config: {error}")))?;
+        .map_err(|error| internal(format!("Could not read the config: {error}")))?;
         let config = self.ghostty.config_path.clone();
         Ok(std::iter::once(config)
             .chain(set.files.into_iter().map(|file| file.path))

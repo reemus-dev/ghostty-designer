@@ -431,7 +431,7 @@
       "reply": {
         "state": {
           "draft": {"theme":"Nord","values":{}},
-          "history": {"undo":[{"label":"Theme Nord"}],"redo":[]},
+          "history": {"undo":[{"label":"Theme: Nord"}],"redo":[]},
           "changes": 1,
           "themeSetting": "Nord",
           "themePair": {"light":"Nord","dark":"Nord"},
@@ -763,7 +763,7 @@
         "state": {
           "draft": {"theme":"Nord","values":{"font-size":["20"]}},
           "history": {
-            "undo": [{"label":"Theme Nord"},{"label":"Set Font size"}],
+            "undo": [{"label":"Theme: Nord"},{"label":"Set Font size"}],
             "redo": []
           },
           "recentThemes": ["Nord"],
@@ -1054,7 +1054,7 @@
           },
           "history": {
             "undo": [
-              {"label":"Theme Nord"},
+              {"label":"Theme: Nord"},
               {"label":"Set Font size"},
               {"label":"Set Background"}
             ],

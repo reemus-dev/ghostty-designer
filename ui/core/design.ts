@@ -312,7 +312,7 @@ export class Design {
     const unpinned = this.appearanceChosen;
     this.unpin();
     if (!sameDraft(this.draft, EMPTY_DRAFT)) {
-      await this.commit({label: "Revert all changes"}, EMPTY_DRAFT);
+      await this.commit({label: "Discard all changes"}, EMPTY_DRAFT);
     } else if (unpinned) {
       this.show();
     }

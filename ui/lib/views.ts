@@ -25,7 +25,7 @@ export const NOT_SHOWING_TEXT: Record<NotShowing, string> = {
   "not-installed": "Shows in Ghostty after you save",
   paused: "Ghostty shows your saved config",
   rejected: "Ghostty didn't accept this",
-  shadowed: "Partly live",
+  shadowed: "Partly hidden",
 };
 
 /**

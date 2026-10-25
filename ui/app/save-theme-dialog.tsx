@@ -38,7 +38,7 @@ export function SaveThemeDialog() {
       .saveTheme(theme, source)
       .then(() => {
         closeSaveTheme();
-        notify(`Saved “${theme}” under My themes.`);
+        notify(`Saved “${theme}” to My themes`);
       })
       .catch((reason: unknown) => setError(errorText(reason)));
   };

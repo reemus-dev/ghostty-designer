@@ -353,7 +353,7 @@ function OverflowMenu() {
                 setConfirm(false);
                 void session()
                   .restoreOriginal()
-                  .then(() => notify("Restored your original config."))
+                  .then(() => notify("Restored your original config"))
                   .catch((error: unknown) => notify(errorText(error), "error"));
               }}>
               Restore original
