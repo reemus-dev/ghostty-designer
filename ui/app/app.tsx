@@ -27,7 +27,7 @@ export function App() {
     );
   }
   return (
-    <TooltipProvider delay={400}>
+    <TooltipProvider delay={250}>
       <Shell />
     </TooltipProvider>
   );
@@ -46,8 +46,10 @@ function Shell() {
 
   return (
     <div className="grid h-full grid-cols-[56px_minmax(0,1fr)] grid-rows-[48px_minmax(0,1fr)] bg-card">
-      <Toolbar />
-      <Rail />
+      <TooltipProvider delay={50}>
+        <Toolbar />
+        <Rail />
+      </TooltipProvider>
       <main className="relative flex min-h-0 flex-col overflow-hidden rounded-tl-xl bg-background after:pointer-events-none after:absolute after:inset-0 after:z-30 after:rounded-tl-xl after:shadow-[inset_1px_1px_0_var(--color-border)]">
         <Activity mode={!setup && view === "customise" ? "visible" : "hidden"}>
           <CustomiseView />
