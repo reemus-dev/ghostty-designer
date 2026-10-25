@@ -54,8 +54,8 @@ type ControlProps = {
  * doc in a tooltip, when it applies, the unsaved-change marker that resets it,
  * and a control that sends `set` intents (throttled while dragging). Repeatable
  * keys edit their first value and keep the rest. The control wraps under the
- * label when the row is too narrow for both. Rows stack with hairlines between
- * them.
+ * label, at full width, when the row is too narrow for both. Rows stack with
+ * hairlines between them.
  */
 export function OptionControl(props: {option: OptionMeta; className?: string}) {
   const {option, className} = props;
@@ -98,12 +98,17 @@ export function OptionRow(props: {
         "group/option flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1.5 py-1.5 not-first:border-t",
         className,
       )}>
+      {/* Beside the control, the label takes nearly all the free width. Wrapped
+          onto its own line, the control takes it all, and a segmented control
+          stretches to fill it. */}
       <OptionLabel
         option={option}
         note={note}
-        className="max-w-full min-w-28 flex-1"
+        className="max-w-full min-w-28 grow-999 basis-0"
       />
-      <div data-option-control className="ml-auto shrink-0">
+      <div
+        data-option-control
+        className="flex shrink-0 grow justify-end *:data-[slot=toggle-group]:w-full">
         {children}
       </div>
     </div>
@@ -157,7 +162,9 @@ function OptionLabel(props: {
   // A click opens the doc at once, without waiting out the hover delay.
   const [docOpen, setDocOpen] = useState(false);
   return (
-    <div className={cn("flex min-w-0 flex-col gap-px", className)}>
+    // A balanced note leaves a gap before the control, a pretty one fills more
+    // of its line.
+    <div className={cn("flex min-w-0 flex-col gap-px text-pretty", className)}>
       <span className="flex min-w-0 items-center gap-2">
         <Tooltip open={docOpen} onOpenChange={setDocOpen}>
           <TooltipTrigger
