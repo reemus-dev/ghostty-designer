@@ -8,13 +8,16 @@ import type {
   SessionState,
   Snapshot,
 } from "@/core/types";
-import {closePromptShown, host} from "./host";
+import {canPin, closePromptShown, host, pinWindow} from "./host";
 import {MOD} from "./keys";
 import type {ThemeChoice} from "./pick";
 import type {SlotId} from "./slots";
 import type {View} from "./views";
 
 type Notice = {id: number; text: string; tone: "info" | "error"};
+
+/** Whether the window stays above other windows. */
+export type Pin = "off" | "on" | "unsupported";
 
 export type ThemeFilters = {
   query: string;
@@ -51,6 +54,7 @@ type Store = {
   /** The theme in Themes' detail panel. */
   theme: ThemeChoice;
   themeFilters: ThemeFilters;
+  pin: Pin;
 };
 
 /** Module state lives in objects: lint forbids reassigning top-level bindings. */
@@ -68,6 +72,7 @@ const current: {store: Store; session?: Session} = {
     color: "background",
     theme: null,
     themeFilters: NO_FILTERS,
+    pin: "off",
   },
 };
 const listeners = new Set<() => void>();
@@ -109,8 +114,13 @@ export const getStore = () => current.store;
 
 // ─── Session ───
 
-/** Starts the session. Call once at start. */
+/** Starts the session and asks whether the window can pin. Call once at start. */
 export function start() {
+  canPin()
+    .then((pinnable) => {
+      if (!pinnable) update({pin: "unsupported"});
+    })
+    .catch(console.error);
   startSession(host, receive)
     .then((session) => {
       current.session = session;
@@ -333,6 +343,16 @@ export const setThemeFilters = (filters: Partial<ThemeFilters>) =>
   update({themeFilters: {...current.store.themeFilters, ...filters}});
 
 export const clearThemeFilters = () => update({themeFilters: NO_FILTERS});
+
+/** Turns keeping the window above other windows on or off. */
+export function togglePin() {
+  const {pin} = current.store;
+  if (pin === "unsupported") return;
+  const next = pin === "off" ? "on" : "off";
+  pinWindow(next === "on")
+    .then(() => update({pin: next}))
+    .catch((error: unknown) => notify(errorText(error), "error"));
+}
 
 /** Hides the setup card for now, or shows it again with false. */
 export const setSetupLater = (setupLater: boolean) => update({setupLater});

@@ -128,3 +128,18 @@ pub fn close_window(window: Window, guard: State<'_, Arc<CloseGuard>>) -> Result
             .map_err(|error| Error::Internal(error.to_string())),
     )
 }
+
+/// Whether the window can stay above other windows. GTK 3 ignores the request
+/// on Wayland. Not async, so GTK runs on the main thread.
+#[tauri::command]
+pub fn can_pin() -> bool {
+    #[cfg(target_os = "linux")]
+    let pinnable = {
+        use gtk::prelude::ObjectExt;
+        gtk::gdk::Display::default()
+            .is_none_or(|display| display.type_().name() != "GdkWaylandDisplay")
+    };
+    #[cfg(not(target_os = "linux"))]
+    let pinnable = true;
+    pinnable
+}

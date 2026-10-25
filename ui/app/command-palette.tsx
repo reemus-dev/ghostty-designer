@@ -15,12 +15,14 @@ import {describeSlot} from "@/lib/slots";
 import {
   getStore,
   openSaveTheme,
+  type Pin,
   revertAll,
   send,
   setPaletteOpen,
   setSaveOpen,
   setSetupLater,
   stepHistory,
+  togglePin,
   useStore,
 } from "@/lib/store";
 import {
@@ -46,8 +48,8 @@ type Group = {value: string; items: Item[]};
 
 const LIMIT = 80;
 
-/** What to do now, by the session's state. */
-function actionItems(state: SessionState): Item[] {
+/** What to do now, by the session's state and the pin. */
+function actionItems(state: SessionState, pin: Pin): Item[] {
   const dirty = state.changes > 0;
   const actions: Item[] = [];
   if (dirty) {
@@ -104,6 +106,17 @@ function actionItems(state: SessionState): Item[] {
       value: "action:appearance",
       label: `Preview the ${other} theme of the pair`,
       run: () => void send({type: "appearance", appearance: other}),
+    });
+  }
+  if (pin !== "unsupported") {
+    actions.push({
+      value: "action:pin",
+      label: "Keep window on top",
+      hint:
+        pin === "on" ? (
+          <span className="text-xs text-muted-foreground">On</span>
+        ) : undefined,
+      run: togglePin,
     });
   }
   return actions;
@@ -201,7 +214,8 @@ const fontItems = (fonts: FontFamily[] | null): Item[] =>
 
 /** Built when the palette opens, so state pushes keep the list stable. */
 function buildGroups(): Group[] {
-  const snapshot = getStore().snapshot!;
+  const store = getStore();
+  const snapshot = store.snapshot!;
   const views: Item[] = VIEWS.map((view, i) => ({
     value: `view:${view}`,
     label: `Go to ${VIEW_LABEL[view]}`,
@@ -211,7 +225,7 @@ function buildGroups(): Group[] {
 
   const {sections, settings} = placeItems(snapshot);
   return [
-    {value: "Actions", items: actionItems(snapshot.state)},
+    {value: "Actions", items: actionItems(snapshot.state, store.pin)},
     {value: "Go to", items: [...views, ...sections]},
     {value: "Settings", items: settings},
     {value: "Themes", items: themeItems(snapshot.themes)},

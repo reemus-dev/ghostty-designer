@@ -1,9 +1,10 @@
 {
   "identifier": "panel",
-  "description": "Moves and zooms the window from the panel's toolbar and rail.",
+  "description": "Moves, zooms and pins the window from the panel's toolbar and rail.",
   "windows": ["panel"],
   "permissions": [
     "core:window:allow-start-dragging",
-    "core:window:allow-internal-toggle-maximize"
+    "core:window:allow-internal-toggle-maximize",
+    "core:window:allow-set-always-on-top"
   ]
 }

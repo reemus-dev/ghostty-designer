@@ -5,6 +5,7 @@ import {
   LayoutGridIcon,
   type LucideIcon,
   PaletteIcon,
+  PinIcon,
   SlidersHorizontalIcon,
   TypeIcon,
 } from "lucide-react";
@@ -12,7 +13,7 @@ import {Kbd} from "@/components/ui/kbd";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {SECTION_TITLE, type SectionId} from "@/lib/customise";
 import {ALT} from "@/lib/keys";
-import {showsSetup, useStore} from "@/lib/store";
+import {type Pin, showsSetup, togglePin, useStore} from "@/lib/store";
 import {
   revealSection,
   showView,
@@ -36,7 +37,7 @@ const SECTIONS = [
 
 /**
  * The views (Alt 1, Alt 2), Customise's sections with the one in view marked,
- * and the live status. Each shows its name on hover.
+ * the pin and the live status. Each shows its name on hover.
  */
 export function Rail() {
   const setup = useStore(showsSetup);
@@ -47,7 +48,8 @@ export function Rail() {
       className="flex min-h-0 flex-col items-center gap-3 pb-3 select-none">
       {!setup && <ViewSwitch view={view} />}
       {!setup && view === "customise" && <Sections />}
-      <div className="mt-auto">
+      <div className="mt-auto flex flex-col items-center gap-1">
+        <PinToggle />
         <LiveDot />
       </div>
     </div>
@@ -116,6 +118,49 @@ function Sections() {
         </Tooltip>
       ))}
     </nav>
+  );
+}
+
+const PIN_DETAIL: Record<Pin, string | null> = {
+  off: null,
+  on: "On",
+  unsupported: "Not supported on Wayland",
+};
+
+/** Keeps the window above Ghostty while you switch between them. */
+function PinToggle() {
+  const pin = useStore((store) => store.pin);
+  const detail = PIN_DETAIL[pin];
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            aria-label="Keep window on top"
+            aria-pressed={pin === "on"}
+            aria-disabled={pin === "unsupported"}
+            onClick={togglePin}
+          />
+        }
+        className={cn(
+          "flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground",
+          pin === "on" && "bg-selected text-foreground",
+          pin === "unsupported" &&
+            "opacity-64 hover:bg-transparent hover:text-muted-foreground",
+        )}>
+        <PinIcon
+          aria-hidden
+          className={cn("size-4", pin === "on" && "fill-current")}
+        />
+      </TooltipTrigger>
+      <TooltipContent side="right" className="max-w-none whitespace-nowrap">
+        Keep window on top
+        {detail !== null && (
+          <span className="text-muted-foreground">{detail}</span>
+        )}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 

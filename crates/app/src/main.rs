@@ -110,6 +110,7 @@ fn main() {
             panel::call_ordered,
             panel::close_prompt_shown,
             panel::close_window,
+            panel::can_pin,
         ])
         .register_asynchronous_uri_scheme_protocol("font", fonts::serve)
         .on_window_event(move |window, event| {

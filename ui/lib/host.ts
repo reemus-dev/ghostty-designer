@@ -1,4 +1,5 @@
 import {Channel, invoke, type InvokeArgs} from "@tauri-apps/api/core";
+import {getCurrentWindow} from "@tauri-apps/api/window";
 import type {CommandError, HostMessage} from "@/core/bindings";
 import {SessionError} from "@/core/errors";
 import {createHost} from "@/core/host";
@@ -30,3 +31,9 @@ export const host = createHost({
 export const closePromptShown = () => call<void>("close_prompt_shown");
 
 export const closeWindow = () => call<void>("close_window");
+
+export const canPin = () => call<boolean>("can_pin");
+
+/** Keeps the window above other windows, or lets them cover it again. */
+export const pinWindow = (pinned: boolean) =>
+  getCurrentWindow().setAlwaysOnTop(pinned);
