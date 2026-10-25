@@ -49,9 +49,8 @@ __MACOSX/
 .Trash-*
 
 # AI agent local state
-.agents/*
-!.agents/filehooks.*
-.claude/
+.claude/settings.local.json
+.claude/worktrees/
 .codex/
 .pi/
 .air/
