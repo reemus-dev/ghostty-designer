@@ -328,8 +328,7 @@ impl Host {
     async fn load_themes(&self) -> Result<Vec<ThemeFile>, Error> {
         let ghostty = self.0.ghostty.clone();
         blocking(move || {
-            let bundled = (ghostty.resources_dir.as_ref())
-                .map_or_else(PathBuf::new, |dir| dir.join("themes"));
+            let bundled = ghostty.bundled_themes_dir.unwrap_or_default();
             themes::load_themes(&ghostty.user_themes_dir, &bundled)
         })
         .await

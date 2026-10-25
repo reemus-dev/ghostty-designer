@@ -22,8 +22,6 @@ pub struct Env {
     pub state_dir: PathBuf,
     /// `GHOSTTY_CONFIG_PATH`, which only the macOS app reads.
     config_path_override: Option<PathBuf>,
-    /// `GHOSTTY_RESOURCES_DIR`.
-    pub resources_dir: Option<PathBuf>,
     /// Folders where installing or removing a font file changes the scan.
     pub font_dirs: Vec<PathBuf>,
     /// `GHOSTTY_DESIGNER_TARGET_PID`: the instances to reload instead of the
@@ -86,7 +84,6 @@ impl Env {
                 .unwrap_or_else(|| home.join(".local/state"))
                 .join("ghostty-designer"),
             config_path_override: path("GHOSTTY_CONFIG_PATH"),
-            resources_dir: path("GHOSTTY_RESOURCES_DIR"),
             font_dirs,
             target_pids,
             ghostty_bin: path("GHOSTTY_DESIGNER_GHOSTTY"),
@@ -281,13 +278,11 @@ mod tests {
             ("XDG_CONFIG_HOME", "/x"),
             ("XDG_STATE_HOME", "/s"),
             ("CFFIXED_USER_HOME", "/u"),
-            ("GHOSTTY_RESOURCES_DIR", "/r"),
         ]);
         assert_eq!(env.xdg_config, Path::new("/x"));
         assert_eq!(env.state_dir, Path::new("/s/ghostty-designer"));
         assert_eq!(env.user_home, Path::new("/u"));
-        assert_eq!(env.resources_dir.as_deref(), Some(Path::new("/r")));
-        assert_eq!(env.child_env.len(), 5);
+        assert_eq!(env.child_env.len(), 4);
     }
 
     #[test]

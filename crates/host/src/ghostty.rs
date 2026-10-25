@@ -5,7 +5,7 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::{ExitStatus, Stdio};
 use std::time::Duration;
-use std::{fs, io};
+use std::io;
 
 use tokio::io::AsyncReadExt;
 use tokio::process::Command;
@@ -22,8 +22,8 @@ pub struct Ghostty {
     pub bin: PathBuf,
     pub version: String,
     pub platform: Platform,
-    /// Ghostty's bundled resources, such as `themes/`, when found.
-    pub resources_dir: Option<PathBuf>,
+    /// The folder of Ghostty's bundled themes, when it has one.
+    pub bundled_themes_dir: Option<PathBuf>,
     /// The main config the designer edits: the file Ghostty opens for
     /// editing, chosen at startup.
     pub config_path: PathBuf,
@@ -44,9 +44,16 @@ pub async fn detect(env: &Env) -> Result<Ghostty, String> {
     let config_path = env.config_to_write();
     env.check_config_override(&config_path)?;
 
-    let result = run(env, &bin, ["+version"], COMMAND_TIMEOUT)
-        .await
-        .map_err(|error| format!("cannot run {}: {error}", bin.display()))?;
+    let (result, themes) = tokio::join!(
+        run(env, &bin, ["+version"], COMMAND_TIMEOUT),
+        run(
+            env,
+            &bin,
+            ["+list-themes", "--path", "--plain"],
+            COMMAND_TIMEOUT
+        )
+    );
+    let result = result.map_err(|error| format!("cannot run {}: {error}", bin.display()))?;
     let version = parse_version(&result.stdout).ok_or_else(|| {
         format!(
             "cannot read the version of {}: {}",
@@ -58,7 +65,9 @@ pub async fn detect(env: &Env) -> Result<Ghostty, String> {
     Ok(Ghostty {
         version: version.to_owned(),
         platform: env.platform,
-        resources_dir: resources_dir(env, &bin),
+        bundled_themes_dir: themes
+            .ok()
+            .and_then(|themes| bundled_themes_dir(&themes.stdout)),
         preview_path: config_path.with_file_name(PREVIEW_FILE_NAME),
         config_path,
         user_themes_dir: env.user_themes_dir(),
@@ -92,33 +101,13 @@ async fn find_binary(env: &Env) -> Result<PathBuf, String> {
         .ok_or_else(|| "Ghostty is not installed".to_owned())
 }
 
-/// Ghostty's lookup order and sentinels: os/resourcesdir.zig:40-99.
-fn resources_dir(env: &Env, bin: &Path) -> Option<PathBuf> {
-    if let Some(dir) = &env.resources_dir {
-        return Some(dir.clone());
-    }
-    let (sentinels, bases): (&[&str], &[&str]) = match env.platform {
-        Platform::Macos => (
-            &["terminfo/78/xterm-ghostty"],
-            &["Contents/Resources", "share"],
-        ),
-        Platform::Linux => (
-            &["terminfo/g/ghostty", "terminfo/x/xterm-ghostty"],
-            &["share"],
-        ),
-    };
-    // Ghostty starts from its own executable's real path, and checks `/` too.
-    let bin = fs::canonicalize(bin).ok()?;
-    bin.ancestors().skip(1).find_map(|dir| {
-        bases
-            .iter()
-            .map(|base| dir.join(base))
-            .find(|base| {
-                sentinels
-                    .iter()
-                    .any(|sentinel| base.join(sentinel).exists())
-            })
-            .map(|base| base.join("ghostty"))
+/// Ghostty finds its own resources, so the designer asks it instead of
+/// repeating the lookup. A line of `+list-themes --path --plain`:
+/// `0x96f (resources) /usr/share/ghostty/themes/0x96f`.
+fn bundled_themes_dir(output: &str) -> Option<PathBuf> {
+    output.lines().find_map(|line| {
+        let (_, path) = line.split_once(" (resources) ")?;
+        Path::new(path).parent().map(Path::to_owned)
     })
 }
 
@@ -355,37 +344,6 @@ mod tests {
 
         t.env.child_env.pop();
         find_binary(&t.env).await.unwrap_err();
-    }
-
-    #[test]
-    fn finds_resources_by_ghostty_sentinels() {
-        let mut t = TestEnv::default();
-        let touch = |path: &str| {
-            let path = t.root.join(path);
-            fs::create_dir_all(path.parent().unwrap()).unwrap();
-            fs::write(&path, "").unwrap();
-            path
-        };
-        let app = touch("Ghostty.app/Contents/MacOS/ghostty");
-        touch("Ghostty.app/Contents/Resources/terminfo/78/xterm-ghostty");
-        let prefix = touch("usr/bin/ghostty");
-        touch("usr/share/terminfo/x/xterm-ghostty");
-        let link = t.root.join("bin/ghostty");
-        fs::create_dir_all(link.parent().unwrap()).unwrap();
-        std::os::unix::fs::symlink(&prefix, &link).unwrap();
-
-        t.env.platform = Platform::Macos;
-        let resources = t.root.join("Ghostty.app/Contents/Resources/ghostty");
-        assert_eq!(resources_dir(&t.env, &app), Some(resources));
-
-        t.env.platform = Platform::Linux;
-        let share = t.root.join("usr/share/ghostty");
-        assert_eq!(resources_dir(&t.env, &link), Some(share));
-        // App bundles count only on macOS.
-        assert_eq!(resources_dir(&t.env, &app), None);
-
-        t.env.resources_dir = Some("/elsewhere".into());
-        assert_eq!(resources_dir(&t.env, &app), Some("/elsewhere".into()));
     }
 
     #[test]
