@@ -1,11 +1,11 @@
 //! The installed Ghostty: detection, CLI actions, instances and reloads.
 
 use std::ffi::OsStr;
+use std::io;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::{ExitStatus, Stdio};
 use std::time::Duration;
-use std::io;
 
 use tokio::io::AsyncReadExt;
 use tokio::process::Command;
