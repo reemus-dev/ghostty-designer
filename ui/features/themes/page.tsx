@@ -7,7 +7,7 @@ import {MD, useMediaQuery} from "@/lib/media";
  * Themes' body: the filter row, which sticks while the content scrolls at a
  * readable width unless its wrapped rows would crowd a narrow window, and the
  * detail of the focused card. The detail is a side panel when wide, and a sheet
- * behind a button that names the card when narrow.
+ * behind a bar docked under the cards that names the card when narrow.
  */
 export function Page(props: {
   filter: ReactNode;
@@ -32,17 +32,15 @@ export function Page(props: {
         </div>
         {!wide && (
           <Sheet>
-            <div className="pointer-events-none sticky bottom-4 flex justify-end px-4">
-              <SheetTrigger
-                aria-label={`${focused} details`}
-                className="pointer-events-auto flex h-8 max-w-full items-center gap-2 rounded-full bg-popover px-3 popup hover:bg-accent">
-                <span className="truncate">{focused}</span>
-                <PanelRightOpenIcon
-                  aria-hidden
-                  className="size-4 shrink-0 text-muted-foreground"
-                />
-              </SheetTrigger>
-            </div>
+            <SheetTrigger
+              aria-label={`${focused} details`}
+              className="sticky bottom-0 flex h-12 w-full items-center gap-3 border-t bg-card/95 px-4 backdrop-blur-sm hover:bg-accent sm:px-8">
+              <span className="min-w-0 truncate font-medium">{focused}</span>
+              <span className="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
+                Details
+                <PanelRightOpenIcon aria-hidden className="size-4" />
+              </span>
+            </SheetTrigger>
             <SheetContent
               aria-label={`${focused} details`}
               className="gap-5 p-6 pt-12">
