@@ -32,10 +32,11 @@ the Ghostty project.
 > [!NOTE]
 > `ghostty-designer` runs on macOS and Linux, on arm64 and x86_64. It is tested with Ghostty 1.3.1.
 
-On Linux it needs glibc 2.34 or later (Ubuntu 22.04, Debian 12, Fedora 35), GTK
-3 and WebKitGTK 4.1. The `.deb` and `.rpm` packages install them.
+It needs macOS 15 or later. On Linux it needs glibc 2.34 or later (Ubuntu 22.04,
+Debian 12, Fedora 35), GTK 3 and WebKitGTK 4.1. The `.deb` and `.rpm` packages
+install them.
 
-### Homebrew
+### Homebrew (macOS)
 
 ```sh
 brew install reemus-dev/tap/ghostty-designer

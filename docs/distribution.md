@@ -94,8 +94,9 @@ launches: no prompt ever. Desktop launches still prompt as Ghostty Designer.
   responsible.
 - `LSUIElement`: not wanted. It would hide the Dock icon and the menu bar of a
   regular window app.
-- `LSMinimumSystemVersion`: Tauri writes `10.13`. Set the real minimum at
-  release.
+- `LSMinimumSystemVersion`: `15.0`, from `bundle.macOS.minimumSystemVersion`.
+  Tauri also compiles with it as `MACOSX_DEPLOYMENT_TARGET`. macOS 15 is the
+  oldest release Apple still updates, and the one CI runs on.
 - A Developer ID build with the hardened runtime should also carry the
   `com.apple.security.automation.apple-events` entitlement. Whether it is needed
   when the sender is `osascript` is unverified.
@@ -125,10 +126,24 @@ failure.
   re-signs ad hoc only binaries it patches during relocation. A binary that
   links only system libraries should not be patched, but release work should
   confirm with `codesign -dv` after `brew install`.
+- mise does not quarantine its downloads either.
 - Manual downloads and casks are quarantined. An unnotarized app is then blocked
   until the user allows it in System Settings → Privacy & Security, because
   macOS 15 removed the Control-click bypass. A clean experience needs a
   Developer ID signature and notarization (Apple Developer Program).
+
+### mise
+
+`mise use github:reemus-dev/ghostty-designer` installs the formula's archive.
+When an archive holds an app, mise's GitHub backend puts
+`<name>.app/Contents/MacOS` on `PATH` (`discover_bin_paths` in
+`src/backend/github.rs`). The binary then runs from inside the bundle, as it
+does through the exec script.
+
+mise strips an archive's single top-level folder, which would drop the `.app`
+name. The archive holds `LICENSE` beside the app to prevent that.
+
+Unverified until the first release: the Dock name of a mise install.
 
 ## Linux
 
@@ -213,14 +228,41 @@ Without GTK either, the first missing library is `libgdk-3.so.0`.
 
 ### Package metadata
 
-- The bundler names the files `Ghostty Designer_<version>_arm64.deb` and
-  `Ghostty Designer-<version>-1.aarch64.rpm`, and the desktop entry
-  `Ghostty Designer.desktop`. Rename the release files.
-- Description is `(none)`, Maintainer is `reemus` and `Categories=` is empty:
-  set `shortDescription`, `longDescription`, `publisher`, `homepage`, `license`
-  and `category`.
+- `tauri.conf.json` sets the descriptions, publisher (the Debian Maintainer),
+  homepage, license and category (`Development;` in the desktop entry).
+- The package name is `ghostty-designer`, but the bundler names the files after
+  the product, `Ghostty Designer_<version>_arm64.deb`. `scripts/release.sh`
+  renames them to `ghostty-designer_<version>_arm64.deb`.
 - Links open with `xdg-open`, which no package declares. Desktop installs ship
   it.
+
+## Releases
+
+The workspace version in `Cargo.toml` is the release version. To release:
+
+1. Set `version` in `[workspace.package]`, run `cargo check` to update
+   `Cargo.lock`, and commit.
+2. Tag the commit `v<version>` and push the tag.
+
+`.github/workflows/release.yml` runs CI, builds each target on its own runner,
+and publishes the GitHub release with `checksums.txt`. It fails before
+publishing if the tag does not match the version. It then writes
+`Formula/ghostty-designer.rb` to `reemus-dev/homebrew-tap`, through the
+`HOMEBREW_TAP_DEPLOY_KEY` secret: the private half of a deploy key with write
+access to the tap. A manual run of the workflow builds the same files as
+workflow artifacts and publishes nothing.
+
+| Runner             | Target                      | Files                                                 |
+| ------------------ | --------------------------- | ----------------------------------------------------- |
+| `macos-15`         | `aarch64-apple-darwin`      | `_darwin_arm64.tar.gz`                                |
+| `macos-15`         | `x86_64-apple-darwin`       | `_darwin_x86_64.tar.gz`                               |
+| `ubuntu-22.04`     | `x86_64-unknown-linux-gnu`  | `_linux_x86_64.tar.gz`, `_amd64.deb`, `-1.x86_64.rpm` |
+| `ubuntu-22.04-arm` | `aarch64-unknown-linux-gnu` | `_linux_arm64.tar.gz`, `_arm64.deb`, `-1.aarch64.rpm` |
+
+Every file name starts with `ghostty-designer_<version>`, or
+`ghostty-designer-<version>` for the RPMs. Each archive holds the app (macOS) or
+the binary (Linux), and `LICENSE`. `mise run release:build [target]` builds one
+row on this machine.
 
 ## Open questions
 
@@ -230,10 +272,9 @@ Without GTK either, the first missing library is `libgdk-3.so.0`.
    API, and with ad-hoc signing a new prompt after every upgrade)? The manual
    check above decides most of it.
 2. Developer ID signing and notarization: needed before manual downloads or a
-   cask, and for consent that survives upgrades.
+   cask, and for consent that survives upgrades. Waits for the Apple Developer
+   account. Tauri signs and notarizes when the `APPLE_*` signing variables are
+   set, so it needs secrets passed to the macOS build step and a new
+   `signingIdentity`, not a new pipeline.
 3. Spotlight and Launchpad: the formula's bundle lives in the Homebrew prefix.
    Offer a caveat to link it into `~/Applications`, or ship a cask as well?
-4. `mise use github:reemus-dev/ghostty-designer` expects a bare binary in the
-   archive. Keep mise as an install route on macOS once the archive holds a
-   bundle?
-5. The minimum macOS version for `LSMinimumSystemVersion`.

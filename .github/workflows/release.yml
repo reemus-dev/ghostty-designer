@@ -1,0 +1,130 @@
+name: Release
+
+# A version tag publishes the release and updates the Homebrew tap. A manual
+# run builds the release files as workflow artifacts and publishes nothing.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  build:
+    needs: verify
+    strategy:
+      matrix:
+        include:
+          - runner: macos-15
+            target: aarch64-apple-darwin
+          - runner: macos-15
+            target: x86_64-apple-darwin
+          # Ubuntu 22.04 sets the glibc floor.
+          - runner: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+          - runner: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6.1.0
+        with:
+          persist-credentials: false
+
+      - uses: jdx/mise-action@v4.3.0
+        with:
+          version: 2026.10.13
+          cache: true
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev
+
+      - name: Install dependencies
+        run: mise run install
+
+      - name: Build the release files
+        run: mise run release:build ${{ matrix.target }}
+
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: ${{ matrix.target }}
+          path: dist/release/*
+          if-no-files-found: error
+
+  publish:
+    if: github.ref_type == 'tag'
+    needs: build
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6.1.0
+        with:
+          persist-credentials: false
+
+      - uses: jdx/mise-action@v4.3.0
+        with:
+          version: 2026.10.13
+          cache: true
+
+      - name: Check the tag names the crate version
+        run: |
+          version=$(cargo pkgid -p ghostty-designer)
+          version=${version##*@}
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the crate version $version"
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          path: dist/release
+          merge-multiple: true
+
+      - name: Write checksums
+        working-directory: dist/release
+        run: sha256sum -- * >checksums.txt
+
+      - name: Write the Homebrew formula
+        run: mise run release:formula >"$RUNNER_TEMP/ghostty-designer.rb"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/release/* \
+            --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+
+      - name: Update Homebrew tap
+        env:
+          TAP_DEPLOY_KEY: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
+        run: |
+          if [ -z "$TAP_DEPLOY_KEY" ]; then
+            echo "::warning::HOMEBREW_TAP_DEPLOY_KEY is not set, so the tap was not updated"
+            exit 0
+          fi
+          key="$RUNNER_TEMP/tap_key"
+          printf '%s\n' "$TAP_DEPLOY_KEY" >"$key"
+          chmod 600 "$key"
+          export GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+          git clone --depth 1 git@github.com:reemus-dev/homebrew-tap.git "$RUNNER_TEMP/tap"
+          cp "$RUNNER_TEMP/ghostty-designer.rb" "$RUNNER_TEMP/tap/Formula/ghostty-designer.rb"
+          cd "$RUNNER_TEMP/tap"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/ghostty-designer.rb
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "ghostty-designer ${GITHUB_REF_NAME#v}"
+          git push

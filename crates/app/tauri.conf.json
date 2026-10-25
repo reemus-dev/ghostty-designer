@@ -13,6 +13,12 @@
     }
   },
   "bundle": {
+    "shortDescription": "Design Ghostty's appearance, with your own Ghostty windows as the live preview",
+    "longDescription": "Design Ghostty's appearance in a control panel window: themes, colours, fonts, cursor and window options. Every change shows in your own Ghostty windows at once, and reaches your config only when you save. An unofficial community tool, not affiliated with the Ghostty project.",
+    "publisher": "Reemus Pty Ltd",
+    "homepage": "https://github.com/reemus-dev/ghostty-designer",
+    "license": "MIT",
+    "category": "DeveloperTool",
     "icon": [
       "icons/512x512.png",
       "icons/32x32.png",
@@ -21,7 +27,7 @@
       "icons/256x256.png",
       "icons/icon.icns"
     ],
-    "macOS": {"signingIdentity": "-"},
+    "macOS": {"signingIdentity": "-", "minimumSystemVersion": "15.0"},
     "linux": {
       "deb": {"depends": ["procps", "fontconfig"]},
       "rpm": {"depends": ["/usr/bin/pgrep", "/usr/bin/fc-list"]}

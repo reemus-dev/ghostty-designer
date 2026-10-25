@@ -32,6 +32,17 @@ description = "Launch the Linux window under Xvfb in a sandbox and close it with
 depends = ["ui:build"]
 run = "scripts/smoke-linux.sh"
 
+# ── Release ─────────────────────────────────────────────────────────────────
+
+[tasks."release:build"]
+description = "Build the release files for this machine, or for a target triple, into dist/release"
+depends = ["ui:build"]
+run = "scripts/release.sh build"
+
+[tasks."release:formula"]
+description = "Print the Homebrew formula for the macOS archives in dist/release/checksums.txt"
+run = "scripts/release.sh formula"
+
 # ── UI bundle ───────────────────────────────────────────────────────────────
 
 [tasks."ui:build"]
