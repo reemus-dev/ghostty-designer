@@ -183,7 +183,7 @@ export function CommitInput(props: CommitInputProps) {
       size="icon-xs"
       tabIndex={-1}
       aria-label={by > 0 ? "Step up" : "Step down"}
-      className="mx-px size-5 text-muted-foreground hover:text-foreground"
+      className="size-7 text-muted-foreground hover:text-foreground"
       onPointerUp={() => setHeld(0)}
       onPointerLeave={() => setHeld(0)}
       onPointerCancel={() => setHeld(0)}
