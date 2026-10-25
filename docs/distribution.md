@@ -149,9 +149,9 @@ Unverified until the first release: the Dock name of a mise install.
 
 ### glibc floor
 
-Built in an `ubuntu:22.04` container (glibc 2.35, arm64). The highest symbol
-version the binary needs is `GLIBC_2.34`, so it runs on Ubuntu 22.04+, Debian
-12+, Fedora 35+ and RHEL 9+. The x86_64 build was not measured.
+Built on Ubuntu 22.04 (glibc 2.35), the release runners' image, for arm64 and
+x86_64. The highest symbol version either binary needs is `GLIBC_2.34`, so it
+runs on Ubuntu 22.04+, Debian 12+, Fedora 35+ and RHEL 9+.
 
 `DT_NEEDED`, in order:
 
