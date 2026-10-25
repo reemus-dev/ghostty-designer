@@ -1,5 +1,4 @@
 import {type ReactNode, useMemo, useRef} from "react";
-import {flushSync} from "react-dom";
 import {MoonIcon, SearchIcon, SunIcon} from "lucide-react";
 import {Autocomplete} from "@base-ui/react/autocomplete";
 import {Dialog} from "@base-ui/react/dialog";
@@ -20,7 +19,6 @@ import {
   send,
   setPaletteOpen,
   setSaveOpen,
-  setSetupLater,
   stepHistory,
   togglePin,
   useStore,
@@ -89,16 +87,6 @@ function actionItems(state: SessionState, pin: Pin): Item[] {
       run: revertAll,
     });
   }
-  if (!state.previewInstalled) {
-    actions.unshift({
-      value: "action:install",
-      label: "Enable live preview…",
-      run: () => {
-        flushSync(() => setSetupLater(false));
-        return document.querySelector<HTMLElement>("#setup-enable");
-      },
-    });
-  }
   const pair = state.themePair;
   if (pair && pair.light !== pair.dark) {
     const other = state.appearance === "dark" ? "light" : "dark";
@@ -108,6 +96,14 @@ function actionItems(state: SessionState, pin: Pin): Item[] {
       run: () => void send({type: "appearance", appearance: other}),
     });
   }
+  actions.push({
+    value: "action:live-preview",
+    label: "Live preview",
+    hint: state.livePreview ? (
+      <span className="text-xs text-muted-foreground">On</span>
+    ) : undefined,
+    run: () => void send({type: "live-preview", on: !state.livePreview}),
+  });
   if (pin !== "unsupported") {
     actions.push({
       value: "action:pin",

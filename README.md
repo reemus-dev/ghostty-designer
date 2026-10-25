@@ -102,7 +102,8 @@ step. Press ⌘K to find any setting.
 On first run, the panel asks to add an include line to the end of your config,
 which turns on the live preview. From then on every change shows in your Ghostty
 windows as you make it. Nothing else is written until you choose **Save to
-config…**, review the exact changes and confirm.
+config…**, review the exact changes and confirm. Click the live status in the
+toolbar to turn the live preview off or on. The designer remembers your choice.
 
 Running `ghostty-designer` again while it runs brings its window to the front.
 
@@ -187,8 +188,8 @@ the panel warns when that hides a change.
 
 | What                                       | When                                                                    | Undo                                                  |
 | ------------------------------------------ | ----------------------------------------------------------------------- | ----------------------------------------------------- |
-| The preview file                           | On start, and on every change while the designer runs                   | Stop the designer, or delete the file                 |
-| Two lines at the end of your config        | When you click **Enable live preview** on first run                     | **Restore original config…**, or delete the two lines |
+| The preview file                           | On start, and on every change while live preview is on                  | Stop the designer, or delete the file                 |
+| Two lines at the end of your config        | When you click **Enable live preview**                                  | **Restore original config…**, or delete the two lines |
 | The changed lines in your config           | When you confirm **Save**                                               | **Restore original config…**, or the previous copy    |
 | A theme file in `~/.config/ghostty/themes` | When you save colours as a theme, or tick the backup option when saving | Delete the file. A theme never replaces another file. |
 

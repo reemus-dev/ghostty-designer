@@ -1,5 +1,6 @@
 import {useSyncExternalStore} from "react";
 import {errorText} from "@/core/errors";
+import {isLive} from "@/core/preview";
 import {type Session, startSession} from "@/core/session";
 import type {
   Intent,
@@ -47,8 +48,6 @@ type Store = {
   saveOpen: boolean;
   /** The open "Save as theme" dialog: what it saves, and the name it suggests. */
   saveTheme: {source: SaveThemeSource; name: string} | null;
-  /** "Not now" on the setup card: the views show while live preview is off. */
-  setupLater: boolean;
   /** The colour in Customise's editor. */
   color: SlotId;
   /** The theme in Themes' detail panel. */
@@ -68,7 +67,6 @@ const current: {store: Store; session?: Session} = {
     paletteOpen: false,
     saveOpen: false,
     saveTheme: null,
-    setupLater: false,
     color: "background",
     theme: null,
     themeFilters: NO_FILTERS,
@@ -289,10 +287,11 @@ const peek = {on: false};
 
 /**
  * Compare with saved: Ghostty shows the saved config while on (the `pause`
- * intent).
+ * intent). Without live preview, Ghostty shows it already.
  */
 export function setPeek(on: boolean) {
-  if (on === peek.on) return;
+  const state = current.store.snapshot?.state;
+  if (on === peek.on || (on && (!state || !isLive(state)))) return;
   peek.on = on;
   void send({type: "pause", paused: on});
 }
@@ -352,12 +351,11 @@ export function togglePin() {
     .catch((error: unknown) => notify(errorText(error), "error"));
 }
 
-/** Hides the setup card for now, or shows it again with false. */
-export const setSetupLater = (setupLater: boolean) => update({setupLater});
-
 /**
- * The setup card shows in place of the views: live preview is off and not put
- * off.
+ * The setup card shows in place of the views while the user wants live preview
+ * and its include is not installed.
  */
-export const showsSetup = (store: Store) =>
-  !store.snapshot?.state.previewInstalled && !store.setupLater;
+export const showsSetup = (store: Store) => {
+  const state = store.snapshot?.state;
+  return state !== undefined && state.livePreview && !state.previewInstalled;
+};

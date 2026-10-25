@@ -1,8 +1,11 @@
-import type {ReactNode} from "react";
+import {useRef, useState} from "react";
 import {cn} from "cn";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import {Button} from "@/components/ui/button";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Switch} from "@/components/ui/switch";
+import {isLive} from "@/core/preview";
 import type {OptionMeta, SessionState} from "@/core/types";
-import {setSetupLater, useSnapshot} from "@/lib/store";
+import {send, useSnapshot} from "@/lib/store";
 import {NOT_SHOWING_TEXT, revealOption} from "@/lib/views";
 
 type Status = {
@@ -10,8 +13,8 @@ type Status = {
   dot: string;
   warn?: boolean;
   detail: string;
-  /** What a click does: makes the status a button. */
-  action?: () => void;
+  /** A button in the popover. `run` returns the element to focus. */
+  action?: {label: string; run: () => HTMLElement | null};
 };
 
 const DOT = {
@@ -21,13 +24,11 @@ const DOT = {
 };
 
 function liveStatus(state: SessionState, options: OptionMeta[]): Status {
-  if (!state.previewInstalled) {
+  if (!isLive(state)) {
     return {
       label: "Live preview off",
       dot: DOT.off,
-      detail:
-        "Ghostty updates only when you save. Click to turn on live preview.",
-      action: () => setSetupLater(false),
+      detail: "Ghostty updates only when you save.",
     };
   }
   if (state.apply.state === "paused") {
@@ -54,8 +55,8 @@ function liveStatus(state: SessionState, options: OptionMeta[]): Status {
       label: `Ghostty didn't accept ${label}`,
       dot: DOT.warn,
       warn: true,
-      detail: `${error}\nYour other changes show in Ghostty. Click to go to the setting.`,
-      action: () => revealOption(key)?.focus({preventScroll: true}),
+      detail: `${error}\nYour other changes show in Ghostty.`,
+      action: {label: `Go to ${label}`, run: () => revealOption(key)},
     };
   }
   if (state.previewShadowed) {
@@ -89,78 +90,70 @@ function useLiveStatus() {
   return liveStatus(state, options);
 }
 
-/** Whether Ghostty shows the changes now, as a dot. Its words show on hover. */
-export function LiveDot() {
-  const status = useLiveStatus();
-  return (
-    <StatusTrigger
-      status={status}
-      side="right"
-      aria-label={status.label}
-      tip={
-        <span className="flex flex-col gap-0.5">
-          <span className="font-medium">{status.label}</span>
-          <span className="text-muted-foreground">{status.detail}</span>
-        </span>
-      }
-      className="size-8 justify-center rounded-lg">
-      <Dot status={status} />
-    </StatusTrigger>
-  );
-}
-
 /**
- * The status in words while it needs the user: Ghostty didn't accept a value,
- * another file overrides the preview, or live preview is off.
+ * Whether Ghostty shows the changes now: a dot, with its words in a wide
+ * window. A click opens the details, the status's action and the live preview
+ * switch. Turning it on shows the setup card when the include is missing.
  */
-export function LiveAlert() {
+export function LiveStatus() {
   const status = useLiveStatus();
-  if (!status.warn && !status.action) return null;
-  return (
-    <StatusTrigger
-      status={status}
-      side="bottom"
-      tip={status.detail}
-      className="h-7 min-w-0 shrink gap-2 rounded-full px-2 text-sm">
-      <Dot status={status} />
-      <span className="truncate max-lg:sr-only">{status.label}</span>
-    </StatusTrigger>
-  );
-}
+  const livePreview = useSnapshot((snapshot) => snapshot.state.livePreview);
+  const [open, setOpen] = useState(false);
+  /** The action's focus target, or null when the popover closed without one. */
+  const chosen = useRef<HTMLElement | null>(null);
 
-function StatusTrigger(props: {
-  status: Status;
-  side: "right" | "bottom";
-  tip: ReactNode;
-  className: string;
-  "aria-label"?: string;
-  children: ReactNode;
-}) {
-  const {status, side, tip, className, children} = props;
-  const {action} = status;
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          action ? (
-            <button type="button" onClick={action} />
-          ) : (
-            <span role="status" tabIndex={0} />
-          )
-        }
-        aria-label={props["aria-label"]}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
         className={cn(
-          "flex shrink-0 items-center whitespace-nowrap text-muted-foreground",
+          "flex h-7 min-w-0 shrink items-center gap-2 rounded-full px-2 text-sm whitespace-nowrap text-muted-foreground hover:bg-accent",
           status.warn && "text-warn",
-          action && "hover:bg-accent",
-          className,
         )}>
-        {children}
-      </TooltipTrigger>
-      <TooltipContent side={side} className="max-w-sm whitespace-pre-wrap">
-        {tip}
-      </TooltipContent>
-    </Tooltip>
+        <Dot status={status} />
+        <span className="truncate max-lg:sr-only">{status.label}</span>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        className="w-80"
+        finalFocus={() => {
+          const target = chosen.current;
+          chosen.current = null;
+          return target ?? true;
+        }}>
+        <div className="flex flex-col gap-1 px-1">
+          <span
+            className={cn(
+              "flex items-center gap-2 font-medium",
+              status.warn && "text-warn",
+            )}>
+            <Dot status={status} />
+            {status.label}
+          </span>
+          <p className="whitespace-pre-wrap text-muted-foreground">
+            {status.detail}
+          </p>
+        </div>
+        {status.action && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="self-start"
+            onClick={() => {
+              chosen.current = status.action!.run();
+              setOpen(false);
+            }}>
+            {status.action.label}
+          </Button>
+        )}
+        <label className="flex items-center justify-between gap-3 border-t px-1 pt-2.5 font-medium">
+          Live preview
+          <Switch
+            checked={livePreview}
+            onCheckedChange={(on) => void send({type: "live-preview", on})}
+          />
+        </label>
+      </PopoverContent>
+    </Popover>
   );
 }
 

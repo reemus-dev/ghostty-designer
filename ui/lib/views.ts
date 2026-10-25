@@ -5,10 +5,8 @@ import {
   clearThemeFilters,
   getStore,
   setColor,
-  setSetupLater,
   setTheme,
   setView,
-  showsSetup,
 } from "./store";
 
 export const VIEWS = ["customise", "themes"] as const;
@@ -22,24 +20,19 @@ export const VIEW_LABEL: Record<View, string> = {
 
 /** Why the draft does not show, in the views' words. */
 export const NOT_SHOWING_TEXT: Record<NotShowing, string> = {
-  "not-installed": "Shows in Ghostty after you save",
+  off: "Shows in Ghostty after you save",
   paused: "Ghostty shows your saved config",
   rejected: "Ghostty didn't accept this",
   shadowed: "Partly hidden",
 };
 
 /**
- * Shows a view, putting off the setup card if it shows. It renders before this
- * returns, so callers can scroll to and focus elements in it.
+ * Shows a view. It renders before this returns, so callers can scroll to and
+ * focus elements in it.
  */
 export function showView(view: View) {
-  const store = getStore();
-  const setup = showsSetup(store);
-  if (!setup && store.view === view) return;
-  flushSync(() => {
-    if (setup) setSetupLater(true);
-    setView(view);
-  });
+  if (getStore().view === view) return;
+  flushSync(() => setView(view));
 }
 
 /**

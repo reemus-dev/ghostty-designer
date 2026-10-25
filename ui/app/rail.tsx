@@ -13,7 +13,7 @@ import {Kbd} from "@/components/ui/kbd";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {SECTION_TITLE, type SectionId} from "@/lib/customise";
 import {ALT} from "@/lib/keys";
-import {type Pin, showsSetup, togglePin, useStore} from "@/lib/store";
+import {type Pin, togglePin, useStore} from "@/lib/store";
 import {
   revealSection,
   showView,
@@ -21,7 +21,6 @@ import {
   VIEW_LABEL,
   VIEWS,
 } from "@/lib/views";
-import {LiveDot} from "./live-status";
 
 const VIEW_ICON: Record<View, LucideIcon> = {
   customise: SlidersHorizontalIcon,
@@ -37,20 +36,18 @@ const SECTIONS = [
 
 /**
  * The views (Alt 1, Alt 2), Customise's sections with the one in view marked,
- * the pin and the live status. Each shows its name on hover.
+ * and the pin. Each shows its name on hover.
  */
 export function Rail() {
-  const setup = useStore(showsSetup);
   const view = useStore((store) => store.view);
   return (
     <div
       data-tauri-drag-region="deep"
       className="flex min-h-0 flex-col items-center gap-3 pb-3 select-none">
-      {!setup && <ViewSwitch view={view} />}
-      {!setup && view === "customise" && <Sections />}
-      <div className="mt-auto flex flex-col items-center gap-1">
+      <ViewSwitch view={view} />
+      {view === "customise" && <Sections />}
+      <div className="mt-auto">
         <PinToggle />
-        <LiveDot />
       </div>
     </div>
   );

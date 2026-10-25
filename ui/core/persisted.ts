@@ -6,6 +6,8 @@ export type Persisted = {
   favorites: string[];
   recentThemes: string[];
   reference: string | null;
+  /** False once the user turns live preview off, or puts its setup off. */
+  livePreview: boolean;
 };
 
 const isStrings = (value: unknown): value is string[] =>
@@ -24,11 +26,12 @@ export function readPersisted(text: string | null): Persisted {
   }
   const fields: Record<string, unknown> =
     typeof read === "object" && read !== null ? {...read} : {};
-  const {favorites, recentThemes, reference} = fields;
+  const {favorites, recentThemes, reference, livePreview} = fields;
   return {
     favorites: isStrings(favorites) ? favorites : [],
     recentThemes: isStrings(recentThemes) ? recentThemes : [],
     reference: typeof reference === "string" ? reference : null,
+    livePreview: typeof livePreview === "boolean" ? livePreview : true,
   };
 }
 

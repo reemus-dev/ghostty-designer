@@ -1,4 +1,5 @@
 import {Activity} from "react";
+import {cn} from "cn";
 import {TooltipProvider} from "@/components/ui/tooltip";
 import {ThemesView} from "@/features/themes";
 import {showsSetup, useStore} from "@/lib/store";
@@ -35,8 +36,9 @@ export function App() {
 
 /**
  * The app shell: the toolbar across the top and the rail down the left, on one
- * surface that meets the content at a rounded corner. The content shows the two
- * views or the live preview setup. Both views stay mounted, also behind the
+ * surface that meets the content at a rounded corner. The live preview setup
+ * takes the whole window instead, under a bare title bar, because none of the
+ * controls act before it is answered. Both views stay mounted, also behind the
  * setup, so each keeps its scroll and its own state, such as the font search.
  */
 function Shell() {
@@ -45,12 +47,26 @@ function Shell() {
   const setup = useStore(showsSetup);
 
   return (
-    <div className="grid h-full grid-cols-[56px_minmax(0,1fr)] grid-rows-[48px_minmax(0,1fr)] bg-card">
-      <TooltipProvider delay={50}>
-        <Toolbar />
-        <Rail />
-      </TooltipProvider>
-      <main className="relative flex min-h-0 flex-col overflow-hidden rounded-tl-xl bg-background after:pointer-events-none after:absolute after:inset-0 after:z-30 after:rounded-tl-xl after:shadow-[inset_1px_1px_0_var(--color-border)]">
+    <div
+      className={cn(
+        "grid h-full grid-cols-[56px_minmax(0,1fr)] grid-rows-[48px_minmax(0,1fr)]",
+        setup ? "bg-background" : "bg-card",
+      )}>
+      {setup ? (
+        <header data-tauri-drag-region="deep" className="col-span-2" />
+      ) : (
+        <TooltipProvider delay={50}>
+          <Toolbar />
+          <Rail />
+        </TooltipProvider>
+      )}
+      <main
+        className={cn(
+          "relative flex min-h-0 flex-col overflow-hidden bg-background",
+          setup
+            ? "col-span-2"
+            : "rounded-tl-xl after:pointer-events-none after:absolute after:inset-0 after:z-30 after:rounded-tl-xl after:shadow-[inset_1px_1px_0_var(--color-border)]",
+        )}>
         <Activity mode={!setup && view === "customise" ? "visible" : "hidden"}>
           <CustomiseView />
         </Activity>

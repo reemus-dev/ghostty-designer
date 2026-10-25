@@ -28,6 +28,7 @@ import {Kbd} from "@/components/ui/kbd";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {errorText} from "@/core/errors";
+import {isLive} from "@/core/preview";
 import {type DraftChange, draftChanges, undoChange} from "@/lib/changes";
 import {MOD, SHIFT_MOD} from "@/lib/keys";
 import {tildePath} from "@/lib/paths";
@@ -43,16 +44,16 @@ import {
   useSnapshot,
 } from "@/lib/store";
 import {ChangeValues} from "./change-values";
-import {LiveAlert} from "./live-status";
+import {LiveStatus} from "./live-status";
 
 /** Shrinks a labelled button to its icon in a narrow window. */
 const NARROW_ICON = "max-lg:w-[30px] max-lg:px-0!";
 
 /**
- * Search, the live status while it needs the user, the unsaved changes and the
- * ways out: compare with saved, discard, undo, redo and save. On macOS it
- * starts after the traffic lights. In a narrow window, buttons show only their
- * icons and the change count drops its words.
+ * Search, the live status, the unsaved changes and the ways out: compare with
+ * saved, discard, undo, redo and save. On macOS it starts after the traffic
+ * lights. In a narrow window, buttons show only their icons, and the live
+ * status and the change count drop their words.
  */
 export function Toolbar() {
   const platform = useSnapshot((snapshot) => snapshot.ghostty.platform);
@@ -71,7 +72,7 @@ export function Toolbar() {
       )}>
       <SearchButton />
       <div className="ml-auto flex min-w-0 items-center gap-1 lg:gap-1.5 lg:pl-3">
-        <LiveAlert />
+        <LiveStatus />
         {dirty ? (
           <ChangeList
             changes={draftChanges(state, options, colorDefaults)}
@@ -84,7 +85,7 @@ export function Toolbar() {
         )}
         {dirty && (
           <>
-            <CompareButton />
+            {isLive(state) && <CompareButton />}
             <Tooltip>
               <TooltipTrigger
                 render={

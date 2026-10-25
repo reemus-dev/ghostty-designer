@@ -6,6 +6,7 @@ import {
   setPaletteOpen,
   setPeek,
   setSaveOpen,
+  showsSetup,
   stepHistory,
 } from "@/lib/store";
 import {showView, VIEWS} from "@/lib/views";
@@ -32,7 +33,8 @@ export function useGlobalKeys() {
 
     // oxlint-disable-next-line complexity -- one handler for every global shortcut, each an early return
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented) return;
+      // The setup takes the window until it is answered.
+      if (event.defaultPrevented || showsSetup(getStore())) return;
       const mod = event.metaKey || event.ctrlKey;
       const key = event.key.toLowerCase();
       const {snapshot, paletteOpen, saveOpen, saveTheme} = getStore();

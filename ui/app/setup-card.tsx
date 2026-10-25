@@ -1,16 +1,17 @@
 import {useMemo, useState} from "react";
-import {ShieldCheckIcon} from "lucide-react";
+import {cn} from "cn";
+import {ArchiveRestoreIcon, ShieldCheckIcon} from "lucide-react";
 import {PaletteDots} from "@/components/palette-dots";
 import {Button} from "@/components/ui/button";
 import {PREVIEW_INCLUDE_LINES} from "@/core/save";
 import {themeColors} from "@/core/theme";
 import {tildePath} from "@/lib/paths";
-import {send, setSetupLater, useSnapshot} from "@/lib/store";
+import {send, useSnapshot} from "@/lib/store";
 
 /**
- * Live preview needs one include line in the config: shown on first run and
- * from the live status. "Not now" still allows changing and saving; Ghostty
- * then updates only on save.
+ * Live preview needs one include line in the config. The card asks for it while
+ * live preview is on without the line: on first run, and when the user turns it
+ * on later. "Not now" turns live preview off, so Ghostty updates only on save.
  */
 export function SetupCard() {
   const configPath = useSnapshot((snapshot) => snapshot.ghostty.configPath);
@@ -28,87 +29,92 @@ export function SetupCard() {
   const summary = match?.exact ? `Theme: ${match.theme}` : "Your own colours";
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:py-10">
+    // Centred in the window, not just under the title bar: the bottom padding
+    // adds the bar's 48px. Auto margins give way to scrolling when it is short.
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-10 pt-5 pb-17">
       <section
         aria-labelledby="setup-title"
-        className="mx-auto flex max-w-[720px] flex-col gap-6 card p-6 sm:p-10 sm:text-lg">
-        <div className="flex items-center gap-3 text-base text-muted-foreground">
-          <PaletteDots
-            colors={colors.palette.slice(0, 8)}
-            className="flex shrink-0 gap-0.5 rounded-md p-1.5 inset-ring inset-ring-border"
-            dotClassName="size-3 rounded-xs"
-            style={{background: colors.background}}
-          />
-          <span>
-            <b className="font-medium text-foreground">Found your config</b>
-            <br />
-            {summary} · {font}
-            {size && `, ${size} pt`}
-          </span>
-        </div>
-
+        className="m-auto flex w-full max-w-[720px] flex-col gap-6 card p-6 sm:p-10 sm:text-lg">
         <div className="flex flex-col gap-3">
           <h1
             id="setup-title"
             className="text-xl leading-tight font-semibold tracking-[-0.02em]">
-            See your changes live in Ghostty
+            Enable live preview
           </h1>
           <p className="text-muted-foreground">
-            To update your open Ghostty windows as you try things, Ghostty
-            Designer adds these lines to the end of your config:
+            See your changes in your open Ghostty windows as you make them. To
+            do this, Ghostty Designer adds these lines to the end of your
+            config:
           </p>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <figure className="overflow-hidden rounded-xl bg-background inset-ring inset-ring-border">
-            <figcaption className="border-b px-4 py-2 font-mono text-sm wrap-anywhere text-muted-foreground">
+        <figure className="overflow-hidden rounded-xl bg-background inset-ring inset-ring-border">
+          <figcaption className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-b px-4 py-2 text-sm text-muted-foreground">
+            <span className="font-mono wrap-anywhere">
               {tildePath(configPath)}
-            </figcaption>
-            <pre className="overflow-x-auto px-4 py-3 font-mono text-sm leading-relaxed">
-              <span className="text-muted-foreground">
-                … end of your config{"\n"}
+            </span>
+            <span className="flex items-center gap-2">
+              <PaletteDots
+                colors={colors.palette.slice(0, 8)}
+                className="flex shrink-0 gap-0.5 rounded-sm p-1 inset-ring inset-ring-border"
+                dotClassName="size-2.5 rounded-[2px]"
+                style={{background: colors.background}}
+              />
+              <span>
+                {summary} · {font}
+                {size && `, ${size} pt`}
               </span>
-              {PREVIEW_INCLUDE_LINES.map((line) => (
-                <span
-                  key={line}
-                  className={
-                    line.startsWith("#")
-                      ? "text-muted-foreground"
-                      : "text-added"
-                  }>
-                  {line}
-                  {"\n"}
-                </span>
-              ))}
-            </pre>
-          </figure>
-          <p className="text-base text-muted-foreground">
-            They point Ghostty at a small file that Ghostty Designer looks
-            after. The <code className="text-foreground">?</code> tells Ghostty
-            to skip that file if it's ever missing, so the lines can't break
-            anything.
+            </span>
+          </figcaption>
+          <pre className="px-4 py-3 font-mono text-sm leading-relaxed wrap-break-word whitespace-pre-wrap">
+            <span className="block text-muted-foreground">
+              … end of your config
+            </span>
+            {PREVIEW_INCLUDE_LINES.map((line) => (
+              <span
+                key={line}
+                className={cn(
+                  "block pl-[2ch] -indent-[2ch]",
+                  line.startsWith("#") ? "text-muted-foreground" : "text-added",
+                )}>
+                {line}
+              </span>
+            ))}
+          </pre>
+        </figure>
+
+        <ul className="flex flex-col gap-3 text-base text-muted-foreground">
+          <li className="flex gap-3">
+            <ShieldCheckIcon aria-hidden className="mt-1 size-4 shrink-0" />
+            <span>
+              They point Ghostty at a small file that Ghostty Designer looks
+              after. The <code className="text-foreground">?</code> tells
+              Ghostty to skip that file if it's ever missing, so the lines can't
+              break anything.
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <ArchiveRestoreIcon aria-hidden className="mt-1 size-4 shrink-0" />
+            <span>
+              A backup of your config is kept first. Remove the lines or restore
+              the original any time.
+            </span>
+          </li>
+        </ul>
+
+        <div className="flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            With “Not now” you can still change and save settings. Ghostty then
+            updates only when you save.
           </p>
-        </div>
-
-        <p className="flex gap-3 text-base text-muted-foreground">
-          <ShieldCheckIcon
-            aria-hidden
-            className="mt-1 size-4 shrink-0 text-muted-foreground"
-          />
-          A backup of your config is kept first. Remove the lines or restore the
-          original any time.
-        </p>
-
-        <div className="flex flex-col gap-3 border-t pt-6">
-          <div className="flex justify-end gap-2">
+          <div className="flex shrink-0 justify-end gap-2">
             <Button
               size="lg"
               variant="ghost"
-              onClick={() => setSetupLater(true)}>
+              onClick={() => void send({type: "live-preview", on: false})}>
               Not now
             </Button>
             <Button
-              id="setup-enable"
               size="lg"
               disabled={busy}
               onClick={() => {
@@ -120,10 +126,6 @@ export function SetupCard() {
               Enable live preview
             </Button>
           </div>
-          <p className="text-right text-base text-muted-foreground">
-            With “Not now” you can still change and save settings. Ghostty then
-            updates only when you save.
-          </p>
         </div>
       </section>
     </div>

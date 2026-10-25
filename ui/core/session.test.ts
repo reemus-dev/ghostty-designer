@@ -264,6 +264,25 @@ describe("the draft", () => {
     expect(fake.calls.previews.at(-1)).toContain("font-size = 20");
   });
 
+  it("previews nothing while live preview is off, and remembers it", async () => {
+    const {fake, state, set, intents} = await setup({
+      config: `font-size = 13\n${INCLUDE}`,
+    });
+    await set("font-size", "20");
+
+    await intents({type: "live-preview", on: false});
+    expect(fake.calls.previews.at(-1)).toBe("");
+    expect(JSON.parse(fake.calls.states.at(-1)!)).toMatchObject({
+      livePreview: false,
+    });
+    await set("font-size", "21");
+    expect(fake.calls.previews.at(-1)).toBe("");
+
+    await intents({type: "live-preview", on: true});
+    expect(fake.calls.previews.at(-1)).toContain("font-size = 21");
+    expect(state().livePreview).toBe(true);
+  });
+
   it("reverts to the system's half of a theme pair", async () => {
     const {state, intents} = await setup({
       config: "theme = light:Light,dark:Dark\n",
@@ -324,6 +343,7 @@ describe("themes", () => {
       favorites: ["Light"],
       recentThemes: state().recentThemes,
       reference: "Light",
+      livePreview: true,
     });
   });
 

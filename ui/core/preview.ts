@@ -59,12 +59,16 @@ export class PreviewCalls {
   }
 }
 
+/** Whether the draft previews in Ghostty: live preview is on and installed. */
+export const isLive = (state: SessionState) =>
+  state.livePreview && state.previewInstalled;
+
 /**
- * Why Ghostty does not show the draft for some keys: the preview include is not
- * installed, Compare with saved pauses it, Ghostty rejected the keys, or a file
- * that loads after the preview sets them too.
+ * Why Ghostty does not show the draft for some keys: live preview is off or its
+ * include is not installed, Compare with saved pauses it, Ghostty rejected the
+ * keys, or a file that loads after the preview sets them too.
  */
-export type NotShowing = "not-installed" | "paused" | "rejected" | "shadowed";
+export type NotShowing = "off" | "paused" | "rejected" | "shadowed";
 
 /**
  * Why Ghostty does not show the draft for these keys now, or null when it does.
@@ -79,7 +83,7 @@ export function whyNotShowing(
     key === "theme" ? draft.theme !== null : Object.hasOwn(draft.values, key),
   );
   if (!touched) return null;
-  if (!state.previewInstalled) return "not-installed";
+  if (!isLive(state)) return "off";
   if (state.apply.state === "paused") return "paused";
   if (state.apply.state === "error") {
     const rejected = state.apply.rejected ?? [];

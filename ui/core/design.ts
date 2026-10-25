@@ -161,7 +161,12 @@ export class Design {
       case "pause": {
         this.paused = intent.paused;
         if (!this.paused) this.show();
-        else if (this.installed()) this.revert();
+        else if (this.live()) this.revert();
+        break;
+      }
+      case "live-preview": {
+        await this.persist({...this.persisted, livePreview: intent.on});
+        this.sync();
         break;
       }
       case "favorite": {
@@ -231,14 +236,14 @@ export class Design {
 
   /**
    * Shows the preview again when what it depends on changed it: its text, or
-   * whether the include loads it. A removed include clears it, so instances
-   * stop showing the draft.
+   * whether it is live. Live preview turned off or a removed include clears it,
+   * so instances stop showing the draft.
    */
   sync() {
     if (!this.started) return;
-    const text = this.installed() ? this.previewText() : "";
+    const text = this.live() ? this.previewText() : "";
     if (text === this.preview.text) return;
-    if (this.installed()) this.show();
+    if (this.live()) this.show();
     else if (!this.paused) this.revert();
   }
 
@@ -269,9 +274,13 @@ export class Design {
     return this.config.include !== "absent";
   }
 
+  /** Ghostty reads the preview file only through the include line. */
+  private live() {
+    return this.persisted.livePreview && this.installed();
+  }
+
   private show() {
-    // Ghostty reads the preview file only through the include line.
-    if (!this.started || this.paused || !this.installed()) return;
+    if (!this.started || this.paused || !this.live()) return;
     const text = this.previewText();
     this.preview.schedule(text, (id) => this.host.previewApply(id, text));
   }

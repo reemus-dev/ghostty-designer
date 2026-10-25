@@ -165,6 +165,11 @@ export type SessionState = {
   recentThemes: string[];
   /** The theme pinned to line up under the user's own colours. */
   reference: string | null;
+  /**
+   * The user's choice to preview live. It shows in Ghostty only with
+   * `previewInstalled`.
+   */
+  livePreview: boolean;
   /** True when a backup of the pre-designer config exists. */
   canRestoreOriginal: boolean;
   /** Running Ghostty instances the preview reloads. */
@@ -242,6 +247,8 @@ export type Intent =
   | {type: "revert"}
   | {type: "appearance"; appearance: Appearance}
   | {type: "pause"; paused: boolean}
+  /** Turns live preview on or off, and remembers the choice. */
+  | {type: "live-preview"; on: boolean}
   | {type: "install-preview"}
   | {type: "favorite"; theme: string; on: boolean}
   /** Pins a theme to line up under the user's own colours, or unpins with null. */

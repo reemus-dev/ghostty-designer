@@ -7,6 +7,7 @@
       "favorites": [],
       "recentThemes": [],
       "reference": null,
+      "livePreview": true,
       "changes": 0,
       "previewInstalled": true,
       "previewShadowed": false,
@@ -1976,7 +1977,7 @@
           "palette = 255=#eeeeee",
           ""
         ],
-        "state/ghostty-designer/state.json": "{\"favorites\":[],\"recentThemes\":[\"light:GitHub Light Default,dark:GitHub Dark Default\"],\"reference\":null}"
+        "state/ghostty-designer/state.json": "{\"favorites\":[],\"recentThemes\":[\"light:GitHub Light Default,dark:GitHub Dark Default\"],\"reference\":null,\"livePreview\":true}"
       }
     },
     {
@@ -3967,7 +3968,7 @@
           "config-file = ?ghostty-designer.conf",
           ""
         ],
-        "state/ghostty-designer/state.json": "{\"favorites\":[],\"recentThemes\":[\"Nord\",\"light:GitHub Light Default,dark:GitHub Dark Default\"],\"reference\":null}",
+        "state/ghostty-designer/state.json": "{\"favorites\":[],\"recentThemes\":[\"Nord\",\"light:GitHub Light Default,dark:GitHub Dark Default\"],\"reference\":null,\"livePreview\":true}",
         "xdg/ghostty/config": [
           "theme = \"Nord\"",
           "font-family = Menlo",
