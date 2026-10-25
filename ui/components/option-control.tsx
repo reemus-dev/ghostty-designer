@@ -52,10 +52,11 @@ type ControlProps = {
 
 /**
  * One catalog option, rendered from its control kind: label with the Ghostty
- * doc in a tooltip, when it applies, the unsaved-change marker, reset, and a
- * control that sends `set` intents (throttled while dragging). Repeatable keys
- * edit their first value and keep the rest. The control wraps under the label
- * when the row is too narrow for both. Rows stack with hairlines between them.
+ * doc in a tooltip, when it applies, the unsaved-change marker that resets it,
+ * and a control that sends `set` intents (throttled while dragging). Repeatable
+ * keys edit their first value and keep the rest. The control wraps under the
+ * label when the row is too narrow for both. Rows stack with hairlines between
+ * them.
  */
 export function OptionControl(props: {option: OptionMeta; className?: string}) {
   const {option, className} = props;
@@ -82,7 +83,7 @@ export function OptionControl(props: {option: OptionMeta; className?: string}) {
 
 /**
  * An option's row around any control: its label and notes on the left, the
- * control and reset on the right.
+ * control on the right.
  */
 export function OptionRow(props: {
   option: OptionMeta;
@@ -95,7 +96,7 @@ export function OptionRow(props: {
     <div
       data-option={option.key}
       className={cn(
-        "flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1.5 py-1.5 not-first:border-t",
+        "group/option flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1.5 py-1.5 not-first:border-t",
         className,
       )}>
       <OptionLabel
@@ -103,11 +104,8 @@ export function OptionRow(props: {
         note={note}
         className="max-w-full min-w-28 flex-1"
       />
-      <div
-        data-option-control
-        className="ml-auto flex shrink-0 items-center gap-1.5">
+      <div data-option-control className="ml-auto shrink-0">
         {children}
-        <OptionReset option={option} />
       </div>
     </div>
   );
@@ -169,7 +167,7 @@ function OptionLabel(props: {
         <span id={helpId} className="sr-only">
           {[option.key, doc, option.reloadNote].filter(Boolean).join(". ")}
         </span>
-        {changed && <ChangedDot />}
+        {changed && <OptionReset option={option} />}
       </span>
       {notes.length > 0 && (
         <small className="text-sm text-muted-foreground">
@@ -185,31 +183,19 @@ function OptionLabel(props: {
   );
 }
 
-/** The unsaved-change marker beside a setting's name. */
-function ChangedDot() {
-  return (
-    <span
-      role="img"
-      aria-label="Changed"
-      title="Changed, not saved yet"
-      className="size-1.5 shrink-0 rounded-full bg-changed"
-    />
-  );
-}
-
-/** Discards the option's draft value; holds its place while there is none. */
+/**
+ * The unsaved-change marker beside a setting's name. It turns into a reset that
+ * discards the draft while the row is hovered or the marker has focus.
+ */
 function OptionReset(props: {option: OptionMeta}) {
   const {option} = props;
-  const draft = useSnapshot(
-    (snapshot) => snapshot.state.provenance[option.key] === "draft",
-  );
   return (
     <IconButton
       label={`Reset ${option.label}`}
-      disabled={!draft}
-      className="disabled:invisible"
+      className="-m-1"
       onClick={() => void send({type: "reset", key: option.key})}>
-      <RotateCcwIcon />
+      <span className="size-1.5 rounded-full bg-changed group-hover/option:hidden group-focus-visible/button:hidden" />
+      <RotateCcwIcon className="hidden group-hover/option:block group-focus-visible/button:block" />
     </IconButton>
   );
 }

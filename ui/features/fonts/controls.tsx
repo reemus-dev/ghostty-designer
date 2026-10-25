@@ -362,13 +362,23 @@ function Axis(props: {axis: FontAxis}) {
 
   return (
     <div className="flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1.5 py-1.5 not-first:border-t">
-      <span className="flex min-w-28 flex-1 items-baseline gap-1.5 font-medium">
-        <span className="truncate">{axis.name}</span>
-        <code className="text-xs font-normal text-muted-foreground">
-          {axis.tag}
-        </code>
+      <span className="flex min-w-28 flex-1 items-center gap-2">
+        <span className="flex min-w-0 items-baseline gap-1.5 font-medium">
+          <span className="truncate">{axis.name}</span>
+          <code className="text-xs font-normal text-muted-foreground">
+            {axis.tag}
+          </code>
+        </span>
+        {axes.has(axis.tag) && (
+          <IconButton
+            label={`Reset ${axis.name} to ${axis.default}`}
+            className="-m-1"
+            onClick={() => commit(null, false)}>
+            <RotateCcwIcon />
+          </IconButton>
+        )}
       </span>
-      <div className="ml-auto flex shrink-0 items-center gap-1.5">
+      <div className="ml-auto shrink-0">
         <SliderField
           label={axis.name}
           min={axis.min}
@@ -388,13 +398,6 @@ function Axis(props: {axis: FontAxis}) {
             onCommit={(next) => commit(next, true)}
           />
         </SliderField>
-        <IconButton
-          label={`Reset ${axis.name} to ${axis.default}`}
-          disabled={!axes.has(axis.tag)}
-          className="disabled:invisible"
-          onClick={() => commit(null, false)}>
-          <RotateCcwIcon />
-        </IconButton>
       </div>
     </div>
   );
