@@ -308,14 +308,14 @@ function OverflowMenu() {
         </Menu.Trigger>
         <Menu.Portal>
           <Menu.Positioner align="end" sideOffset={4} className="z-50">
-            <Menu.Popup className="flex w-[300px] origin-(--transform-origin) popup-motion flex-col rounded-xl bg-popover p-1.5 popup outline-none">
+            <Menu.Popup className="flex w-[340px] origin-(--transform-origin) popup-motion flex-col rounded-xl bg-popover p-1.5 popup outline-none">
               <MenuItem
                 icon={<RotateCcwIcon />}
                 label="Restore original config…"
                 disabled={!canRestore}
                 hint={
                   canRestore
-                    ? "Puts back the file from before your first save"
+                    ? "Your config from before your first save"
                     : "Available after your first save"
                 }
                 onClick={() => setConfirm(true)}
@@ -323,7 +323,11 @@ function OverflowMenu() {
               <MenuItem
                 icon={<CopyIcon />}
                 label="Copy the config file path"
-                hint={configPath}
+                hint={
+                  <span className="font-mono wrap-anywhere">
+                    {tildePath(configPath)}
+                  </span>
+                }
                 onClick={() =>
                   void navigator.clipboard
                     .writeText(configPath)
@@ -368,19 +372,19 @@ function OverflowMenu() {
 function MenuItem(props: {
   icon: ReactNode;
   label: string;
-  hint: string;
+  hint: ReactNode;
   disabled?: boolean;
   onClick: () => void;
 }) {
   return (
     <Menu.Item
       disabled={props.disabled}
-      className="flex cursor-default items-start gap-2.5 rounded-sm px-2.5 py-[7px] outline-none select-none data-disabled:opacity-64 data-highlighted:bg-accent [&_svg]:mt-0.5 [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground"
+      className="flex cursor-default items-start gap-2.5 rounded-sm px-2.5 py-[7px] outline-none select-none data-disabled:opacity-64 data-highlighted:bg-accent [&_svg]:mt-1 [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground"
       onClick={props.onClick}>
       {props.icon}
       <span className="flex min-w-0 flex-col gap-px">
         {props.label}
-        <small className="text-sm break-all text-muted-foreground">
+        <small className="text-xs text-muted-foreground">
           {props.hint}
         </small>
       </span>
