@@ -18,7 +18,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
-import {MOD} from "@/lib/keys";
 import {pickTheme} from "@/lib/pick";
 import {
   clearThemeFilters,
@@ -119,8 +118,7 @@ export function ThemesView() {
         <Kbd>←</Kbd>
         <Kbd>→</Kbd>
         <Kbd>↑</Kbd>
-        <Kbd>↓</Kbd> try themes in Ghostty · <Kbd>{`${MOD}Z`}</Kbd> back to
-        where you started
+        <Kbd>↓</Kbd> try themes in Ghostty
       </p>
       {sections.length > 0 ? (
         <Gallery
@@ -149,7 +147,7 @@ export function ThemesView() {
   );
 }
 
-/** Search, dark or light, the filter chips and the sort. */
+/** Search and the sort, then dark or light and the filter chips under them. */
 function Filters(props: {
   total: number;
   counts: FilterCounts;
@@ -178,60 +176,62 @@ function Filters(props: {
           pickTheme(card.dataset.theme ?? null);
         }}
       />
-      <ToggleGroup
-        aria-label="Dark or light"
-        value={[mode]}
-        onValueChange={(next) =>
-          next[0] && setThemeFilters({mode: next[0] as ThemeFilters["mode"]})
-        }>
-        <ToggleGroupItem value="all">All</ToggleGroupItem>
-        <ToggleGroupItem value="dark">
-          <MoonIcon aria-hidden className="size-3" />
-          Dark <Count>{counts.dark}</Count>
-        </ToggleGroupItem>
-        <ToggleGroupItem value="light">
-          <SunIcon aria-hidden className="size-3" />
-          Light <Count>{counts.light}</Count>
-        </ToggleGroupItem>
-      </ToggleGroup>
-      <div className="flex flex-wrap items-center gap-2">
-        <Chip
-          pressed={readable}
-          count={counts.readable}
-          title="Only themes whose text and colours are all easy to read"
-          onPressedChange={(next) => setThemeFilters({readable: next})}>
-          {readable && <CheckIcon aria-hidden />}
-          Readable only
-        </Chip>
-        <Chip
-          pressed={starred}
-          count={counts.starred}
-          title="Only your starred themes. F stars the focused card."
-          onPressedChange={(next) => setThemeFilters({starred: next})}>
-          <StarIcon
+      <Select value={sort} onValueChange={(next) => next && onSort(next)}>
+        <SelectTrigger
+          aria-label="Sort"
+          className="border-0 bg-transparent px-1.5 text-muted-foreground">
+          <ArrowUpDownIcon
             aria-hidden
-            className={starred ? "fill-current" : undefined}
+            className="size-3.5 text-muted-foreground"
           />
-          Favourites
-        </Chip>
-        <Select value={sort} onValueChange={(next) => next && onSort(next)}>
-          <SelectTrigger
-            aria-label="Sort"
-            className="border-0 bg-transparent px-1.5 text-muted-foreground">
-            <ArrowUpDownIcon
+          <SelectValue>{(value: Sort) => SORT_LABEL[value]}</SelectValue>
+        </SelectTrigger>
+        <SelectContent align="end">
+          {(Object.keys(SORT_LABEL) as Sort[]).map((key) => (
+            <SelectItem key={key} value={key}>
+              {SORT_LABEL[key]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <div className="flex basis-full flex-wrap items-center gap-2">
+        <ToggleGroup
+          aria-label="Dark or light"
+          value={[mode]}
+          onValueChange={(next) =>
+            next[0] && setThemeFilters({mode: next[0] as ThemeFilters["mode"]})
+          }>
+          <ToggleGroupItem value="all">All</ToggleGroupItem>
+          <ToggleGroupItem value="dark">
+            <MoonIcon aria-hidden className="size-3" />
+            Dark <Count>{counts.dark}</Count>
+          </ToggleGroupItem>
+          <ToggleGroupItem value="light">
+            <SunIcon aria-hidden className="size-3" />
+            Light <Count>{counts.light}</Count>
+          </ToggleGroupItem>
+        </ToggleGroup>
+        <div className="flex gap-2">
+          <Chip
+            pressed={readable}
+            count={counts.readable}
+            title="Only themes whose text and colours are all easy to read"
+            onPressedChange={(next) => setThemeFilters({readable: next})}>
+            {readable && <CheckIcon aria-hidden />}
+            Readable only
+          </Chip>
+          <Chip
+            pressed={starred}
+            count={counts.starred}
+            title="Only your starred themes. F stars the focused card."
+            onPressedChange={(next) => setThemeFilters({starred: next})}>
+            <StarIcon
               aria-hidden
-              className="size-3.5 text-muted-foreground"
+              className={starred ? "fill-current" : undefined}
             />
-            <SelectValue>{(value: Sort) => SORT_LABEL[value]}</SelectValue>
-          </SelectTrigger>
-          <SelectContent align="end">
-            {(Object.keys(SORT_LABEL) as Sort[]).map((key) => (
-              <SelectItem key={key} value={key}>
-                {SORT_LABEL[key]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            Favourites
+          </Chip>
+        </div>
       </div>
     </>
   );

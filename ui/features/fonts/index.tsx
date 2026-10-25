@@ -10,7 +10,6 @@ import {ligatureTag} from "@/core/font-settings";
 import {whyNotShowing} from "@/core/preview";
 import {withPrimary} from "@/core/values";
 import {fontFace} from "@/lib/fonts";
-import {MOD} from "@/lib/keys";
 import {cancelPick, DWELL_MS, schedulePick} from "@/lib/pick";
 import {
   getStore,
@@ -134,45 +133,47 @@ export function FontSection() {
                   move(first, event.key === "ArrowDown");
               }}
             />
-            {Object.entries(FILTERS).map(([key, filter]) => (
-              <Chip
-                key={key}
-                pressed={filters.includes(key as Filter)}
-                count={fonts?.filter(filter.test).length}
-                onPressedChange={(on) =>
-                  setFilters(
-                    on
-                      ? [...filters, key as Filter]
-                      : filters.filter((item) => item !== key),
-                  )
-                }>
-                {filter.label}
-              </Chip>
-            ))}
-            <IconButton
-              label="Rescan fonts"
-              disabled={fonts === null || rescanning}
-              onClick={() => {
-                setRescanFrom(fonts);
-                void send({type: "rescan-fonts"});
-              }}>
-              <RotateCwIcon
-                className={
-                  rescanning || fonts === null
-                    ? "motion-safe:animate-spin"
-                    : undefined
-                }
-              />
-            </IconButton>
+            {/* The filters wrap as one group, under the search field. */}
+            <div className="flex flex-wrap items-center gap-2">
+              {Object.entries(FILTERS).map(([key, filter]) => (
+                <Chip
+                  key={key}
+                  pressed={filters.includes(key as Filter)}
+                  count={fonts?.filter(filter.test).length}
+                  onPressedChange={(on) =>
+                    setFilters(
+                      on
+                        ? [...filters, key as Filter]
+                        : filters.filter((item) => item !== key),
+                    )
+                  }>
+                  {filter.label}
+                </Chip>
+              ))}
+              <IconButton
+                label="Rescan fonts"
+                disabled={fonts === null || rescanning}
+                onClick={() => {
+                  setRescanFrom(fonts);
+                  void send({type: "rescan-fonts"});
+                }}>
+                <RotateCwIcon
+                  className={
+                    rescanning || fonts === null
+                      ? "motion-safe:animate-spin"
+                      : undefined
+                  }
+                />
+              </IconButton>
+            </div>
           </div>
           <p className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1 text-sm text-muted-foreground">
             {visible
               ? `${visible.length} of ${fonts?.length ?? 0} fonts`
               : "Scanning fonts…"}
-            <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+            <span className="flex items-center gap-1.5">
               <Kbd>↑</Kbd>
-              <Kbd>↓</Kbd> try fonts in Ghostty · <Kbd>{MOD}Z</Kbd> back to
-              where you started
+              <Kbd>↓</Kbd> try fonts in Ghostty
             </span>
           </p>
           {/* About ten rows, or half the height when stacked so the page can
