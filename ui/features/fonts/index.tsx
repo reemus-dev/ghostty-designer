@@ -175,16 +175,19 @@ export function FontSection() {
               where you started
             </span>
           </p>
-          {/* About ten rows. */}
-          <div className="h-[min(640px,68vh)] overflow-y-auto card p-1.5">
-            <FamilyList
-              families={visible}
-              withDefault={withDefault}
-              saved={savedFont}
-              cursor={selected}
-              listRef={listRef}
-              onMove={move}
-            />
+          {/* About ten rows. The card's edge is an inset ring, which scrolled
+              rows would paint over, so the rows scroll inside its padding. */}
+          <div className="h-[min(640px,68vh)] card p-1.5">
+            <div className="h-full overflow-y-auto">
+              <FamilyList
+                families={visible}
+                withDefault={withDefault}
+                saved={savedFont}
+                cursor={selected}
+                listRef={listRef}
+                onMove={move}
+              />
+            </div>
           </div>
         </div>
         <div className="flex flex-col gap-5 card p-6">
