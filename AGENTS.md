@@ -17,7 +17,7 @@ session in TypeScript.
 | `crates/app/src/instance.rs`     | One designer per state folder, focus requests from later launches      |
 | `crates/app/src/launch.rs`       | Detach from the terminal, startup report, error dialog                 |
 | `crates/app/src/fonts.rs`        | `font://` protocol that serves font faces to the panel                 |
-| `crates/app/icons/`              | App icons, written by `mise run icon` from `scripts/app-icon.ts`       |
+| `crates/app/icons/`              | App icons, written by `app-icon.ts` from `scripts/`                    |
 | `crates/host/`                   | The native side, no Tauri or GUI dependency:                           |
 | `crates/host/src/host.rs`        | Host: commands, watches, instance poll, write limit, shutdown fence    |
 | `crates/host/src/api.rs`         | Host contract and commands, generates `ui/core/bindings.ts` with ts-rs |
@@ -40,8 +40,8 @@ session in TypeScript.
 | `ui/features/`                   | Customise sections (colors, fonts, window) and the Themes view         |
 | `ui/components/`                 | Shared controls, with shadcn components in `components/ui/`            |
 | `ui/lib/`                        | Store, host commands, view helpers, specimen pages                     |
-| `scripts/`                       | Sandbox runner, Linux smoke, Lima VM scripts                           |
-| `docs/`                          | Architecture and distribution decisions, native window checks          |
+| `scripts/`                       | Commands on the PATH: sandbox, panel driver, VMs, Linux smoke, icon    |
+| `docs/`                          | Architecture and distribution decisions, running and driving the app   |
 | `.github/workflows/`             | CI on macOS and Linux                                                  |
 
 ## Design constraints
@@ -68,7 +68,7 @@ session in TypeScript.
 
 Install the pinned toolchain with `mise install` and dependencies with
 `mise run install`. `.mise.toml` is the authority for commands and tool
-versions.
+versions, and puts the commands in `scripts/` on the PATH.
 
 ```sh
 mise run check            # typecheck, lint, bun test, clippy, Rust tests and format check, read-only
@@ -95,20 +95,29 @@ Foundation, which ignores `HOME`, so a changed `XDG_CONFIG_HOME` alone still
 reaches the real one. Use a sandbox instead:
 
 ```sh
-mise run sandbox run         # build and run the app in the sandbox
-mise run sandbox run --dev   # the same, with a hot-reloading UI
-mise run sandbox env         # export lines for other commands in the sandbox
-mise run sandbox reset --no-include   # baseline config without the preview include
+sandbox.ts --name <name> start [--dev]       # build, then run the app in the background
+sandbox.ts --name <name> stop
+sandbox.ts --name <name> env                 # export lines for other commands in the sandbox
+sandbox.ts --name <name> reset --no-include  # baseline config without the preview include
 ```
 
 Each sandbox has its own home, config, state and lock under
-`.cache/sandboxes/<name>/`, seeded with a baseline config. `--name <name>` picks
-one (default `default`), so parallel runs never collide. The app targets a
-stand-in process instead of Ghostty, so nothing reloads. Check previews in the
-sandbox's config and preview files.
+`.cache/sandboxes/<name>/`, seeded with a baseline config. Name it after your
+task, so parallel sessions never share one. The app targets a stand-in process
+instead of Ghostty, so nothing reloads. Check previews in the sandbox's config
+and preview files.
 
-To check the native window on Linux (Lima VMs) or macOS, follow
-`docs/verify.md`.
+Drive the panel with `panel.ts`, not with screenshots or cua-driver:
+
+- Check results with `js`, `text` and the sandbox's files. Take a `shot`,
+  cropped to an element, only to judge appearance.
+- Use real input, with cua-driver or xdotool, only for what `panel.ts` cannot
+  reach.
+- Drive the user's dev instance (`--dev`) only as the user allows. Otherwise use
+  a sandbox.
+
+`docs/verify.md` has the commands to run and drive the app, in sandboxes and the
+Lima VMs, and what needs real input.
 
 CI installs the tracked mise toolchain and invokes the same mise tasks used
 locally. Do not introduce independent version sources.

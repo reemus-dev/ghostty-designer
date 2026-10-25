@@ -132,6 +132,8 @@ fn main() {
             owner.serve(move |token| raise_panel(&app, token));
             Ok(())
         });
+    #[cfg(feature = "webdriver")]
+    let builder = builder.plugin(tauri_plugin_wdio_webdriver::init());
 
     // A dead renderer reloads the page, which connects again.
     #[cfg(target_os = "macos")]
@@ -261,10 +263,20 @@ fn open_panel(app: &AppHandle, state: &Path) -> tauri::Result<()> {
         None => builder.inner_size(1200.0, 800.0),
     };
     #[cfg_attr(
-        not(target_os = "linux"),
-        expect(unused_variables, reason = "only Linux watches the renderer")
+        not(any(target_os = "linux", all(target_os = "macos", feature = "webdriver"))),
+        expect(unused_variables, reason = "no webview setup on this build")
     )]
     let window = builder.build()?;
+    // WebKit stops rendering a window it sees as covered, so the panel's
+    // animations never end and a closing popup blocks input. Agents drive the
+    // window in the background, so it keeps rendering.
+    #[cfg(all(target_os = "macos", feature = "webdriver"))]
+    window.with_webview(|webview| {
+        // SAFETY: on macOS, `inner` is the window's live WKWebView.
+        let view = unsafe { &*webview.inner().cast::<objc2::runtime::AnyObject>() };
+        // SAFETY: WKWebView has this WebKit SPI, and it takes a BOOL.
+        let () = unsafe { objc2::msg_send![view, _setWindowOcclusionDetectionEnabled: false] };
+    })?;
     // A dead renderer reloads the page, which connects again.
     #[cfg(target_os = "linux")]
     window.with_webview(|webview| {

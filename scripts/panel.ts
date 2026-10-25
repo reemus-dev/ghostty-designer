@@ -1,0 +1,341 @@
+#!/usr/bin/env bun
+// Drives the panel of a running designer through the WebDriver server that
+// development builds embed (the app crate's `webdriver` feature). Each call
+// opens a session, runs one command, and closes the session.
+//
+//   panel.ts --name <sandbox> | --dev | --vm <vm> <command>
+//
+//   js <body>                  run an async function body in the panel, print its result as JSON
+//   click <selector>           click the one visible element that matches
+//   fill <selector> <text>     clear the one visible field that matches, then type text
+//   key <key>...               press keys in order: Escape, Enter, ArrowDown, Meta+k …
+//   drag <selector> <to>       drag the match onto another selector, or by an offset such as -80,0
+//   text [selector]            print the visible text of the match, or of the whole panel
+//   shot <out.png> [selector]  screenshot the panel, cropped to the match
+//
+// The target is a sandbox (`--name`), the user's dev instance (`--dev`), or the
+// window in a Lima VM (`--vm`). Selectors are CSS,
+// or XPath when they start with "/" or "(". Both views stay mounted, so only
+// visible elements count as matches. The page gets synthetic events, so what
+// needs real input is in docs/verify.md.
+import {existsSync, readFileSync, writeFileSync} from "node:fs";
+import path from "node:path";
+
+/** The plugin's port when `TAURI_WEBDRIVER_PORT` is unset, as in `mise run dev`. */
+const DEV_PORT = 4445;
+const ELEMENT_KEY = "element-6066-11e4-a52e-4f735466cecf";
+const USAGE =
+  "usage: panel.ts --name <sandbox> | --dev | --vm <vm> js <body>|click <selector>|fill <selector> <text>|key <key>...|drag <selector> <to>|text [selector]|shot <out.png> [selector]";
+
+// WebDriver's codes for named keys. Any other key is its own character.
+const KEYS: Record<string, string> = {
+  Alt: "",
+  ArrowDown: "",
+  ArrowLeft: "",
+  ArrowRight: "",
+  ArrowUp: "",
+  Backspace: "",
+  Control: "",
+  Delete: "",
+  End: "",
+  Enter: "",
+  Escape: "",
+  Home: "",
+  Meta: "",
+  PageDown: "",
+  PageUp: "",
+  Shift: "",
+  Space: " ",
+  Tab: "",
+};
+
+// Crops a screenshot to an element inside the panel, so the script needs no
+// image tools. Arguments: the base64 PNG, the element, the async callback.
+const CROP_SCRIPT = `
+const [png, element, done] = arguments;
+const rect = element.getBoundingClientRect();
+const image = new Image();
+image.onload = () => {
+  const scale = image.naturalWidth / innerWidth;
+  const [x, y, width, height] = [rect.x, rect.y, rect.width, rect.height].map((value) => Math.round(value * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d").drawImage(image, x, y, width, height, 0, 0, width, height);
+  done(canvas.toDataURL("image/png").slice("data:image/png;base64,".length));
+};
+image.onerror = () => done(null);
+image.src = "data:image/png;base64," + png;
+`;
+
+// Base UI marks a popup with these attributes while it animates open or
+// closed, and a closing popup still takes the pointer. Every command waits for
+// them first, so it never acts on or reads a popup mid-animation.
+const SETTLE_SCRIPT = `
+const deadline = Date.now() + 2000;
+while (document.querySelector("[data-starting-style], [data-ending-style]") && Date.now() < deadline) {
+  await new Promise((resolve) => setTimeout(resolve, 20));
+}`;
+
+class DriveError extends Error {}
+
+type ElementRef = {[ELEMENT_KEY]: string};
+
+const root = path.join(import.meta.dir, "..");
+
+/** Removes `flag <value>` from the arguments and returns the value. */
+function takeOption(args: string[], flag: string) {
+  const index = args.indexOf(flag);
+  if (index === -1) return;
+  return args.splice(index, 2)[1];
+}
+
+/** Removes the target options from the arguments, and finds the target's port. */
+function resolveTarget(args: string[]) {
+  const dev = args.indexOf("--dev");
+  if (dev !== -1) {
+    args.splice(dev, 1);
+    return {port: DEV_PORT, label: "the dev instance"};
+  }
+
+  const vm = takeOption(args, "--vm");
+  const name = takeOption(args, "--name");
+  if (vm !== undefined) {
+    return readPort(`VM ${vm}`, path.join(root, ".cache/vms", vm));
+  }
+  if (name !== undefined) {
+    return readPort(
+      `sandbox ${name}`,
+      path.join(root, ".cache/sandboxes", name),
+    );
+  }
+  throw new DriveError(USAGE);
+}
+
+/** Reads the port that the target's runner records in its folder. */
+function readPort(label: string, folder: string) {
+  const portFile = path.join(folder, "webdriver-port");
+  if (!existsSync(portFile)) {
+    throw new DriveError(`${label} is not running: ${portFile} is missing`);
+  }
+  return {port: Number(readFileSync(portFile, "utf8")), label};
+}
+
+/** One WebDriver session on the target, closed by `end`. */
+async function startSession(port: number, label: string) {
+  const base = `http://127.0.0.1:${port}`;
+
+  async function request(method: string, route: string, body?: unknown) {
+    let response: Response;
+    try {
+      response = await fetch(base + route, {
+        method,
+        headers: {"content-type": "application/json"},
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+    } catch {
+      throw new DriveError(
+        `${label} does not answer on port ${port}. Is it running?`,
+      );
+    }
+    const {value} = (await response.json()) as {value: unknown};
+    if (typeof value === "object" && value !== null && "error" in value) {
+      const {error, message} = value as {error: string; message: string};
+      throw new DriveError(`${error}: ${message}`);
+    }
+    return value;
+  }
+
+  const {sessionId} = (await request("POST", "/session", {
+    capabilities: {},
+  })) as {sessionId: string};
+  const session = `/session/${sessionId}`;
+
+  return {
+    call: (method: string, route: string, body?: unknown) =>
+      request(method, session + route, body),
+    end: () => request("DELETE", session),
+  };
+}
+
+type Session = Awaited<ReturnType<typeof startSession>>;
+
+async function find(session: Session, selector: string) {
+  const matches = (await session.call("POST", "/elements", {
+    using: /^[/(]/.test(selector) ? "xpath" : "css selector",
+    value: selector,
+  })) as ElementRef[];
+  const shown = (await session.call("POST", "/execute/sync", {
+    script:
+      "return arguments[0].map((element) => element.getClientRects().length > 0)",
+    args: [matches],
+  })) as boolean[];
+  const [element, ...others] = matches.filter((_, index) => shown[index]);
+  if (element === undefined) {
+    throw new DriveError(`no visible element matches ${selector}`);
+  }
+  if (others.length > 0) {
+    throw new DriveError(
+      `${others.length + 1} visible elements match ${selector}. Narrow the selector`,
+    );
+  }
+  return element;
+}
+
+/** Runs `body` as an async function and returns its result. */
+async function runScript(session: Session, body: string) {
+  const result = (await session.call("POST", "/execute/async", {
+    script: `const done = arguments[0];
+(async () => {${body}\n})().then(
+  (value) => done({value}),
+  (error) => done({error: String(error)}),
+);`,
+    args: [],
+  })) as {value?: unknown; error?: string};
+  if (result.error !== undefined) throw new DriveError(result.error);
+  return result.value;
+}
+
+/** Presses each chord, such as `Meta+k`, holding its keys in order. */
+async function pressKeys(session: Session, chords: string[]) {
+  const actions = chords.flatMap((chord) => {
+    const keys = chord.split("+").map((key) => KEYS[key] ?? key);
+    return [
+      ...keys.map((value) => ({type: "keyDown", value})),
+      ...keys.toReversed().map((value) => ({type: "keyUp", value})),
+    ];
+  });
+  await session.call("POST", "/actions", {
+    actions: [{type: "key", id: "keyboard", actions}],
+  });
+  await session.call("DELETE", "/actions");
+}
+
+/** Drags from the match's centre to another match's centre, or by `dx,dy`. */
+async function drag(session: Session, selector: string, to: string) {
+  const from = await find(session, selector);
+  const offset = /^(-?\d+),(-?\d+)$/.exec(to);
+  const end = offset
+    ? {origin: "pointer", x: Number(offset[1]), y: Number(offset[2])}
+    : {origin: await find(session, to), x: 0, y: 0};
+  await session.call("POST", "/actions", {
+    actions: [
+      {
+        type: "pointer",
+        id: "mouse",
+        parameters: {pointerType: "mouse"},
+        actions: [
+          {type: "pointerMove", origin: from, x: 0, y: 0},
+          {type: "pointerDown", button: 0},
+          {type: "pointerMove", duration: 200, ...end},
+          {type: "pointerUp", button: 0},
+        ],
+      },
+    ],
+  });
+  await session.call("DELETE", "/actions");
+}
+
+async function screenshot(session: Session, out: string, selector?: string) {
+  if (selector === undefined) {
+    writePng(out, (await session.call("GET", "/screenshot")) as string);
+    return;
+  }
+
+  const element = await find(session, selector);
+  await session.call("POST", "/execute/sync", {
+    script: "arguments[0].scrollIntoView({block: 'nearest'})",
+    args: [element],
+  });
+  const png = await session.call("GET", "/screenshot");
+  const cropped = await session.call("POST", "/execute/async", {
+    script: CROP_SCRIPT,
+    args: [png, element],
+  });
+  if (typeof cropped !== "string") {
+    throw new DriveError("the panel could not crop the screenshot");
+  }
+  writePng(out, cropped);
+}
+
+function writePng(out: string, png: string) {
+  const bytes = Buffer.from(png, "base64");
+  writeFileSync(out, bytes);
+  // A PNG's width and height are big-endian at bytes 16 and 20.
+  console.log(`${out} ${bytes.readUInt32BE(16)}x${bytes.readUInt32BE(20)}`);
+}
+
+async function run(session: Session, command: string, args: string[]) {
+  const [first, second] = args;
+  switch (command) {
+    case "js": {
+      if (first === undefined) break;
+      console.log(JSON.stringify(await runScript(session, first)));
+      return;
+    }
+    case "click": {
+      if (first === undefined) break;
+      const element = await find(session, first);
+      await session.call("POST", `/element/${element[ELEMENT_KEY]}/click`, {});
+      return;
+    }
+    case "fill": {
+      if (first === undefined || second === undefined) break;
+      const id = (await find(session, first))[ELEMENT_KEY];
+      await session.call("POST", `/element/${id}/clear`, {});
+      await session.call("POST", `/element/${id}/value`, {text: second});
+      return;
+    }
+    case "drag": {
+      if (first === undefined || second === undefined) break;
+      await drag(session, first, second);
+      return;
+    }
+    case "key": {
+      if (args.length === 0) break;
+      await pressKeys(session, args);
+      return;
+    }
+    case "text": {
+      const element =
+        first === undefined ? undefined : await find(session, first);
+      const text = await session.call("POST", "/execute/sync", {
+        script: "return (arguments[0] ?? document.body).innerText",
+        args: [element ?? null],
+      });
+      console.log(
+        String(text)
+          .replaceAll(/\n{3,}/g, "\n\n")
+          .trim(),
+      );
+      return;
+    }
+    case "shot": {
+      if (first === undefined) break;
+      await screenshot(session, first, second);
+      return;
+    }
+    default: {
+      break;
+    }
+  }
+  throw new DriveError(USAGE);
+}
+
+try {
+  const args = process.argv.slice(2);
+  const {port, label} = resolveTarget(args);
+  const [command, ...rest] = args;
+  if (command === undefined) throw new DriveError(USAGE);
+  const session = await startSession(port, label);
+  try {
+    await runScript(session, SETTLE_SCRIPT);
+    await run(session, command, rest);
+  } finally {
+    await session.end();
+  }
+} catch (error) {
+  if (!(error instanceof DriveError)) throw error;
+  console.error(error.message);
+  process.exit(1);
+}

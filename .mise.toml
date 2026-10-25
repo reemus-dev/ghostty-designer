@@ -1,5 +1,5 @@
 [env]
-_.path = ["{{config_root}}/node_modules/.bin"]
+_.path = ["{{config_root}}/node_modules/.bin", "{{config_root}}/scripts"]
 
 [tools]
 bun = "1.4.3"
@@ -16,7 +16,7 @@ run = "bun install --frozen-lockfile"
 
 [tasks.dev]
 description = "Run the app from source with the real environment and a hot-reloading UI (only the user runs this)"
-run = "TAURI_APP_PATH=crates/app tauri dev"
+run = "TAURI_APP_PATH=crates/app tauri dev --features webdriver"
 
 [tasks.build]
 description = "Build the release app for this machine at dist/ghostty-designer"
@@ -27,18 +27,10 @@ cargo build --release --locked -p ghostty-designer
 cp target/release/ghostty-designer dist/ghostty-designer
 '''
 
-[tasks.sandbox]
-description = "Designer from source against a sandboxed home and config: run [--dev] [args]|env|reset [--no-include]; --name <name> picks the sandbox"
-run = "bun scripts/sandbox.ts"
-
 [tasks."smoke:linux"]
 description = "Launch the Linux window under Xvfb in a sandbox and close it with SIGTERM"
 depends = ["ui:build"]
 run = "scripts/smoke-linux.sh"
-
-[tasks.icon]
-description = "Draw the app icon and write its PNGs, icon.icns and Icon Composer document to crates/app/icons"
-run = "bun scripts/app-icon.ts"
 
 # ── UI bundle ───────────────────────────────────────────────────────────────
 

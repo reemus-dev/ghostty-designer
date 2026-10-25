@@ -211,17 +211,24 @@ mise run check
 
 `mise run dev` runs the app from source against your real config and reloads
 your Ghostty. To work without touching either, use a sandbox with its own home
-and config under `.cache/sandboxes/`:
+and config under `.cache/sandboxes/`. In a shell with mise activated, the
+commands in `scripts/` are on the PATH:
 
 ```sh
-mise run sandbox run                # the app from source in the sandbox
-mise run sandbox run --dev          # the same, with a hot-reloading UI
-mise run sandbox reset              # restore the sandbox's baseline config
-mise run sandbox run --name other   # a separate sandbox, for parallel runs
+sandbox.ts --name try run         # the app from source in the sandbox "try"
+sandbox.ts --name try run --dev   # the same, with a hot-reloading UI
+sandbox.ts --name try reset       # restore the sandbox's baseline config
+sandbox.ts --name try start       # run in the background, until "stop"
 ```
+
+Each name is a separate sandbox, so runs with different names can run side by
+side.
 
 A sandboxed app never reloads Ghostty, so previews land only in the sandbox's
 config files.
+
+Development builds, from `mise run dev` and sandboxes, serve WebDriver on
+127.0.0.1, so `panel.ts` can drive the panel. `docs/verify.md` describes it.
 
 `mise run test:scenarios` replays the session scenarios against an installed
 Ghostty 1.3.1.

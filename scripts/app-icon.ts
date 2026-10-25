@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 // Draws the app icon, a fan of terminal theme swatch cards, and writes it to
 // crates/app/icons:
 //
@@ -7,7 +8,7 @@
 //   26 and later add their own shadows, glass and dark, clear and tinted looks.
 //   docs/distribution.md says why the bundle does not list it yet.
 //
-//   bun scripts/app-icon.ts
+//   app-icon.ts
 import {cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync} from "node:fs";
 import {tmpdir} from "node:os";
 import path from "node:path";

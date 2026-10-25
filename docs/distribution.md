@@ -177,8 +177,8 @@ the minimal 24.04 image stands in for it, since the point is that the package
 pulls WebKitGTK 4.1 itself. Arch has no package; its names were checked against
 archlinux.org.
 
-`scripts/lima/packages.sh <vm> build|check <image>…` repeats the build and the
-container checks.
+`vm.sh <vm> packages build|check <image>…` repeats the build and the container
+checks.
 
 ### README install lines
 

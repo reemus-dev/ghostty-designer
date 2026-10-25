@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # The environment that confines a designer run to a sandbox folder, for every
-# runner: sandbox.ts, the Linux smoke and the Lima window script.
+# runner: sandbox.ts, the Linux smoke and vm.sh.
 #
 #   sandbox-env.sh <sandbox-dir> <command...>   exec the command in the sandbox
 #   sandbox-env.sh <sandbox-dir>                print export lines for a shell
@@ -28,7 +28,5 @@ if [ $# -gt 0 ]; then
   exec "$@"
 fi
 for name in HOME CFFIXED_USER_HOME XDG_CONFIG_HOME XDG_STATE_HOME XDG_CACHE_HOME GHOSTTY_CONFIG_PATH; do
-  value=
-  eval "value=\$$name"
-  printf "export %s='%s'\n" "$name" "$(printf %s "$value" | sed "s/'/'\\\\''/g")"
+  printf "export %s='%s'\n" "$name" "$(printf %s "${!name}" | sed "s/'/'\\\\''/g")"
 done

@@ -12,6 +12,9 @@ workspace = true
 default = ["embed"]
 # Embeds dist/ui. `tauri dev` drops it and loads `devUrl` instead.
 embed = ["tauri/custom-protocol"]
+# Serves W3C WebDriver on 127.0.0.1, port TAURI_WEBDRIVER_PORT (4445 by
+# default), so agents can drive the panel. Development builds only.
+webdriver = ["dep:tauri-plugin-wdio-webdriver"]
 
 # The Tauri CLI writes the `features` lists of tauri and tauri-build on each
 # `tauri dev` and `tauri build`, from tauri.conf.json.
@@ -23,6 +26,7 @@ clap = { version = "4.6.7", features = ["derive"] }
 ghostty-designer-host = { path = "../host" }
 libc.workspace = true
 tauri = { version = "2.12.4", features = [] }
+tauri-plugin-wdio-webdriver = { version = "1.5.1", optional = true }
 tokio = { workspace = true, features = ["signal", "time"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
