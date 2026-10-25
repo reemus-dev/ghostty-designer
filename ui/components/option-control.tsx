@@ -1,6 +1,6 @@
 import {type ReactNode, useId} from "react";
 import {cn} from "cn";
-import {RotateCcwIcon} from "lucide-react";
+import {AppleIcon, RotateCcwIcon} from "lucide-react";
 import {
   Combobox,
   ComboboxContent,
@@ -20,9 +20,11 @@ import {Slider} from "@/components/ui/slider";
 import {Switch} from "@/components/ui/switch";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import type {Platform} from "@/core/bindings";
 import {FULL_HEX, parseHex} from "@/core/color";
 import type {OptionMeta, Reload} from "@/core/types";
 import {parseMetric} from "@/core/values";
+import {PLATFORM_LABEL} from "@/lib/customise";
 import {send, sendLive, useEffective, useSnapshot} from "@/lib/store";
 import {CommitInput, NumberField} from "./commit-input";
 import {IconButton} from "./icon-button";
@@ -34,8 +36,6 @@ const RELOAD_NOTE: Record<Reload, string | null> = {
   "new-window": "New windows only",
   special: null,
 };
-
-const PLATFORM_NOTE = {macos: "macOS only", linux: "Linux only"};
 
 /** Enums this short render as a segmented control, longer ones as a select. */
 const SEGMENTED_MAX = 3;
@@ -128,16 +128,13 @@ function OptionLabel(props: {
     (snapshot) => snapshot.state.apply.rejected?.includes(option.key) ?? false,
   );
   // The other platform's options sit in a card titled for it.
-  const onlyHere = useSnapshot(
-    (snapshot) =>
-      option.platforms.length === 1 &&
-      option.platforms[0] === snapshot.ghostty.platform,
+  const onlyHere = useSnapshot((snapshot) =>
+    option.platforms.length === 1 &&
+    option.platforms[0] === snapshot.ghostty.platform
+      ? snapshot.ghostty.platform
+      : null,
   );
-  const notes = [
-    note,
-    RELOAD_NOTE[option.reload],
-    onlyHere ? PLATFORM_NOTE[option.platforms[0]!] : null,
-  ].filter(Boolean);
+  const notes = [note, RELOAD_NOTE[option.reload]].filter(Boolean);
   const [summary = ""] = option.doc.split("\n\n", 1);
   const doc = summary || "No documentation.";
   const helpId = `${useId()}-help`;
@@ -167,6 +164,7 @@ function OptionLabel(props: {
         <span id={helpId} className="sr-only">
           {[option.key, doc, option.reloadNote].filter(Boolean).join(". ")}
         </span>
+        {onlyHere && <PlatformMark platform={onlyHere} />}
         {changed && <OptionReset option={option} />}
       </span>
       {notes.length > 0 && (
@@ -180,6 +178,43 @@ function OptionLabel(props: {
         </small>
       )}
     </div>
+  );
+}
+
+/** Lucide has no Linux icon, so this draws Tux. */
+function TuxIcon(props: {className?: string}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+      className={props.className}>
+      <path
+        fillRule="evenodd"
+        d="M12 1.5c-2.4 0-3.9 1.9-3.9 4.4v2.4c0 1.4-1.2 2.6-2.4 4.4-1 1.6-1.6 3.4-1.2 5.3h15c.4-1.9-.2-3.7-1.2-5.3-1.2-1.8-2.4-3-2.4-4.4V5.9c0-2.5-1.5-4.4-3.9-4.4Zm-1.3 3.4a.9 1.1 0 1 0 0 2.2.9 1.1 0 0 0 0-2.2Zm2.6 0a.9 1.1 0 1 0 0 2.2.9 1.1 0 0 0 0-2.2ZM12 10.2c-1.8 0-3.2 2.3-3.2 5s1.4 3.6 3.2 3.6 3.2-.9 3.2-3.6-1.4-5-3.2-5Z"
+      />
+      <path d="M3.5 21.2c0-1.6 1.6-2.7 3.6-2.7s3.4 1.1 3.4 2.7c0 .7-.6 1.3-1.3 1.3H4.8c-.7 0-1.3-.6-1.3-1.3Zm17 0c0-1.6-1.6-2.7-3.6-2.7s-3.4 1.1-3.4 2.7c0 .7.6 1.3 1.3 1.3h4.4c.7 0 1.3-.6 1.3-1.3Z" />
+    </svg>
+  );
+}
+
+const PLATFORM_ICON = {macos: AppleIcon, linux: TuxIcon};
+
+/** Marks a setting only this platform has, named in its tooltip. */
+function PlatformMark(props: {platform: Platform}) {
+  const Icon = PLATFORM_ICON[props.platform];
+  const label = `${PLATFORM_LABEL[props.platform]} only`;
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={<span />}
+        role="img"
+        aria-label={label}
+        className="-ml-0.5 shrink-0 text-muted-foreground">
+        <Icon className="size-3.5 fill-current" />
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
