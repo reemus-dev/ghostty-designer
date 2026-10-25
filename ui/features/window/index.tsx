@@ -330,9 +330,7 @@ function SubRow(props: {label: string; note?: string; children: ReactNode}) {
           <small className="text-sm text-muted-foreground">{props.note}</small>
         )}
       </div>
-      <div className="ml-auto flex items-center gap-1.5">
-        {props.children}
-      </div>
+      <div className="ml-auto flex items-center gap-1.5">{props.children}</div>
     </div>
   );
 }
