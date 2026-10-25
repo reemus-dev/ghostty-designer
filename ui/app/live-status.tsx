@@ -114,7 +114,7 @@ export function LiveStatus() {
         <Truncate className="max-w-56 max-lg:sr-only">{status.label}</Truncate>
       </PopoverTrigger>
       <PopoverContent
-        align="end"
+        align="start"
         className="w-80"
         finalFocus={() => {
           const target = chosen.current;

@@ -47,14 +47,12 @@ import {
 import {ChangeValues} from "./change-values";
 import {LiveStatus} from "./live-status";
 
-/** Shrinks a labelled button to its icon in a narrow window. */
-const NARROW_ICON = "max-lg:w-[30px] max-lg:px-0!";
-
 /**
- * Search, the live status, the unsaved changes and the ways out: compare with
- * saved, discard, undo, redo and save. On macOS it starts after the traffic
- * lights. In a narrow window, buttons show only their icons, and the live
- * status and the change count drop their words.
+ * Search and the live status on the left. The draft on the right: its changes,
+ * undo, redo and save. The change count grows into the gap between them, so
+ * nothing moves as the draft changes. On macOS it starts after the traffic
+ * lights. In a narrow window, search shows only its icon, and the live status
+ * and the change count drop their words.
  */
 export function Toolbar() {
   const platform = useSnapshot((snapshot) => snapshot.ghostty.platform);
@@ -62,7 +60,6 @@ export function Toolbar() {
   const options = useSnapshot((snapshot) => snapshot.options);
   const colorDefaults = useSnapshot((snapshot) => snapshot.colorDefaults);
   const {history} = state;
-  const dirty = state.changes > 0;
 
   return (
     <header
@@ -72,40 +69,13 @@ export function Toolbar() {
         platform === "macos" ? "pl-[92px]" : "pl-14",
       )}>
       <SearchButton />
+      <LiveStatus />
       <div className="ml-auto flex min-w-0 items-center gap-1 lg:gap-1.5 lg:pl-3">
-        <LiveStatus />
-        {dirty ? (
-          <ChangeList
-            changes={draftChanges(state, options, colorDefaults)}
-            count={state.changes}
-          />
-        ) : (
-          <span className="px-1 text-sm whitespace-nowrap text-muted-foreground max-lg:hidden">
-            No unsaved changes
-          </span>
-        )}
-        {dirty && (
-          <>
-            {isLive(state) && <CompareButton />}
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    className={NARROW_ICON}
-                    onClick={revertAll}
-                  />
-                }>
-                <EraserIcon />
-                <span className="max-lg:sr-only">Discard</span>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                Discard all changes <Kbd>esc esc</Kbd>
-              </TooltipContent>
-            </Tooltip>
-          </>
-        )}
-        <div aria-hidden className="mx-1 h-4 w-px bg-border max-lg:hidden" />
+        <ChangeList
+          changes={draftChanges(state, options, colorDefaults)}
+          count={state.changes}
+          compare={isLive(state)}
+        />
         <HistoryButton
           shortcut={`${MOD}Z`}
           disabled={history.undo.length === 0}
@@ -128,11 +98,13 @@ export function Toolbar() {
           onClick={() => stepHistory("redo")}>
           <Redo2Icon />
         </HistoryButton>
-        <div aria-hidden className="mx-1 h-4 w-px bg-border max-lg:hidden" />
         <Tooltip>
           <TooltipTrigger
             render={
-              <Button disabled={!dirty} onClick={() => setSaveOpen(true)} />
+              <Button
+                disabled={state.changes === 0}
+                onClick={() => setSaveOpen(true)}
+              />
             }>
             Save
           </TooltipTrigger>
@@ -154,7 +126,7 @@ function SearchButton() {
         render={
           <Button
             variant="ghost"
-            className={cn("text-muted-foreground", NARROW_ICON)}
+            className="text-muted-foreground max-lg:w-[30px] max-lg:px-0!"
             onClick={() => setPaletteOpen(true)}
           />
         }>
@@ -199,8 +171,8 @@ function HistoryButton(props: {
 
 /** Ghostty shows the saved config while the button is held, like holding `\`. */
 function CompareButton() {
-  // The last change can go while the button is held, which unmounts it
-  // before the pointer comes up.
+  // The popover can close while the button is held, which unmounts it before
+  // the pointer comes up.
   useEffect(() => () => setPeek(false), []);
   return (
     <Tooltip>
@@ -208,7 +180,8 @@ function CompareButton() {
         render={
           <Button
             variant="ghost"
-            className={cn("select-none", NARROW_ICON)}
+            size="sm"
+            className="select-none"
             onPointerDown={() => setPeek(true)}
             onPointerUp={() => setPeek(false)}
             onPointerLeave={() => setPeek(false)}
@@ -221,43 +194,76 @@ function CompareButton() {
           />
         }>
         <Columns2Icon />
-        <span className="max-lg:sr-only">Compare</span>
+        Hold to compare
+        <Kbd>\</Kbd>
       </TooltipTrigger>
       <TooltipContent side="bottom">
-        Press and hold to see your saved config in Ghostty, or hold <Kbd>\</Kbd>
+        Shows your saved config in Ghostty while held
       </TooltipContent>
     </Tooltip>
   );
 }
 
-/** "3 unsaved changes ⌄": opens the full list, each with its own undo. */
-function ChangeList(props: {changes: DraftChange[]; count: number}) {
-  const {changes, count} = props;
+/**
+ * "3 unsaved changes ⌄": opens the full list, each with its own undo, then
+ * compare and discard.
+ */
+function ChangeList(props: {
+  changes: DraftChange[];
+  count: number;
+  compare: boolean;
+}) {
+  const {changes, count, compare} = props;
+  const [open, setOpen] = useState(false);
+  // The last change can go with the list open, by its own undo or a shortcut.
+  if (open && count === 0) setOpen(false);
   return (
-    <Popover>
-      <PopoverTrigger className="flex h-7 shrink-0 items-center gap-2 rounded-md px-1.5 font-semibold whitespace-nowrap hover:bg-accent">
-        <span
-          aria-hidden
-          className="size-[7px] rounded-full bg-changed ring-3 ring-changed/16"
-        />
-        <span>
-          {count}
-          <span className="max-lg:sr-only">
-            {` unsaved ${count === 1 ? "change" : "changes"}`}
-          </span>
-        </span>
-        <ChevronDownIcon
-          aria-hidden
-          className="size-3.5 text-muted-foreground max-lg:hidden"
-        />
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        disabled={count === 0}
+        className="flex h-7 shrink-0 items-center gap-2 rounded-md px-1.5 whitespace-nowrap enabled:font-semibold enabled:hover:bg-accent disabled:text-sm disabled:text-muted-foreground disabled:max-lg:hidden">
+        {count === 0 ? (
+          "No unsaved changes"
+        ) : (
+          <>
+            <span
+              aria-hidden
+              className="size-[7px] rounded-full bg-changed ring-3 ring-changed/16"
+            />
+            <span>
+              {count}
+              <span className="max-lg:sr-only">
+                {` unsaved ${count === 1 ? "change" : "changes"}`}
+              </span>
+            </span>
+            <ChevronDownIcon
+              aria-hidden
+              className="size-3.5 text-muted-foreground max-lg:hidden"
+            />
+          </>
+        )}
       </PopoverTrigger>
       <PopoverContent
         side="bottom"
         align="end"
-        className="max-h-[60vh] w-[min(420px,calc(100vw-1.5rem))] gap-0 overflow-y-auto p-1.5">
-        {changes.map((change) => (
-          <ChangeRow key={change.key} change={change} />
-        ))}
+        className="max-h-[60vh] w-[min(420px,calc(100vw-1.5rem))] gap-0 p-1.5">
+        <div className="min-h-0 overflow-y-auto">
+          {changes.map((change) => (
+            <ChangeRow key={change.key} change={change} />
+          ))}
+        </div>
+        <div className="mt-1.5 flex items-center gap-1 border-t pt-1.5">
+          {compare && <CompareButton />}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto"
+            onClick={revertAll}>
+            <EraserIcon />
+            Discard all
+            <Kbd>esc esc</Kbd>
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );
@@ -386,9 +392,7 @@ function MenuItem(props: {
       {props.icon}
       <span className="flex min-w-0 flex-col gap-px">
         {props.label}
-        <small className="text-xs text-muted-foreground">
-          {props.hint}
-        </small>
+        <small className="text-xs text-muted-foreground">{props.hint}</small>
       </span>
     </Menu.Item>
   );
