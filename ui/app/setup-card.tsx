@@ -28,10 +28,10 @@ export function SetupCard() {
   const summary = match?.exact ? `Theme: ${match.theme}` : "Your own colours";
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-10">
+    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:py-10">
       <section
         aria-labelledby="setup-title"
-        className="mx-auto flex max-w-[720px] flex-col gap-6 card p-10 text-lg">
+        className="mx-auto flex max-w-[720px] flex-col gap-6 card p-6 sm:p-10 sm:text-lg">
         <div className="flex items-center gap-3 text-base text-muted-foreground">
           <PaletteDots
             colors={colors.palette.slice(0, 8)}

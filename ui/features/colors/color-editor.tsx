@@ -421,11 +421,7 @@ function Readability(props: ReadabilityProps) {
         <h3 className="flex-1 text-sm text-muted-foreground">
           {surface ? "With" : "On"} {againstName}
         </h3>
-        <span
-          className={cn(
-            "text-lg tabular-nums",
-            !meets && "text-warn",
-          )}>
+        <span className={cn("text-lg tabular-nums", !meets && "text-warn")}>
           {formatRatio(ratio)}
           <span className="text-sm text-muted-foreground">:1</span>
         </span>

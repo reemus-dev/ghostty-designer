@@ -10,7 +10,7 @@ export function Card(props: {
 }) {
   const {label, aside, className, children} = props;
   return (
-    <section className={cn("flex flex-col gap-5 card p-6", className)}>
+    <section className={cn("flex flex-col gap-5 card p-4 sm:p-6", className)}>
       <header className="flex flex-col gap-[3px]">
         <h3 className="text-lg font-semibold tracking-[-0.01em]">{label}</h3>
         {aside !== undefined && (

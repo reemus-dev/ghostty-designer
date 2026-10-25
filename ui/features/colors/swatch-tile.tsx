@@ -5,13 +5,15 @@ import {describeSlot, setSlot, type SlotId, themeSlot} from "@/lib/slots";
 import {send, setColor} from "@/lib/store";
 import type {SlotDragProps} from "./slot-drag";
 
+const CORNERS = {top: "rounded-b-none", bottom: "rounded-t-none"};
+
 /**
- * One colour: its swatch, the reference theme's colour under it, and its hex.
- * `named` lays it out as a row with its name, for the basics.
+ * One colour: its swatch, which grows to fill the tile, and the reference
+ * theme's colour under it. `half` joins it to the other colour of its column.
  */
 export function SwatchTile(props: {
   id: SlotId;
-  named: boolean;
+  half?: "top" | "bottom";
   hex: string;
   selected: boolean;
   changed: boolean;
@@ -20,69 +22,47 @@ export function SwatchTile(props: {
   reference: ThemeSummary | undefined;
   dragProps: SlotDragProps;
 }) {
-  const {id, named, hex, selected, reference} = props;
+  const {id, half, hex, selected, reference} = props;
   const title = describeSlot(id).title;
   return (
     <div
       {...props.dragProps}
-      title={named ? undefined : title}
-      className={cn(
-        "flex min-w-0 cursor-pointer flex-col gap-1.5",
-        named && "flex-row items-center gap-2.5",
-      )}
+      title={title}
+      className="flex min-w-0 cursor-pointer flex-col gap-[3px]"
       onClick={() => setColor(id)}>
-      <span className={cn("flex flex-col gap-[3px]", named && "w-8 shrink-0")}>
-        <button
-          type="button"
-          data-color={id}
-          aria-pressed={selected}
-          aria-label={`${title} ${hex}`}
-          tabIndex={selected ? 0 : -1}
-          className="block rounded-md">
-          <Swatch
-            color={hex}
-            changed={props.changed}
-            warning={props.warning}
-            selected={selected}
-            className={cn(
-              named && "size-8",
-              props.dropTarget &&
-                !selected &&
-                "ring-2 ring-muted-foreground ring-offset-2 ring-offset-card",
-            )}
-          />
-        </button>
-        {reference && (
-          <ReferenceStrip
-            reference={reference}
-            id={id}
-            hex={themeSlot(reference.colors, id)}
-            title={title}
-          />
-        )}
-      </span>
-      <span
+      <button
+        type="button"
+        data-color={id}
+        aria-pressed={selected}
+        aria-label={`${title} ${hex}`}
+        tabIndex={selected ? 0 : -1}
         className={cn(
-          "flex min-w-0 flex-col items-center leading-tight",
-          named && "items-start",
+          "flex flex-1 flex-col rounded-md",
+          half && CORNERS[half],
         )}>
-        {named && (
-          <span
-            className={cn(
-              "max-w-full truncate text-base",
-              selected ? "text-foreground" : "text-muted-foreground",
-            )}>
-            {title}
-          </span>
-        )}
-        <code
+        <Swatch
+          color={hex}
+          changed={props.changed}
+          warning={props.warning}
+          selected={selected}
           className={cn(
-            "px-px text-2xs",
-            selected ? "text-foreground" : "text-muted-foreground",
-          )}>
-          {hex.slice(1)}
-        </code>
-      </span>
+            "h-auto min-h-7 flex-1",
+            half && CORNERS[half],
+            selected && "z-10",
+            props.dropTarget &&
+              !selected &&
+              "ring-2 ring-muted-foreground ring-offset-2 ring-offset-card",
+          )}
+        />
+      </button>
+      {reference && (
+        <ReferenceStrip
+          reference={reference}
+          id={id}
+          hex={themeSlot(reference.colors, id)}
+          title={title}
+        />
+      )}
     </div>
   );
 }

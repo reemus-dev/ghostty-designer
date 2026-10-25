@@ -5,6 +5,7 @@ import {
   Columns2Icon,
   CopyIcon,
   EllipsisIcon,
+  EraserIcon,
   Redo2Icon,
   RotateCcwIcon,
   SearchIcon,
@@ -44,10 +45,14 @@ import {
 import {ChangeValues} from "./change-values";
 import {LiveAlert} from "./live-status";
 
+/** Shrinks a labelled button to its icon in a narrow window. */
+const NARROW_ICON = "max-lg:w-[30px] max-lg:px-0!";
+
 /**
  * Search, the live status while it needs the user, the unsaved changes and the
  * ways out: compare with saved, discard, undo, redo and save. On macOS it
- * starts after the traffic lights.
+ * starts after the traffic lights. In a narrow window, buttons show only their
+ * icons and the change count drops its words.
  */
 export function Toolbar() {
   const platform = useSnapshot((snapshot) => snapshot.ghostty.platform);
@@ -61,11 +66,11 @@ export function Toolbar() {
     <header
       data-tauri-drag-region="deep"
       className={cn(
-        "col-span-2 flex min-w-0 items-center gap-1.5 pr-3 select-none",
+        "col-span-2 flex min-w-0 items-center gap-1 pr-3 select-none lg:gap-1.5",
         platform === "macos" ? "pl-[92px]" : "pl-14",
       )}>
       <SearchButton />
-      <div className="ml-auto flex min-w-0 items-center gap-1.5 pl-3">
+      <div className="ml-auto flex min-w-0 items-center gap-1 lg:gap-1.5 lg:pl-3">
         <LiveAlert />
         {dirty ? (
           <ChangeList
@@ -73,7 +78,7 @@ export function Toolbar() {
             count={state.changes}
           />
         ) : (
-          <span className="px-1 text-sm whitespace-nowrap text-muted-foreground">
+          <span className="px-1 text-sm whitespace-nowrap text-muted-foreground max-lg:hidden">
             No unsaved changes
           </span>
         )}
@@ -82,8 +87,15 @@ export function Toolbar() {
             <CompareButton />
             <Tooltip>
               <TooltipTrigger
-                render={<Button variant="ghost" onClick={revertAll} />}>
-                Discard
+                render={
+                  <Button
+                    variant="ghost"
+                    className={NARROW_ICON}
+                    onClick={revertAll}
+                  />
+                }>
+                <EraserIcon />
+                <span className="max-lg:sr-only">Discard</span>
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 Discard all changes <Kbd>esc esc</Kbd>
@@ -91,7 +103,7 @@ export function Toolbar() {
             </Tooltip>
           </>
         )}
-        <div aria-hidden className="mx-1 h-4 w-px bg-border" />
+        <div aria-hidden className="mx-1 h-4 w-px bg-border max-lg:hidden" />
         <HistoryButton
           shortcut={`${MOD}Z`}
           disabled={history.undo.length === 0}
@@ -114,13 +126,13 @@ export function Toolbar() {
           onClick={() => stepHistory("redo")}>
           <Redo2Icon />
         </HistoryButton>
-        <div aria-hidden className="mx-1 h-4 w-px bg-border" />
+        <div aria-hidden className="mx-1 h-4 w-px bg-border max-lg:hidden" />
         <Tooltip>
           <TooltipTrigger
             render={
               <Button disabled={!dirty} onClick={() => setSaveOpen(true)} />
             }>
-            Save to config…
+            Save
           </TooltipTrigger>
           <TooltipContent side="bottom">
             Review and save to your config <Kbd>{MOD}S</Kbd>
@@ -132,17 +144,26 @@ export function Toolbar() {
   );
 }
 
-/** Looks like a search field and opens the palette, which does the search. */
+/** Opens the palette, which does the search. */
 function SearchButton() {
   return (
-    <Button
-      variant="outline"
-      className="w-80 min-w-10 shrink justify-start gap-2 font-normal text-muted-foreground"
-      onClick={() => setPaletteOpen(true)}>
-      <SearchIcon />
-      <span className="truncate">Search settings, themes, fonts</span>
-      <Kbd className="ml-auto">{MOD}K</Kbd>
-    </Button>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            className={cn("text-muted-foreground", NARROW_ICON)}
+            onClick={() => setPaletteOpen(true)}
+          />
+        }>
+        <SearchIcon />
+        <span className="max-lg:sr-only">Search</span>
+        <Kbd className="max-lg:hidden">{MOD}K</Kbd>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        Search settings, themes, fonts <Kbd>{MOD}K</Kbd>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -185,7 +206,7 @@ function CompareButton() {
         render={
           <Button
             variant="ghost"
-            className="select-none"
+            className={cn("select-none", NARROW_ICON)}
             onPointerDown={() => setPeek(true)}
             onPointerUp={() => setPeek(false)}
             onPointerLeave={() => setPeek(false)}
@@ -198,7 +219,7 @@ function CompareButton() {
           />
         }>
         <Columns2Icon />
-        Compare
+        <span className="max-lg:sr-only">Compare</span>
       </TooltipTrigger>
       <TooltipContent side="bottom">
         Press and hold to see your saved config in Ghostty, or hold <Kbd>\</Kbd>
@@ -218,11 +239,14 @@ function ChangeList(props: {changes: DraftChange[]; count: number}) {
           className="size-[7px] rounded-full bg-changed ring-3 ring-changed/16"
         />
         <span>
-          {count} unsaved {count === 1 ? "change" : "changes"}
+          {count}
+          <span className="max-lg:sr-only">
+            {` unsaved ${count === 1 ? "change" : "changes"}`}
+          </span>
         </span>
         <ChevronDownIcon
           aria-hidden
-          className="size-3.5 text-muted-foreground"
+          className="size-3.5 text-muted-foreground max-lg:hidden"
         />
       </PopoverTrigger>
       <PopoverContent

@@ -111,7 +111,7 @@ export function FontSection() {
 
   return (
     <PageSection id="font">
-      <div className="editor-columns items-start">
+      <div className="grid grid-cols-1 items-start gap-5 lg:editor-columns">
         <div className="flex min-w-0 flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <PageFilter
@@ -169,15 +169,16 @@ export function FontSection() {
             {visible
               ? `${visible.length} of ${fonts?.length ?? 0} fonts`
               : "Scanning fonts…"}
-            <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
               <Kbd>↑</Kbd>
               <Kbd>↓</Kbd> try fonts in Ghostty · <Kbd>{MOD}Z</Kbd> back to
               where you started
             </span>
           </p>
-          {/* About ten rows. The card's edge is an inset ring, which scrolled
+          {/* About ten rows, or half the height when stacked so the page can
+              scroll past it. The card's edge is an inset ring, which scrolled
               rows would paint over, so the rows scroll inside its padding. */}
-          <div className="h-[min(640px,68vh)] card p-1.5">
+          <div className="h-[min(420px,45vh)] card p-1.5 lg:h-[min(640px,68vh)]">
             <div className="h-full overflow-y-auto">
               <FamilyList
                 families={visible}
@@ -190,7 +191,7 @@ export function FontSection() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-5 card p-6">
+        <div className="flex flex-col gap-5 card p-4 sm:p-6">
           <FontHeader
             family={family}
             name={selected || DEFAULT_NAME}

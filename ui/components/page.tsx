@@ -21,8 +21,8 @@ export function PageSection(props: {
       tabIndex={-1}
       aria-labelledby={`${id}-title`}
       className="flex scroll-mt-6 flex-col gap-4 outline-none">
-      <header className="flex items-start gap-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <header className="flex flex-wrap items-start gap-x-4 gap-y-2">
+        <div className="flex min-w-60 flex-1 flex-col gap-1">
           <h2
             id={`${id}-title`}
             className="text-xl font-semibold tracking-[-0.015em]">

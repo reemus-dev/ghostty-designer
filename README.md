@@ -129,7 +129,7 @@ changes, the panel asks first.
         │                                                            ▼ loaded last
         │                                            Ghostty reloads every window
         │
-        └─ Save to config…  (only after you review the exact diff)
+        └─ Save  (only after you review the exact diff)
                  ├─▶ ~/.local/state/ghostty-designer/original/  first copy, never replaced
                  ├─▶ ~/.local/state/ghostty-designer/previous/  copy before the latest write
                  └─▶ your config   only the changed lines, edited in place
@@ -139,7 +139,7 @@ Your config over time:
 
 ```text
  ──●───────────────────●───────────────────────────●──────────────▶
-   designer starts     Enable live preview         Save to config…
+   designer starts     Enable live preview         Save
    nothing written     2 lines added at the end    your changed lines
                        (original copied first)     (previous version copied first)
 
@@ -189,7 +189,7 @@ the panel warns when that hides a change.
 | ------------------------------------------ | ----------------------------------------------------------------------- | ----------------------------------------------------- |
 | The preview file                           | On start, and on every change while the designer runs                   | Stop the designer, or delete the file                 |
 | Two lines at the end of your config        | When you click **Enable live preview** on first run                     | **Restore original config…**, or delete the two lines |
-| The changed lines in your config           | When you confirm **Save to config…**                                    | **Restore original config…**, or the previous copy    |
+| The changed lines in your config           | When you confirm **Save**                                               | **Restore original config…**, or the previous copy    |
 | A theme file in `~/.config/ghostty/themes` | When you save colours as a theme, or tick the backup option when saving | Delete the file. A theme never replaces another file. |
 
 Before its first write to a file, the designer copies the file to

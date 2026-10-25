@@ -1,4 +1,5 @@
 import {type KeyboardEvent, useEffect, useMemo} from "react";
+import {cn} from "cn";
 import {ArrowRightIcon, PinIcon, XIcon} from "lucide-react";
 import {PageSection} from "@/components/page";
 import {Button} from "@/components/ui/button";
@@ -14,9 +15,8 @@ import {
 import {slotColors} from "@/core/theme";
 import type {ThemeSummary} from "@/core/types";
 import {SWATCH_ORDER} from "@/lib/customise";
-import {ALT, isEditable, verticalNeighbour} from "@/lib/keys";
+import {ALT, type Direction, isEditable, neighbour} from "@/lib/keys";
 import {
-  BASE_SLOTS,
   describeSlot,
   type SlotId,
   TERMINAL_SLOTS,
@@ -37,14 +37,29 @@ import {useSlotDrag} from "./slot-drag";
 import {ColorSummary, Warnings} from "./summary";
 import {SwatchTile} from "./swatch-tile";
 
-const NAMES = TERMINAL_SLOTS.slice(0, 8).map((id) => describeSlot(id).title);
+const ARROWS: Partial<Record<string, Direction>> = {
+  ArrowUp: "up",
+  ArrowDown: "down",
+  ArrowLeft: "left",
+  ArrowRight: "right",
+};
 
-/** The slot a key moves to through the list: ← → on the grid, [ and ] anywhere. */
-function stepSlot(id: SlotId, key: string): SlotId | undefined {
-  const delta = {ArrowLeft: -1, ArrowRight: 1, "[": -1, "]": 1}[key];
-  if (delta === undefined) return undefined;
+/** The basics as columns of a colour and the text on it, under row names. */
+const BASICS: {name: string; background?: SlotId; text: SlotId}[] = [
+  {name: "Default", background: "background", text: "foreground"},
+  {name: "Cursor", background: "cursor-color", text: "cursor-text"},
+  {
+    name: "Selection",
+    background: "selection-background",
+    text: "selection-foreground",
+  },
+  {name: "Bold", text: "bold-color"},
+];
+
+/** The slot before or after one in the list, which [ and ] step through. */
+function stepSlot(id: SlotId, delta: number) {
   const index = SWATCH_ORDER.indexOf(id) + delta;
-  return SWATCH_ORDER[Math.min(SWATCH_ORDER.length - 1, Math.max(0, index))];
+  return SWATCH_ORDER[Math.min(SWATCH_ORDER.length - 1, Math.max(0, index))]!;
 }
 
 /** [ and ] step through the colours from anywhere on Customise. */
@@ -61,8 +76,7 @@ function useBracketKeys() {
       )
         return;
       event.preventDefault();
-      const {color} = getStore();
-      setColor(stepSlot(color, event.key) ?? color);
+      setColor(stepSlot(getStore().color, event.key === "[" ? -1 : 1));
     };
     addEventListener("keydown", onKeyDown);
     return () => removeEventListener("keydown", onKeyDown);
@@ -70,9 +84,10 @@ function useBracketKeys() {
 }
 
 /**
- * What the colours are in plain words, every colour as a named swatch with its
- * hex, the editor for the selected one, then the contrast and 256-colour
- * options.
+ * What the colours are in plain words, every colour as a swatch, the editor for
+ * the selected one, then the contrast and 256-colour options. The swatches and
+ * the editor share a card until the window is wide enough to put the editor in
+ * a column of its own.
  */
 export function ColorsSection() {
   const state = useSnapshot((snapshot) => snapshot.state);
@@ -91,29 +106,25 @@ export function ColorsSection() {
   useBracketKeys();
 
   const onArrow = (event: KeyboardEvent<HTMLElement>) => {
-    if (!event.key.startsWith("Arrow")) return;
+    const direction = ARROWS[event.key];
+    if (!direction) return;
     event.preventDefault();
     const swatches = [
       ...event.currentTarget.querySelectorAll<HTMLElement>("[data-color]"),
     ];
     const from = swatches.find((swatch) => swatch.dataset.color === selected);
-    const vertical = event.key === "ArrowUp" || event.key === "ArrowDown";
-    const next = vertical
-      ? from && verticalNeighbour(swatches, from, event.key === "ArrowDown")
-      : swatches.find(
-          (swatch) => swatch.dataset.color === stepSlot(selected, event.key),
-        );
+    const next = from && neighbour(swatches, from, direction);
     if (!next) return;
     setColor(next.dataset.color!);
     next.focus();
   };
 
   const {over, dragProps} = useSlotDrag((id) => colors[id]!.hex);
-  const tile = (id: SlotId, named: boolean) => (
+  const tile = (id: SlotId, half?: "top" | "bottom") => (
     <SwatchTile
       key={id}
       id={id}
-      named={named}
+      half={half}
       hex={colors[id]!.hex}
       selected={id === selected}
       changed={state.provenance[id] === "draft"}
@@ -122,6 +133,20 @@ export function ColorsSection() {
       reference={reference}
       dragProps={dragProps(id)}
     />
+  );
+  // A column of two joined colours over their name. A pinned theme's strip
+  // under each colour parts the pair. Without a top colour, the bottom one
+  // keeps its row.
+  const column = (name: string, top: SlotId | undefined, bottom: SlotId) => (
+    <div
+      key={bottom}
+      className={cn("flex min-w-0 flex-col", reference && "gap-1.5")}>
+      {top ? tile(top, reference ? undefined : "top") : <span className="flex-1" />}
+      {tile(bottom, reference || !top ? undefined : "bottom")}
+      <span className="mt-1.5 flex justify-center text-2xs whitespace-nowrap text-muted-foreground">
+        {name}
+      </span>
+    </div>
   );
 
   return (
@@ -138,60 +163,63 @@ export function ColorsSection() {
           </Button>
         </>
       }>
-      <div className="editor-columns grid-rows-[auto_1fr] items-start">
-        <div className="@container flex flex-col gap-5 card p-6">
-          <Warnings warnings={state.warnings} />
-          <div className="-my-1 flex items-center gap-4">
-            <p className="min-w-0 flex-1 text-sm text-muted-foreground">
-              {reference
-                ? `Under each colour is ${reference.name}'s. Click one to use it.`
-                : `Click a colour to edit it. Drag to swap, ${ALT}-drag to copy.`}
-            </p>
-            <ReferencePicker reference={reference} />
-          </div>
-          <div
-            role="group"
-            aria-label="Colours"
-            className="flex flex-col gap-6"
-            onKeyDown={onArrow}>
-            <div className="flex flex-col gap-3">
-              <h3 className="text-sm text-muted-foreground">Basics</h3>
-              <div className="grid grid-cols-2 gap-4 @min-[34rem]:grid-cols-3 @min-[44rem]:grid-cols-4">
-                {BASE_SLOTS.map((slot) => tile(slot.key, true))}
-              </div>
+      <div className="grid grid-cols-1 items-start gap-5 split:editor-columns split:grid-rows-[auto_1fr]">
+        <div className="flex flex-col gap-5 card p-4 sm:p-6 split:contents">
+          <div className="flex flex-col gap-5 split:card split:p-6">
+            <Warnings warnings={state.warnings} />
+            <div className="-my-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+              <p className="text-sm text-muted-foreground">
+                {reference
+                  ? `Under each colour is ${reference.name}'s. Click one to use it.`
+                  : `Click to edit · drag to swap · ${ALT}-drag to copy`}
+              </p>
+              <ReferencePicker reference={reference} />
             </div>
-            <div className="flex flex-col gap-3">
-              <h3 className="text-sm text-muted-foreground">
-                Terminal colours
-              </h3>
-              <div className="grid grid-cols-[auto_repeat(8,minmax(0,1fr))] items-start gap-2 [&_code]:hidden @min-[30rem]:[&_code]:block">
-                <span />
-                {NAMES.map((name) => (
-                  <span
-                    key={name}
-                    className="truncate text-center text-2xs text-muted-foreground">
-                    {name}
+            <div
+              role="group"
+              aria-label="Colours"
+              className="flex flex-col gap-5"
+              onKeyDown={onArrow}>
+              <div className="flex flex-col gap-3">
+                <h3 className="text-sm text-muted-foreground">Basics</h3>
+                <div className="grid grid-cols-8 gap-x-2">
+                  <div
+                    className={cn(
+                      "col-span-2 flex flex-col text-2xs text-muted-foreground",
+                      reference && "gap-1.5",
+                    )}>
+                    <span className="flex flex-1 items-center">Background</span>
+                    <span className="flex flex-1 items-center">Text</span>
+                    <span aria-hidden className="mt-1.5 h-lh" />
+                  </div>
+                  {BASICS.map((basic) =>
+                    column(basic.name, basic.background, basic.text),
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+                  <h3 className="text-sm text-muted-foreground">
+                    Terminal colours
+                  </h3>
+                  <span className="text-2xs text-muted-foreground">
+                    top normal · bottom bright
                   </span>
-                ))}
-                {["Normal", "Bright"].map((row, r) => [
-                  <span
-                    key={row}
-                    className="flex h-7 items-center pr-2 text-sm text-muted-foreground">
-                    {row}
-                  </span>,
-                  ...TERMINAL_SLOTS.slice(r * 8, r * 8 + 8).map((id) =>
-                    tile(id, false),
-                  ),
-                ])}
+                </div>
+                <div className="grid grid-cols-8 gap-x-2">
+                  {TERMINAL_SLOTS.slice(0, 8).map((id, i) =>
+                    column(describeSlot(id).title, id, TERMINAL_SLOTS[i + 8]!),
+                  )}
+                </div>
               </div>
             </div>
           </div>
+          <ColorEditor
+            slot={selected}
+            reference={reference}
+            className="border-t pt-5 split:sticky split:top-6 split:col-start-2 split:row-span-2 split:row-start-1 split:card split:border-t-0 split:p-6"
+          />
         </div>
-        <ColorEditor
-          slot={selected}
-          reference={reference}
-          className="sticky top-6 col-start-2 row-span-2 row-start-1 card p-6"
-        />
         <ColorOptions colors={colors} provenance={state.provenance} />
       </div>
     </PageSection>

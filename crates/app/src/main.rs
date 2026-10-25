@@ -255,9 +255,11 @@ fn open_panel(app: &AppHandle, state: &Path) -> tauri::Result<()> {
         .hidden_title(true)
         .traffic_light_position(tauri::LogicalPosition::new(18.0, 26.0));
 
-    // Customise lays out the basic colours in three columns from about 1060px
-    // wide. A saved frame smaller than the minimum grows to it.
-    let builder = builder.min_inner_size(1080.0, 600.0);
+    // Beside Ghostty on a 1440pt-wide MacBook screen, the minimum width leaves
+    // Ghostty 80 columns at font sizes up to 18pt. The minimum height
+    // fits the colour editor and the whole rail, and a quarter of a 13"
+    // screen. A saved frame smaller than the minimum grows to it.
+    let builder = builder.min_inner_size(540.0, 400.0);
     let builder = match restore_frame(app, &state.join("window-frame")) {
         Some([x, y, width, height]) => builder.position(x, y).inner_size(width, height),
         None => builder.inner_size(1200.0, 800.0),

@@ -6,7 +6,7 @@ import {PaletteDots} from "@/components/palette-dots";
 import {whyNotShowing} from "@/core/preview";
 import {THEME_PICK_KEYS} from "@/core/theme";
 import type {ColorMatch, ThemeColors, ThemeSummary} from "@/core/types";
-import {verticalNeighbour} from "@/lib/keys";
+import {neighbour} from "@/lib/keys";
 import {pickTheme, type ThemeChoice} from "@/lib/pick";
 import {SPECIMEN_CARD} from "@/lib/specimen";
 import {getStore, send, useSnapshot} from "@/lib/store";
@@ -100,8 +100,8 @@ export function Gallery(props: GalleryProps) {
     const next = {
       left: () => cards[index - 1],
       right: () => cards[index + 1],
-      up: () => verticalNeighbour(cards, target, false),
-      down: () => verticalNeighbour(cards, target, true),
+      up: () => neighbour(cards, target, "up"),
+      down: () => neighbour(cards, target, "down"),
       home: () => cards[0],
       end: () => cards.at(-1),
     }[move]();

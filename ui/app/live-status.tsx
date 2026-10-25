@@ -123,7 +123,7 @@ export function LiveAlert() {
       tip={status.detail}
       className="h-7 min-w-0 shrink gap-2 rounded-full px-2 text-sm">
       <Dot status={status} />
-      <span className="truncate">{status.label}</span>
+      <span className="truncate max-lg:sr-only">{status.label}</span>
     </StatusTrigger>
   );
 }

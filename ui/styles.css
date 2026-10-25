@@ -13,6 +13,9 @@
      Counts and quantities stay sans, with tabular-nums where they change or line up. */
   --font-mono: "Roboto Mono Variable", monospace;
 
+  /* Colours puts its editor beside the swatches here, before the other sections split at lg, where their option names fit. */
+  --breakpoint-split: 57.5rem;
+
   --text-2xs: 12px;
   --text-2xs--line-height: 1.35;
   --text-xs: 13px;
@@ -135,10 +138,10 @@
   @apply rounded-2xl bg-card inset-shadow-highlight inset-ring inset-ring-border;
 }
 
-/* Colours and Font: what you pick from, then the card that edits it. A shared width lines their columns up. */
+/* Colours and Font: what you pick from, then the card that edits it. A shared width lines their columns up.
+   The list keeps room for eight terminal colours and their names, and the editor takes up to 440px of the rest. */
 @utility editor-columns {
-  @apply grid gap-5;
-  grid-template-columns: minmax(0, 1fr) 440px;
+  grid-template-columns: minmax(28rem, 1fr) minmax(0, 440px);
 }
 
 /* The edge and shadow of anything that floats over the panel. */

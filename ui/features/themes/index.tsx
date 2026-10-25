@@ -105,6 +105,7 @@ export function ThemesView() {
 
   return (
     <Page
+      focused={theme?.name ?? "Current"}
       detail={detail}
       filter={
         <Filters
@@ -238,8 +239,6 @@ function Filters(props: {
 
 function Count(props: {children: number}) {
   return (
-    <span className="text-xs text-muted-foreground">
-      {props.children}
-    </span>
+    <span className="text-xs text-muted-foreground">{props.children}</span>
   );
 }
