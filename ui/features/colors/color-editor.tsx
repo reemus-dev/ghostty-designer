@@ -1,23 +1,13 @@
-import {type CSSProperties, useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 import {cn} from "cn";
-import {ArrowRightIcon, CheckIcon, CopyIcon, PinIcon} from "lucide-react";
-import {CommitInput, NumberField} from "@/components/commit-input";
+import {ArrowRightIcon, PinIcon} from "lucide-react";
 import {HexChip} from "@/components/swatch";
 import {Button} from "@/components/ui/button";
-import {Slider} from "@/components/ui/slider";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {
-  clampChroma,
+  type ColorModel,
   contrastRatio,
   fixLightness,
-  formatOklch,
-  fromOklch,
-  FULL_HEX,
-  inSrgbGamut,
-  normalizeHex,
-  type Oklch,
-  parseOklch,
   toOklch,
 } from "@/core/color";
 import {slotColors} from "@/core/theme";
@@ -32,17 +22,16 @@ import {
   themeSlot,
   warningSlot,
 } from "@/lib/slots";
-import {send, sendLive, useSnapshot} from "@/lib/store";
+import {send, useSnapshot} from "@/lib/store";
+import {ChannelFields, ModelSelect} from "./channel-fields";
 
-const C_MAX = 0.37;
-const COPIED_MS = 1200;
 const TARGETS = [3, 4.5, 7];
 const SAMPLE = "~/code ❯ git status  # 0Oo 1lI";
 
 /**
- * Edits one colour: where it comes from, OKLCH sliders that preview while
- * dragging (chroma hatched past sRGB), hex and oklch() fields, copy, reset, and
- * how readable it is against the colour it is read with.
+ * Edits one colour: where it comes from, sliders in a chosen colour model that
+ * preview while dragging (OKLCH chroma hatched past sRGB), hex and CSS fields,
+ * reset, and how readable it is against the colour it is read with.
  */
 export function ColorEditor(props: {
   slot: SlotId;
@@ -62,6 +51,7 @@ export function ColorEditor(props: {
     [state.saved, colorDefaults],
   );
   const themeName = state.themePair?.[state.appearance];
+  const [model, setModel] = useState<ColorModel>("oklch");
 
   const slot = describeSlot(id);
   const hex = colors[id]!.hex;
@@ -101,6 +91,7 @@ export function ColorEditor(props: {
             Reset
           </Button>
         )}
+        <ModelSelect value={model} onChange={setModel} />
       </header>
       {reference && referenceHex && (
         <ReferenceColor
@@ -110,7 +101,13 @@ export function ColorEditor(props: {
           current={hex}
         />
       )}
-      <OklchFields key={id} id={id} hex={hex} label={slot.title} />
+      <ChannelFields
+        key={id}
+        id={id}
+        hex={hex}
+        model={model}
+        label={slot.title}
+      />
       <Readability
         key={`${id}:readability`}
         id={id}
@@ -151,200 +148,6 @@ function ReferenceColor(props: {
         </Button>
       )}
     </p>
-  );
-}
-
-// ─── OKLCH ───
-
-function OklchFields(props: {id: SlotId; hex: string; label: string}) {
-  const {id, hex, label} = props;
-
-  // The OKLCH a drag asked for: greys lose their hue and clamped colours their
-  // chroma in hex, so the sliders keep the request until Ghostty shows it.
-  const [request, setRequest] = useState<{
-    lch: Oklch;
-    hex: string;
-    pending: boolean;
-  }>();
-  if (request?.pending && request.hex === hex) {
-    setRequest({...request, pending: false});
-  }
-  const lch =
-    request && (request.pending || request.hex === hex)
-      ? request.lch
-      : toOklch(hex);
-
-  /**
-   * Sliders and number fields send throttled while they move; the oklch() field
-   * sends once.
-   */
-  const commit = (next: Oklch, live: boolean) => {
-    const nextHex = fromOklch(next);
-    setRequest({lch: next, hex: nextHex, pending: true});
-    const intent = setSlot(id, nextHex, label);
-    if (live) sendLive(intent);
-    else void send(intent);
-  };
-  const commitHex = (text: string) => {
-    const next = normalizeHex(text);
-    if (!next) return false;
-    setRequest(undefined);
-    sendLive(setSlot(id, next, label));
-    return true;
-  };
-  const commitOklch = (text: string) => {
-    const next = parseOklch(text);
-    if (!next) return false;
-    commit(next, false);
-    return true;
-  };
-
-  const edge = clampChroma({...lch, c: C_MAX}).c;
-  const edgePct = (Math.min(edge, C_MAX) / C_MAX) * 100;
-
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-2.5">
-        <ChannelSlider
-          label="L"
-          name="Lightness"
-          value={lch.l}
-          max={1}
-          step={0.001}
-          fieldStep={0.01}
-          decimals={3}
-          track={`linear-gradient(90deg, oklch(0 ${lch.c} ${lch.h}), oklch(0.5 ${lch.c} ${lch.h}), oklch(1 ${lch.c} ${lch.h}))`}
-          onChange={(l) => commit({...lch, l}, true)}
-        />
-        <ChannelSlider
-          label="C"
-          name="Chroma"
-          value={lch.c}
-          max={C_MAX}
-          step={0.001}
-          fieldStep={0.01}
-          decimals={3}
-          track={[
-            edgePct < 100 &&
-              `repeating-linear-gradient(-45deg, transparent 0 3px, rgb(255 255 255 / 55%) 3px 4.5px) right / ${100 - edgePct}% 100% no-repeat`,
-            `linear-gradient(90deg, oklch(${lch.l} 0 ${lch.h}), oklch(${lch.l} ${edge} ${lch.h}) ${edgePct}%, oklch(${lch.l} ${edge} ${lch.h}))`,
-          ]
-            .filter(Boolean)
-            .join(", ")}
-          onChange={(c) => commit({...lch, c}, true)}
-        />
-        <ChannelSlider
-          label="H"
-          name="Hue"
-          value={lch.h}
-          max={360}
-          step={0.1}
-          fieldStep={1}
-          decimals={1}
-          track={`linear-gradient(90deg, ${[0, 60, 120, 180, 240, 300, 360].map((h) => `oklch(0.72 0.12 ${h})`).join(", ")})`}
-          onChange={(h) => commit({...lch, h}, true)}
-        />
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <CommitInput
-          data-hex-field
-          aria-label="Hex"
-          reason="A hex colour such as #1e1e2e"
-          value={hex}
-          live={(text) => FULL_HEX.test(text.trim())}
-          className="min-w-[92px] flex-1"
-          onCommit={commitHex}
-        />
-        <CopyButton hex={hex} />
-        <CommitInput
-          aria-label="OKLCH"
-          reason="Such as oklch(0.72 0.12 250)"
-          value={formatOklch(lch)}
-          className="min-w-46 flex-[3]"
-          onCommit={commitOklch}
-        />
-      </div>
-      {!inSrgbGamut(lch) && (
-        <p className="-mt-1 text-sm text-muted-foreground">
-          Past the hatched edge, Ghostty gets the nearest colour it can show.
-        </p>
-      )}
-    </div>
-  );
-}
-
-type ChannelSliderProps = {
-  label: string;
-  name: string;
-  value: number;
-  max: number;
-  step: number;
-  /** What the field's − / + and arrow keys add. */
-  fieldStep: number;
-  decimals: number;
-  /** CSS background of the track. */
-  track: string;
-  onChange: (value: number) => void;
-};
-
-function ChannelSlider(props: ChannelSliderProps) {
-  const {label, name, value, max, step, track} = props;
-  return (
-    <div className="grid grid-cols-[12px_minmax(0,1fr)_auto] items-center gap-3">
-      <span aria-hidden className="text-sm font-semibold text-muted-foreground">
-        {label}
-      </span>
-      <Slider
-        data-edits
-        aria-label={name}
-        min={0}
-        max={max}
-        step={step}
-        largeStep={max / 10}
-        value={Math.min(value, max)}
-        className="**:data-[slot=slider-track]:h-2! **:data-[slot=slider-track]:[background:var(--track)]!"
-        style={
-          {"--track": track, "--slider-range": "transparent"} as CSSProperties
-        }
-        onValueChange={(next) =>
-          typeof next === "number" && props.onChange(next)
-        }
-      />
-      <NumberField
-        aria-label={`${name} value`}
-        value={value.toFixed(props.decimals)}
-        min={0}
-        max={max}
-        step={props.fieldStep}
-        className="w-12"
-        onCommit={props.onChange}
-      />
-    </div>
-  );
-}
-
-function CopyButton(props: {hex: string}) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="Copy hex"
-            onClick={() => {
-              void navigator.clipboard.writeText(props.hex).then(() => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), COPIED_MS);
-              });
-            }}
-          />
-        }>
-        {copied ? <CheckIcon className="text-live" /> : <CopyIcon />}
-      </TooltipTrigger>
-      <TooltipContent>{copied ? "Copied" : `Copy ${props.hex}`}</TooltipContent>
-    </Tooltip>
   );
 }
 

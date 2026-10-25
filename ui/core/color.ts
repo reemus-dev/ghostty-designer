@@ -1,11 +1,16 @@
 // Pure colour helpers. Colours are hex strings at rest.
 import {
   clampChroma as clampOklchChroma,
+  type Color,
+  modeHsl,
+  modeHsv,
+  modeHwb,
   modeLab65,
   modeLrgb,
   modeOklab,
   modeOklch,
   modeRgb,
+  parse,
   useMode,
   wcagContrast,
   wcagLuminance,
@@ -23,6 +28,9 @@ const toOklchColor = useMode(modeOklch);
 const toLab = useMode(modeLab65);
 const toOklabColor = useMode(modeOklab);
 const toLrgb = useMode(modeLrgb);
+const toHsl = useMode(modeHsl);
+const toHsv = useMode(modeHsv);
+const toHwb = useMode(modeHwb);
 // oxlint-enable react-hooks/rules-of-hooks
 
 /** Accepts the forms Ghostty does: #rgb, #rrggbb, rrggbb. Channels are 0-255. */
@@ -48,6 +56,12 @@ const hexByte = (v: number) =>
   Math.min(255, Math.max(0, Math.round(v)))
     .toString(16)
     .padStart(2, "0");
+
+/** Channels outside sRGB are clipped. */
+function hexOf(color: Color) {
+  const {r, g, b} = toRgb(color);
+  return formatHex({r: r * 255, g: g * 255, b: b * 255});
+}
 
 /**
  * A colour complete enough to show while it is typed: six hex digits, not three
@@ -122,10 +136,8 @@ export function fixLightness(hex: string, against: string, target: number) {
 }
 
 /** Out-of-gamut colours lose chroma until they fit sRGB. */
-export function fromOklch(color: Oklch): string {
-  const {r, g, b} = toRgb({mode: "oklch", ...clampChroma(color)});
-  return formatHex({r: r * 255, g: g * 255, b: b * 255});
-}
+export const fromOklch = (color: Oklch) =>
+  hexOf({mode: "oklch", ...clampChroma(color)});
 
 /** True when every sRGB channel rounds into 0-255. */
 export function inSrgbGamut(color: Oklch) {
@@ -157,9 +169,6 @@ export function xterm256(index: number) {
     b: CUBE[n % 6]!,
   });
 }
-
-/** A channel from 0-1 scaled to 0-255, clamped. */
-const unitByte = (v: number) => Math.min(1, Math.max(0, v)) * 255;
 
 /**
  * Slots 16-255 as Ghostty shows them. `palette-generate` interpolates the cube
@@ -194,11 +203,6 @@ export function extendedPalette(input: {
     a: a.a + (b.a - a.a) * t,
     b: a.b + (b.b - a.b) * t,
   });
-  const hexOf = (color: Lab) => {
-    const {r, g, b} = toRgb(color);
-    return formatHex({r: unitByte(r), g: unitByte(g), b: unitByte(b)});
-  };
-
   const result: string[] = [];
   for (let r = 0; r < 6; r++) {
     const c0 = blend(r / 5, base[0]!, base[1]!);
@@ -217,24 +221,92 @@ export function extendedPalette(input: {
   return result.map((hex, i) => (explicit(i + 16) ? fixed(i + 16) : hex));
 }
 
-/** `oklch(0.561 0.034 279.1)`, as CSS writes it. */
-export const formatOklch = ({l, c, h}: Oklch) =>
-  `oklch(${l.toFixed(3)} ${c.toFixed(3)} ${h.toFixed(1)})`;
+// ─── Colour models ───
+
+export type ColorModel = "oklch" | "hsl" | "hsv" | "hwb" | "rgb";
+
+/**
+ * A colour's channels in a model, in the units its CSS form writes: percentages
+ * 0-100, RGB 0-255, hue in degrees (0 for greys).
+ */
+export type Channels = [number, number, number];
+
+/** Throws RangeError on a non-hex colour. */
+export const toChannels = (hex: string, model: ColorModel) =>
+  channelsOf(unit(hex), model);
+
+/** Out-of-gamut OKLCH loses chroma until it fits sRGB. */
+export function fromChannels(model: ColorModel, channels: Channels) {
+  const [a, b, c] = channels;
+  switch (model) {
+    case "oklch":
+      return fromOklch({l: a, c: b, h: c});
+    case "hsl":
+      return hexOf({mode: "hsl", h: a, s: b / 100, l: c / 100});
+    case "hsv":
+      return hexOf({mode: "hsv", h: a, s: b / 100, v: c / 100});
+    case "hwb":
+      return hexOf({mode: "hwb", h: a, w: b / 100, b: c / 100});
+    case "rgb":
+      return hexOf({mode: "rgb", r: a / 255, g: b / 255, b: c / 255});
+  }
+}
+
+function channelsOf(color: Color, model: ColorModel): Channels {
+  switch (model) {
+    case "oklch": {
+      const {l, c, h} = toOklchColor(color);
+      return [l, c, h ?? 0];
+    }
+    case "hsl": {
+      const {h, s, l} = toHsl(color);
+      return [h ?? 0, s * 100, l * 100];
+    }
+    case "hsv": {
+      const {h, s, v} = toHsv(color);
+      return [h ?? 0, s * 100, v * 100];
+    }
+    case "hwb": {
+      const {h, w, b} = toHwb(color);
+      return [h ?? 0, w * 100, b * 100];
+    }
+    case "rgb": {
+      const {r, g, b} = toRgb(color);
+      return [r * 255, g * 255, b * 255];
+    }
+  }
+}
 
 const NUMBER = String.raw`\d+(?:\.\d*)?|\.\d+`;
-const OKLCH = new RegExp(
-  String.raw`^oklch\(\s*(${NUMBER})(%?)\s+(${NUMBER})\s+(${NUMBER})(?:deg)?\s*(?:\/\s*(?:${NUMBER})%?\s*)?\)$`,
+// CSS has no hsv(), so the editor reads and writes one shaped like hwb().
+const HSV = new RegExp(
+  String.raw`^hsv\(\s*(${NUMBER})(?:deg)?\s+(${NUMBER})%\s+(${NUMBER})%\s*\)$`,
   "i",
 );
 
-/** Parses the CSS form, lightness as 0-1 or a percentage. */
-export function parseOklch(text: string): Oklch | null {
-  const match = OKLCH.exec(text.trim());
-  if (!match) return null;
-  const [, l, percent, c, h] = match;
-  return {
-    l: Number(l) / (percent ? 100 : 1),
-    c: Number(c),
-    h: Number(h) % 360,
-  };
+/** Any CSS colour, Ghostty's bare rrggbb, or hsv(). Alpha is ignored. */
+function parseAny(text: string): Color | undefined {
+  const trimmed = text.trim();
+  const hsv = HSV.exec(trimmed);
+  if (hsv) {
+    const [, h, s, v] = hsv.map(Number);
+    return {mode: "hsv", h: h! % 360, s: s! / 100, v: v! / 100};
+  }
+  const hex = normalizeHex(trimmed);
+  return parse(hex ?? trimmed);
+}
+
+/**
+ * The text's colour in `model`. Text in the same model keeps its channels, so a
+ * grey keeps its hue and OKLCH past sRGB keeps its chroma.
+ */
+export function parseChannels(text: string, model: ColorModel) {
+  const color = parseAny(text);
+  return color && channelsOf(color, model);
+}
+
+/** Lowercase #rrggbb from the text, with chroma reduced to fit sRGB. */
+export function parseColor(text: string) {
+  const color = parseAny(text);
+  return color && hexOf(clampOklchChroma(color, "oklch"));
 }
