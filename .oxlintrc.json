@@ -62,6 +62,8 @@
       {"max": 150, "skipBlankLines": true, "skipComments": true}
     ],
     "complexity": "warn",
+    // A stylesheet import exists for its side effect.
+    "import/no-unassigned-import": ["warn", {"allow": ["**/*.css"]}],
 
     // Rules from the recommended configs of eslint, typescript-eslint (type
     // checked), react and import that oxlint files under style or restriction.

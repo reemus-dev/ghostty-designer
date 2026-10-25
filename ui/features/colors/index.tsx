@@ -169,7 +169,7 @@ export function ColorsSection() {
                 {NAMES.map((name) => (
                   <span
                     key={name}
-                    className="truncate text-center text-xs text-muted-foreground">
+                    className="truncate text-center text-2xs text-muted-foreground">
                     {name}
                   </span>
                 ))}

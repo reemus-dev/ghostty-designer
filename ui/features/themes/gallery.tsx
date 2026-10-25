@@ -126,7 +126,7 @@ export function Gallery(props: GalleryProps) {
           <h2 className="flex items-baseline gap-2 font-medium text-muted-foreground">
             {section.label}
             {section.themes.length > 0 && (
-              <span className="font-mono text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 {section.themes.length}
               </span>
             )}

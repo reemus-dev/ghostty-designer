@@ -118,12 +118,12 @@ function ContrastTable(props: {colors: Colors}) {
             ))}
           </tr>
         </thead>
-        <tbody className="font-mono">
+        <tbody>
           {TEXT_SLOTS.map((text) => (
             <tr key={text}>
               <th
                 scope="row"
-                className="pr-2 text-left font-sans font-normal whitespace-nowrap text-muted-foreground">
+                className="pr-2 text-left font-normal whitespace-nowrap text-muted-foreground">
                 {describeSlot(text).title}
               </th>
               {BACKGROUND_SLOTS.map((bg) => {

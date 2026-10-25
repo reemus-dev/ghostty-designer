@@ -16,7 +16,7 @@ export function Chip(props: Toggle.Props & {count?: number}) {
       )}>
       {children}
       {count !== undefined && (
-        <span className="font-mono text-2xs font-normal text-muted-foreground group-aria-pressed/toggle:text-foreground">
+        <span className="text-2xs font-normal text-muted-foreground group-aria-pressed/toggle:text-foreground">
           {count}
         </span>
       )}

@@ -9,7 +9,7 @@
   "app": {
     "windows": [],
     "security": {
-      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; font-src 'self' font:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; font-src 'self' data: font:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     }
   },
   "bundle": {

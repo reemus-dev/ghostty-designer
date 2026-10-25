@@ -137,7 +137,7 @@ function SearchButton() {
   return (
     <Button
       variant="outline"
-      className="w-72 min-w-10 shrink justify-start gap-2 font-normal text-muted-foreground"
+      className="w-80 min-w-10 shrink justify-start gap-2 font-normal text-muted-foreground"
       onClick={() => setPaletteOpen(true)}>
       <SearchIcon />
       <span className="truncate">Search settings, themes, fonts</span>

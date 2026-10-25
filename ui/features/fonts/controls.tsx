@@ -331,7 +331,7 @@ function Features(props: {family: FontFamily}) {
             className="flex flex-col gap-1.5 border-t pt-2.5 first:border-t-0">
             <h4 className="flex items-center gap-1.5 text-sm text-muted-foreground">
               {group.label}
-              <span className="font-mono text-2xs">
+              <span className="text-2xs">
                 {on > 0 ? `${on} on · ${group.tags.length}` : group.tags.length}
               </span>
             </h4>

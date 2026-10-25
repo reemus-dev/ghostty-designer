@@ -238,7 +238,7 @@ function Filters(props: {
 
 function Count(props: {children: number}) {
   return (
-    <span className="font-mono text-xs text-muted-foreground">
+    <span className="text-xs text-muted-foreground">
       {props.children}
     </span>
   );

@@ -423,7 +423,7 @@ function Readability(props: ReadabilityProps) {
         </h3>
         <span
           className={cn(
-            "font-mono text-lg tracking-[-0.02em]",
+            "text-lg tabular-nums",
             !meets && "text-warn",
           )}>
           {formatRatio(ratio)}

@@ -8,9 +8,10 @@
 
 /* Type runs 12/13/14/15/17/24, body at 15. */
 @theme {
-  --font-sans:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: "Inter Variable", sans-serif;
+  /* Mono only for text Ghostty or a shell reads as written: config keys and values, paths, terminal samples.
+     Counts and quantities stay sans, with tabular-nums where they change or line up. */
+  --font-mono: "Roboto Mono Variable", monospace;
 
   --text-2xs: 12px;
   --text-2xs--line-height: 1.35;
@@ -162,14 +163,11 @@
   }
   body {
     @apply bg-background font-sans text-base text-foreground antialiased;
-    font-variant-numeric: tabular-nums;
     /* No one- or two-word last lines. Browsers balance up to about six lines and wrap longer text as usual. */
     text-wrap: balance;
     overflow: hidden;
   }
-  code,
-  kbd,
-  samp {
+  code {
     @apply font-mono;
   }
   :focus-visible {

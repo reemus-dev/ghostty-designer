@@ -256,7 +256,7 @@ export function NumberField(
       reason={whole ? "Whole numbers only" : "Numbers only"}
       {...rest}
       inputMode={whole ? "numeric" : "decimal"}
-      className={cn("w-10 px-0 text-center", className)}
+      className={cn("w-10 px-0 text-center font-sans tabular-nums", className)}
       live={(text) => text.trim() !== ""}
       step={(text, by) => {
         const trimmed = text.trim();
