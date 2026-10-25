@@ -234,6 +234,9 @@ fn open_panel(app: &AppHandle, state: &Path) -> tauri::Result<()> {
         // WebKitGTK only automates the shared context, which incognito replaces.
         .incognito(std::env::var("TAURI_WEBVIEW_AUTOMATION").as_deref() != Ok("true"))
         .data_directory(state.join("webview"))
+        // Tauri's file drop handler takes every native drag, so the page would
+        // see no dragover or drop events and colour swatches could not swap.
+        .disable_drag_drop_handler()
         .on_navigation(move |url| {
             let same_origin = url.scheme() == origin.scheme()
                 && url.host_str() == origin.host_str()
