@@ -197,7 +197,7 @@ function OptionLabel(props: {
             onClick={() => setDocOpen(true)}
             aria-describedby={helpId}
             className="group/doc flex min-w-0 items-center gap-1.5 rounded-sm">
-            <span ref={label} className="truncate font-medium text-foreground">
+            <span ref={label} className="truncate text-foreground">
               {option.label}
             </span>
             <Icon
