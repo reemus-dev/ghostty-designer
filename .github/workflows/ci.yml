@@ -47,14 +47,7 @@ jobs:
       - name: Run canonical checks
         run: mise run check
 
-      - name: Install Ghostty
-        if: runner.os == 'Linux'
-        run: |
-          sudo snap install ghostty --classic --revision=820
-          /snap/bin/ghostty +version
-
       - name: Launch and close the window
-        if: runner.os == 'Linux'
         run: mise run smoke
 
   scenarios:

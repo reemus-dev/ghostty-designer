@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Launch-and-close smoke for the window: runs the app in a throwaway sandbox,
 # under Xvfb on Linux, then checks it reports ready once the panel connects and
-# exits cleanly on SIGTERM with no preview left behind.
+# exits cleanly on SIGTERM with no preview left behind. A fake Ghostty CLI
+# answers from the Ghostty 1.3.1 fixtures, so no Ghostty install is needed.
 #
 #   smoke.sh            build the app with the embedded UI and smoke it
 #   smoke.sh <binary>   smoke an installed or released binary
@@ -21,7 +22,18 @@ sandbox=$(mktemp -d)
 trap 'kill "${pid:-}" 2>/dev/null || true; rm -rf "$sandbox"' EXIT
 mkdir -p "$sandbox"/{home,xdg,state}
 
-GHOSTTY_DESIGNER_TARGET_PID='' GHOSTTY_DESIGNER_ATTACHED=1 \
+fixtures=$(cd "$scripts/../crates/host/tests/fixtures/ghostty-1.3.1" && pwd)
+cat >"$sandbox/ghostty" <<EOF
+#!/bin/sh
+case \$1 in
+  +version) cat "$fixtures/version.txt" ;;
+  +list-fonts) cat "$fixtures/list-fonts.txt" ;;
+  +show-config) echo 'font-size = 13' ;;
+esac
+EOF
+chmod +x "$sandbox/ghostty"
+
+GHOSTTY_DESIGNER_GHOSTTY=$sandbox/ghostty GHOSTTY_DESIGNER_TARGET_PID='' GHOSTTY_DESIGNER_ATTACHED=1 \
   "$scripts/sandbox-env.sh" "$sandbox" "$binary" >"$sandbox/out" 2>"$sandbox/err" &
 pid=$!
 

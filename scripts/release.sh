@@ -76,18 +76,6 @@ check() {
     exit 1
   fi
 
-  # The app needs a Ghostty CLI to start. This one answers from the fixtures.
-  cat >"$dir/ghostty" <<EOF
-#!/bin/sh
-case \$1 in
-  +version) cat "$ROOT/crates/host/tests/fixtures/ghostty-1.3.1/version.txt" ;;
-  +list-fonts) cat "$ROOT/crates/host/tests/fixtures/ghostty-1.3.1/list-fonts.txt" ;;
-  +show-config) echo 'font-size = 13' ;;
-esac
-EOF
-  chmod +x "$dir/ghostty"
-  export GHOSTTY_DESIGNER_GHOSTTY=$dir/ghostty
-
   if [ "$os" = darwin ]; then
     scripts/smoke.sh "$binary"
     return
@@ -103,7 +91,7 @@ EOF
   local names=() pids=()
   contained() {
     names+=("$1 on $2")
-    docker run --init --rm -v "$ROOT:$ROOT:ro" -v "$dir:$dir:ro" -w "$ROOT" -e GHOSTTY_DESIGNER_GHOSTTY \
+    docker run --init --rm -v "$ROOT:$ROOT:ro" -v "$dir:$dir:ro" -w "$ROOT" \
       "$2" bash -ec "$3 >/dev/null; scripts/smoke.sh $4" >"$dir/${#names[@]}.log" 2>&1 &
     pids+=($!)
   }
