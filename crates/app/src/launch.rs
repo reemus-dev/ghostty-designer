@@ -16,7 +16,9 @@ use std::sync::{Mutex, OnceLock, PoisonError};
 use std::thread;
 use std::time::Duration;
 
-/// Set by scripts that supervise the process, and on the detached copy.
+/// "1" when a parent supervises the process: a script, or the terminal launch
+/// waiting on its detached copy. The process then stays in the foreground,
+/// reports its launch result to the parent, and shows no error dialog.
 const ATTACHED: &str = "GHOSTTY_DESIGNER_ATTACHED";
 /// The descriptor of the detached copy's end of the report pipe.
 const REPORT_FD: &str = "GHOSTTY_DESIGNER_REPORT_FD";
@@ -119,10 +121,22 @@ pub fn detach(state: &Path) -> ! {
     let see_log = format!("see {}", log.display());
     match receiver.recv_timeout(WAIT_FOR) {
         Ok(report) => match report.trim_end() {
-            line @ ("ready" | "focused") => {
-                outln!("{line}");
+            "ready" => {
+                let tip = |bold: &str, cyan: &str, reset: &str| {
+                    format!(
+                        "{bold}Tip:{reset} run {cyan}ghostty-designer demo{reset} in Ghostty to print sample terminal output."
+                    )
+                };
+                let rule = "─".repeat(tip("", "", "").chars().count() + 2);
+                let text = if crate::use_color(io::stderr().is_terminal()) {
+                    tip("\x1b[1m", "\x1b[36m", "\x1b[0m")
+                } else {
+                    tip("", "", "")
+                };
+                errln!("┌{rule}┐\n│ {text} │\n└{rule}┘");
                 std::process::exit(0);
             }
+            "focused" => std::process::exit(0),
             line => match line.strip_prefix("error ") {
                 Some(error) => errln!("ghostty-designer: {error}"),
                 None => errln!("ghostty-designer: the window exited while starting; {see_log}"),
@@ -136,14 +150,16 @@ pub fn detach(state: &Path) -> ! {
     std::process::exit(1);
 }
 
-/// Reports the launch result once: to the waiting terminal, or to stdout.
+/// Reports the launch result once: to the waiting terminal, or to a
+/// supervising script's stdout.
 pub fn report(line: &str) {
     if REPORTED.swap(true, Ordering::SeqCst) {
         return;
     }
     match PIPE.lock().unwrap_or_else(PoisonError::into_inner).take() {
         Some(mut pipe) => drop(writeln!(pipe, "{line}")),
-        None => outln!("{line}"),
+        None if attached() => outln!("{line}"),
+        None => {}
     }
 }
 
