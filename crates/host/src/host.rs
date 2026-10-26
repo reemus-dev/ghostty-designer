@@ -36,11 +36,13 @@ use std::time::Duration;
 use notify::RecursiveMode;
 
 use crate::api::{
-    Command, CommandResult, ConfigFile, Error, FontFamily, GhosttyInfo, HostInfo, HostMessage,
-    LoadedConfig, OrderedCommand, SaveEdit, SavedFiles, SavedTheme, ThemeFile,
+    AppConfig, Command, CommandResult, ConfigChoice, ConfigFile, EditedConfig, Error, FontFamily,
+    GhosttyInfo, HostInfo, HostMessage, LoadedConfig, OrderedCommand, SaveEdit, SavedFiles,
+    SavedTheme, ThemeFile,
 };
+use crate::app_state;
 use crate::config_file::load_config_set;
-use crate::env::Env;
+use crate::env::{Config, Env};
 use crate::fonts::{FontIndex, FontScan};
 use crate::ghostty::{self, Ghostty};
 use crate::preview::{self, Preview};
@@ -224,6 +226,13 @@ impl Host {
                 version: host.ghostty.version.clone(),
                 platform: host.ghostty.platform,
                 config_path: host.ghostty.config_path.display().to_string(),
+                edited: match &host.env.config {
+                    Config::Ghostty => EditedConfig::Ghostty,
+                    Config::File { path, ghostty_base } => EditedConfig::File {
+                        app: host.env.app_of(path).map(str::to_owned),
+                        ghostty_base: *ghostty_base,
+                    },
+                },
             },
             defaults_with_docs: host.defaults_with_docs.clone(),
             fonts: lock(&host.panel.fonts).clone(),
@@ -231,6 +240,34 @@ impl Host {
             persisted: read_state(&host.env.state_dir.join(STATE_FILE), &*host.log),
             stash: lock(&host.stash).clone(),
         }
+    }
+
+    pub fn env(&self) -> &Env {
+        &self.0.env
+    }
+
+    /// Ghostty's config, each known app's that exists, then the recent files.
+    pub fn config_choices(&self) -> Vec<ConfigChoice> {
+        let env = &self.0.env;
+        let mut ghostty = env.clone();
+        ghostty.config = Config::Ghostty;
+        let path = |path: PathBuf| path.display().to_string();
+        let apps = env
+            .app_config_files()
+            .into_iter()
+            .map(|(app, file)| ConfigChoice::App {
+                app: app.to_owned(),
+                path: path(file),
+            });
+        let recent = app_state::recent(env)
+            .into_iter()
+            .map(|file| ConfigChoice::Recent { path: path(file) });
+        std::iter::once(ConfigChoice::Ghostty {
+            path: path(ghostty.config_to_write()),
+        })
+        .chain(apps)
+        .chain(recent)
+        .collect()
     }
 
     /// Runs a command.
@@ -284,18 +321,47 @@ impl Host {
             )
             .map_err(|error| internal(format!("Could not read the config: {error}")))?;
             *lock(&host.loaded) = set.files.iter().map(|file| file.path.clone()).collect();
-            let can_restore_original =
-                save::has_original(&host.env.state_dir, &host.loaded_files());
+            let writable = host.config_files()?;
+            let can_restore_original = save::has_original(&host.env.state_dir, &writable);
+            let read_only = set
+                .files
+                .iter()
+                .filter(|file| !writable.contains(&file.path))
+                .map(|file| file.path.display().to_string())
+                .collect();
             let files = set.files.into_iter().map(|file| ConfigFile {
                 path: file.path.display().to_string(),
                 text: file.text,
                 utf8: file.utf8,
             });
+            // Apps over Ghostty's config, which only inform the save review, so
+            // an unreadable one is left out.
+            let apps = match host.env.config {
+                Config::Ghostty => host.env.app_config_files(),
+                Config::File { .. } => Vec::new(),
+            };
+            let apps = apps
+                .into_iter()
+                .filter(|(_, path)| app_state::ghostty_base(&host.env, path))
+                .filter_map(|(app, path)| {
+                    let bytes = fs::read(&path).ok()?;
+                    let file = ConfigFile {
+                        path: path.display().to_string(),
+                        utf8: std::str::from_utf8(&bytes).is_ok(),
+                        text: String::from_utf8_lossy(&bytes).into_owned(),
+                    };
+                    Some(AppConfig {
+                        app: app.into(),
+                        file,
+                    })
+                });
             Ok(LoadedConfig {
                 files: files.collect(),
                 preview: set.preview,
                 preview_cleared_by: set.preview_cleared_by,
                 can_restore_original,
+                read_only,
+                apps: apps.collect(),
             })
         })
         .await??;
@@ -303,15 +369,14 @@ impl Host {
         Ok(loaded)
     }
 
-    /// The config as Ghostty shows it without the preview. +show-config takes
-    /// no config flags (src/cli/show_config.zig:62-66) and reads the real
-    /// config, which includes the preview file.
+    /// The config as Ghostty shows it without the preview, which the config
+    /// includes.
     async fn show_config(&self) -> Result<String, Error> {
         let host = &self.0;
-        let args = ["+show-config", "--changes-only=false"];
+        let files = host.env.main_config_files();
         let shown = host
             .preview
-            .without_preview(|| host.ghostty.run(&host.env, args))
+            .without_preview(|| ghostty::show_config(&host.env, &host.ghostty, &files))
             .await
             .map_err(|error| {
                 internal(format!(
@@ -427,6 +492,11 @@ impl Host {
         self.0.panel.send(HostMessage::AppearanceChanged);
     }
 
+    /// Tells the panel a later launch asked to edit a config file.
+    pub fn switch_requested(&self) {
+        self.0.panel.send(HostMessage::SwitchRequested);
+    }
+
     /// The font faces of the latest scan, for `font://`.
     pub fn fonts(&self) -> FontIndex {
         self.0.font_scan.index()
@@ -460,11 +530,11 @@ impl Host {
 }
 
 impl Shared {
-    /// The files a save or restore may write: the config path and the files
-    /// the config loads now.
+    /// The files a save or restore may write: the config path, and the files
+    /// the writable main files load now.
     fn config_files(&self) -> Result<Vec<PathBuf>, Error> {
         let set = load_config_set(
-            &self.env.main_config_files(),
+            &self.env.writable_config_files(),
             &self.env.home,
             &self.ghostty.preview_path,
         )

@@ -54,7 +54,12 @@ function fakeHost(options: Options) {
     connect(listener) {
       onMessage = listener;
       return Promise.resolve({
-        ghostty: {version: "1.3.1", platform: "macos", configPath: CONFIG},
+        ghostty: {
+          version: "1.3.1",
+          platform: "macos",
+          configPath: CONFIG,
+          edited: {type: "ghostty"},
+        },
         defaultsWithDocs: DEFAULTS,
         fonts: [],
         instances: 0,
@@ -69,6 +74,8 @@ function fakeHost(options: Options) {
           includeLoads && file.includes(PREVIEW_FILE_NAME) ? "last" : "absent",
         previewClearedBy: null,
         canRestoreOriginal: file !== original,
+        readOnly: [],
+        apps: [],
       }),
     async showConfig() {
       const shown = file;

@@ -1,12 +1,13 @@
 import {useMemo, useState} from "react";
 import {cn} from "cn";
-import {ArchiveRestoreIcon, ShieldCheckIcon} from "lucide-react";
+import {ArchiveRestoreIcon, FileCogIcon, ShieldCheckIcon} from "lucide-react";
 import {PaletteDots} from "@/components/palette-dots";
 import {Button} from "@/components/ui/button";
 import {PREVIEW_INCLUDE_LINES} from "@/core/save";
 import {themeColors} from "@/core/theme";
 import {tildePath} from "@/lib/paths";
-import {send, useSnapshot} from "@/lib/store";
+import {send, setConfigOpen, useSnapshot} from "@/lib/store";
+import {appName} from "@/lib/views";
 
 /**
  * Live preview needs one include line in the config. The card asks for it while
@@ -18,6 +19,7 @@ export function SetupCard() {
   const match = useSnapshot((snapshot) => snapshot.state.colorMatch);
   const effective = useSnapshot((snapshot) => snapshot.state.effective);
   const colorDefaults = useSnapshot((snapshot) => snapshot.colorDefaults);
+  const edited = useSnapshot((snapshot) => snapshot.ghostty.edited);
   const colors = useMemo(
     () => themeColors(effective, colorDefaults),
     [effective, colorDefaults],
@@ -27,6 +29,10 @@ export function SetupCard() {
   const font = effective["font-family"]?.[0] ?? "Ghostty's default font";
   const size = effective["font-size"]?.[0];
   const summary = match?.exact ? `Theme: ${match.theme}` : "Your own colours";
+  const whose =
+    edited.type === "file" && edited.app === null
+      ? configPath.slice(configPath.lastIndexOf("/") + 1)
+      : `${appName(edited)}'s config`;
 
   return (
     // Centred in the window, not just under the title bar: the bottom padding
@@ -42,27 +48,42 @@ export function SetupCard() {
             Enable live preview
           </h1>
           <p className="text-muted-foreground">
-            See your changes in your open Ghostty windows as you make them. To
-            do this, Ghostty Designer adds these lines to the end of your
-            config:
+            {edited.type === "ghostty"
+              ? "To show your changes in your open Ghostty windows as you make them,"
+              : `To show your changes in ${appName(edited)} whenever it reloads its config,`}{" "}
+            Ghostty Designer adds these lines to the end of your config:
           </p>
         </div>
 
         <figure className="overflow-hidden rounded-xl bg-background inset-ring inset-ring-border">
-          <figcaption className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-b px-4 py-2 text-sm text-muted-foreground">
-            <span className="font-mono wrap-anywhere">
-              {tildePath(configPath)}
+          <figcaption className="flex flex-col gap-2 border-b px-4 py-3 text-sm text-muted-foreground">
+            <span className="flex items-center justify-between gap-3">
+              <span className="text-base font-medium text-foreground">
+                {whose}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setConfigOpen(true)}>
+                <FileCogIcon />
+                Edit another config…
+              </Button>
             </span>
-            <span className="flex items-center gap-2">
-              <PaletteDots
-                colors={colors.palette.slice(0, 8)}
-                className="flex shrink-0 gap-0.5 rounded-sm p-1 inset-ring inset-ring-border"
-                dotClassName="size-2.5 rounded-[2px]"
-                style={{background: colors.background}}
-              />
-              <span>
-                {summary} · {font}
-                {size && `, ${size} pt`}
+            <span className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
+              <span className="font-mono wrap-anywhere">
+                {tildePath(configPath)}
+              </span>
+              <span className="flex items-center gap-2">
+                <PaletteDots
+                  colors={colors.palette.slice(0, 8)}
+                  className="flex shrink-0 gap-0.5 rounded-sm p-1 inset-ring inset-ring-border"
+                  dotClassName="size-2.5 rounded-[2px]"
+                  style={{background: colors.background}}
+                />
+                <span>
+                  {summary} · {font}
+                  {size && `, ${size} pt`}
+                </span>
               </span>
             </span>
           </figcaption>
@@ -87,25 +108,23 @@ export function SetupCard() {
           <li className="flex gap-3">
             <ShieldCheckIcon aria-hidden className="mt-1 size-4 shrink-0" />
             <span>
-              They point Ghostty at a small file that Ghostty Designer looks
-              after. The <code className="text-foreground">?</code> tells
-              Ghostty to skip that file if it's ever missing, so the lines can't
-              break anything.
+              They load a preview file that Ghostty Designer manages. The{" "}
+              <code className="text-foreground">?</code> tells {appName(edited)}{" "}
+              to skip it if it's missing.
             </span>
           </li>
           <li className="flex gap-3">
             <ArchiveRestoreIcon aria-hidden className="mt-1 size-4 shrink-0" />
             <span>
-              A backup of your config is kept first. Remove the lines or restore
-              the original any time.
+              Your config is backed up first. You can remove the lines or
+              restore the original any time.
             </span>
           </li>
         </ul>
 
         <div className="flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
-            With “Not now” you can still change and save settings. Ghostty then
-            updates only when you save.
+            Without live preview, {appName(edited)} updates only when you save.
           </p>
           <div className="flex shrink-0 justify-end gap-2">
             <Button

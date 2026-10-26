@@ -263,6 +263,19 @@ export type SaveConflict = {
   text: string;
 };
 
+/** Changes that a config file the save does not write decides once saved. */
+export type ConfigOverride = {
+  /**
+   * "Ghostty" for Ghostty's config below another file, or an app whose own
+   * config loads over the saved one.
+   */
+  by: string;
+  /** The files whose lines win. */
+  paths: string[];
+  /** The changes, as draftKeys names them. */
+  keys: string[];
+};
+
 export type SavePlan = {
   /** Identifies this review: a save applies only the plan last reviewed. */
   id: string;
@@ -282,6 +295,7 @@ export type SavePlan = {
    * theme.
    */
   replacesColors: boolean;
+  overrides: ConfigOverride[];
 };
 
 /**
@@ -307,4 +321,5 @@ export type SessionMessage =
   | {type: "fonts"; fonts: FontFamily[]}
   | {type: "themes"; themes: ThemeSummary[]}
   | {type: "error"; message: string}
-  | {type: "close-requested"};
+  | {type: "close-requested"}
+  | {type: "switch-requested"};

@@ -15,8 +15,15 @@ import {
   serializeConfig,
 } from "./config-file";
 import {inputError} from "./errors";
+import {draftKeys} from "./resolve";
 import {THEME_COLOR_KEYS} from "./theme";
-import type {Draft, SaveConflict, SavePlan, Values} from "./types";
+import type {
+  ConfigOverride,
+  Draft,
+  SaveConflict,
+  SavePlan,
+  Values,
+} from "./types";
 import {paletteByIndex, paletteIndex} from "./values";
 
 const CONFLICT_PREFIX = "# ghostty-designer: ";
@@ -44,6 +51,10 @@ type SaveInput = {
   /** The keys the draft theme sets, from both halves of a light/dark pair. */
   themeValues: Values;
   repeatable: ReadonlySet<string>;
+  /** Paths of `files` the save does not write: Ghostty's, below another file. */
+  readOnly: ReadonlySet<string>;
+  /** Other apps' own config files, which they load over `files`. */
+  apps: {app: string; file: ConfigFile}[];
 };
 
 /**
@@ -55,7 +66,9 @@ export type PlannedSave = {plan: Omit<SavePlan, "id">; edits: SaveEdit[]};
 // ─── Plan ───
 
 export function planSave(input: SaveInput): PlannedSave {
-  const {files, configPath, draft, themeValues, repeatable} = input;
+  const {files, configPath, draft, themeValues, repeatable, readOnly, apps} =
+    input;
+  const writable = (file: ConfigFile) => !readOnly.has(file.path);
   const replacements = new Map<ConfigFile, Map<number, string[]>>();
   const insertions = new Map<ConfigFile, Map<number, string[]>>();
   const appended: string[] = [];
@@ -73,7 +86,7 @@ export function planSave(input: SaveInput): PlannedSave {
 
   /** A line that already sets the value stays as written. */
   const setScalar = (key: string, value: string) => {
-    const def = lastDefinition(files, key);
+    const def = lastDefinition(files.filter(writable), key);
     if (!def) {
       appended.push(formatEntry(key, value));
     } else if (def.line.value !== value) {
@@ -83,13 +96,12 @@ export function planSave(input: SaveInput): PlannedSave {
 
   const setRepeatable = (key: string, values: string[]) => {
     const all = definitions(files, key);
-    const last = all.at(-1);
+    const last = all.findLast((def) => writable(def.file));
     if (!last) {
-      appended.push(
-        ...(values.length > 0 ? values : [""]).map((value) =>
-          formatEntry(key, value),
-        ),
-      );
+      // A reset keeps out the lines of files the save does not write.
+      const texts =
+        all.length > 0 || values.length === 0 ? ["", ...values] : values;
+      appended.push(...texts.map((value) => formatEntry(key, value)));
       return;
     }
 
@@ -111,8 +123,10 @@ export function planSave(input: SaveInput): PlannedSave {
   const palette = lastDefinitions(files, "palette");
   /** Palette entries override by index, so only that index's line changes. */
   const setPaletteEntry = (index: number, entry: string) => {
-    const def = palette.findLast((d) => paletteIndex(d.line.value) === index);
-    const last = palette.at(-1);
+    const def = palette.findLast(
+      (d) => writable(d.file) && paletteIndex(d.line.value) === index,
+    );
+    const last = palette.findLast((d) => writable(d.file));
     if (def) {
       if (paletteColor(def.line.value) !== paletteColor(entry)) {
         replace(def.file, def.index, [formatEntry("palette", entry, def.line)]);
@@ -153,7 +167,9 @@ export function planSave(input: SaveInput): PlannedSave {
   }
 
   if (themeChanged) {
-    for (const def of themeConflicts(files, themeValues, draft)) comment(def);
+    for (const def of themeConflicts(files, themeValues, draft)) {
+      if (writable(def.file)) comment(def);
+    }
   }
 
   const changes = new Map<ConfigFile, LineEdit[]>();
@@ -179,6 +195,7 @@ export function planSave(input: SaveInput): PlannedSave {
   }
 
   const {edits, diffs} = fileEdits(changes, files);
+  const saved = savedFiles(files, edits);
   return {
     plan: {
       files: diffs,
@@ -187,9 +204,73 @@ export function planSave(input: SaveInput): PlannedSave {
         ? themeSettings(themeValues, draft, files)
         : [],
       replacesColors,
+      overrides: [
+        ...overridesBy("Ghostty", saved, (file) => !writable(file), input),
+        ...apps.flatMap(({app, file}) =>
+          overridesBy(app, [...saved, file], (other) => other === file, input),
+        ),
+      ],
     },
     edits,
   };
+}
+
+/** `files` as the save leaves them, with the files it creates last. */
+function savedFiles(files: ConfigFile[], edits: SaveEdit[]) {
+  const after = new Map(edits.map((edit) => [edit.path, edit.after]));
+  const created = edits.filter((edit) => edit.before === null);
+  return [
+    ...files.map((file) => {
+      const text = after.get(file.path);
+      return text === undefined ? file : parseConfig(file.path, text);
+    }),
+    ...created.map((edit) => parseConfig(edit.path, edit.after)),
+  ];
+}
+
+/**
+ * The changes whose saved value the `other` files of `stack` decide: they hold
+ * the last line for a value or palette entry, the last reset of a list, or the
+ * theme, or a colour line that hides the theme.
+ */
+function overridesBy(
+  by: string,
+  stack: ConfigFile[],
+  other: (file: ConfigFile) => boolean,
+  input: SaveInput,
+): ConfigOverride[] {
+  const {draft, themeValues, repeatable} = input;
+  const palette = lastDefinitions(stack, "palette");
+  const winner = (key: string) => {
+    if (key === "theme") {
+      const theme = lastDefinition(stack, "theme");
+      if (theme && other(theme.file)) return theme;
+      return themeConflicts(stack, themeValues, draft).find((def) =>
+        other(def.file),
+      );
+    }
+    if (key.startsWith("palette:")) {
+      const index = Number(key.slice("palette:".length));
+      const reset = palette[0]?.line.value === "" ? palette[0] : undefined;
+      return (
+        palette.findLast((def) => paletteIndex(def.line.value) === index) ??
+        reset
+      );
+    }
+    if (repeatable.has(key)) {
+      const reset = lastDefinitions(stack, key)[0];
+      return reset?.line.value === "" ? reset : undefined;
+    }
+    return lastDefinition(stack, key);
+  };
+
+  const won = draftKeys(draft).flatMap((key) => {
+    const def = winner(key);
+    return def && other(def.file) ? [{key, path: def.file.path}] : [];
+  });
+  if (won.length === 0) return [];
+  const paths = [...new Set(won.map(({path}) => path))];
+  return [{by, paths, keys: won.map(({key}) => key)}];
 }
 
 /**

@@ -1,6 +1,7 @@
 //! The installed Ghostty: detection, CLI actions, instances and reloads.
 
 use std::ffi::OsStr;
+use std::fs;
 use std::io;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
@@ -11,7 +12,7 @@ use tokio::io::AsyncReadExt;
 use tokio::process::Command;
 
 use crate::api::{Appearance, PREVIEW_FILE_NAME, Platform};
-use crate::env::{BUNDLE_ID, Env};
+use crate::env::{BUNDLE_ID, Config, Env};
 
 const MAC_APP_BIN: &str = "/Applications/Ghostty.app/Contents/MacOS/ghostty";
 /// Kills a hung command, such as osascript waiting on the Apple Events consent prompt.
@@ -42,7 +43,6 @@ pub struct CliOutput {
 pub async fn detect(env: &Env) -> Result<Ghostty, String> {
     let bin = find_binary(env).await?;
     let config_path = env.config_to_write();
-    env.check_config_override(&config_path)?;
 
     let (result, themes) = tokio::join!(
         run(env, &bin, ["+version"], COMMAND_TIMEOUT),
@@ -120,6 +120,60 @@ fn parse_version(output: &str) -> Option<&str> {
         .filter(|version| !version.is_empty())
 }
 
+/// `+show-config` of `files` and their includes, loaded in Ghostty's order.
+/// The CLI reads only Ghostty's default files and takes no config flags
+/// (src/cli/show_config.zig:62-68), so it runs with a temporary config folder
+/// whose config includes `files`, and the user themes folder linked in.
+/// `CFFIXED_USER_HOME` moves Application Support there too.
+pub async fn show_config(env: &Env, ghostty: &Ghostty, files: &[PathBuf]) -> io::Result<CliOutput> {
+    let dir = tempfile::Builder::new()
+        .prefix("ghostty-designer-")
+        .tempdir_in(env.temp_dir())?;
+    let config_dir = dir.path().join("ghostty");
+    fs::create_dir(&config_dir)?;
+    std::os::unix::fs::symlink(env.user_themes_dir(), config_dir.join("themes"))?;
+    let includes: Vec<_> = files
+        .iter()
+        .map(|file| format!("config-file = \"{}\"\n", file.display()))
+        .collect();
+    fs::write(config_dir.join("config.ghostty"), includes.concat())?;
+
+    let mut shown = env.clone();
+    for key in ["XDG_CONFIG_HOME", "CFFIXED_USER_HOME"] {
+        shown.child_env.retain(|(name, _)| name != key);
+        shown.child_env.push((key.into(), dir.path().into()));
+    }
+    let mut output = ghostty
+        .run(&shown, ["+show-config", "--changes-only=false"])
+        .await?;
+    output.stdout = without_first_includes(&output.stdout, files.len());
+    Ok(output)
+}
+
+/// `+show-config` output without its first `count` `config-file` values, the
+/// temporary config's own. With none left the key shows empty, as Ghostty
+/// shows a config without includes.
+fn without_first_includes(shown: &str, count: usize) -> String {
+    const KEY: &str = "config-file = ";
+    let mut lines = Vec::new();
+    let (mut dropped, mut kept, mut first) = (0, false, None);
+    for line in shown.split_inclusive('\n') {
+        if line.starts_with(KEY) {
+            if dropped < count {
+                dropped += 1;
+                first.get_or_insert(lines.len());
+                continue;
+            }
+            kept = true;
+        }
+        lines.push(line);
+    }
+    if !kept && let Some(at) = first {
+        lines.insert(at, "config-file = \n");
+    }
+    lines.concat()
+}
+
 impl Ghostty {
     /// Runs a Ghostty CLI action.
     pub async fn run(
@@ -188,6 +242,11 @@ pub(crate) async fn run(
 pub async fn list_instances(env: &Env) -> Vec<u32> {
     if let Some(pids) = &env.target_pids {
         return pids.clone();
+    }
+    // Ghostty does not load another file, and other apps may not reload on
+    // SIGUSR2, whose default action ends a process.
+    if env.config != Config::Ghostty {
+        return Vec::new();
     }
     match env.platform {
         #[cfg(target_os = "macos")]

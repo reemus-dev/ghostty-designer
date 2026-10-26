@@ -86,8 +86,9 @@ and Ubuntu).
 ## Usage
 
 ```sh
-ghostty-designer            # open the control panel window
-ghostty-designer specimen   # print a colour and font specimen in this terminal
+ghostty-designer                # open the control panel window
+ghostty-designer --config FILE  # edit FILE instead of Ghostty's config, such as another app's
+ghostty-designer specimen       # print a colour and font specimen in this terminal
 ```
 
 From a terminal, the designer moves to the background, and the prompt returns
@@ -107,6 +108,28 @@ config…**, review the exact changes and confirm. Click the live status in the
 toolbar to turn the live preview off or on. The designer remembers your choice.
 
 Running `ghostty-designer` again while it runs brings its window to the front.
+With `--config`, the window also offers to switch to that file.
+
+### Other apps' configs
+
+Apps built on libghostty, such as cmux, Supacode, Ghostex, agterm and macterm,
+can load their own config file. To edit one, choose **Switch config…** in the
+toolbar's ··· menu or with ⌘K. It lists the known apps whose config file exists
+at its default path, your recent files, and takes any other file by path. The
+designer opens the config you last edited, also one given with `--config`.
+
+Some apps load Ghostty's config first and their own file on top, and some load
+only their own. The designer shows the file the way the app loads it: known apps
+as they do by default, other files on top of Ghostty's config. If colours or
+fonts in the designer don't match the app, change **Does this app use Ghostty's
+config as a base?** in the switcher. The designer remembers it for that file.
+
+- A save writes only that file and the files it includes. When a line in
+  Ghostty's config still decides a setting, the save review says so.
+- Only Ghostty reloads with the live preview. Other apps show your changes when
+  they reload their config, and some do that by themselves.
+- Editing Ghostty's config, the save review also names the settings an app's own
+  config overrides.
 
 Closing the panel window or quitting the app stops the designer. With unsaved
 changes, the panel asks first.

@@ -70,7 +70,6 @@ impl Default for TestEnv {
             ("XDG_CONFIG_HOME".into(), xdg.into()),
             ("XDG_STATE_HOME".into(), root.join("state").into()),
             ("XDG_CACHE_HOME".into(), home.join(".cache").into()),
-            ("GHOSTTY_CONFIG_PATH".into(), config.into()),
             ("GHOSTTY_DESIGNER_TARGET_PID".into(), "".into()),
             ("TMPDIR".into(), root.join("tmp").into()),
         ];

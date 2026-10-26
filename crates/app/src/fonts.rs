@@ -3,9 +3,12 @@
 //! Any registered scheme counts as a local origin for IPC, so this serves font
 //! bytes for ids from the latest font scan and nothing else.
 
-use ghostty_designer_host::Host;
+use std::sync::Arc;
+
 use tauri::http::{Method, Request, Response, StatusCode, header};
 use tauri::{Manager, Runtime, UriSchemeContext, UriSchemeResponder};
+
+use crate::panel::ActiveHost;
 
 pub fn serve<R: Runtime>(
     ctx: UriSchemeContext<'_, R>,
@@ -25,7 +28,7 @@ pub fn serve<R: Runtime>(
     #[cfg(not(dev))]
     let origin = "tauri://localhost".to_owned();
 
-    let fonts = ctx.app_handle().state::<Host>().fonts();
+    let fonts = ctx.app_handle().state::<Arc<ActiveHost>>().get().fonts();
     let id = (request.method() == Method::GET)
         .then(|| request.uri().path().strip_prefix('/').map(str::to_owned))
         .flatten();

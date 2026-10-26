@@ -27,7 +27,7 @@ ghostty-designer-host = { path = "../host" }
 libc.workspace = true
 tauri = { version = "2.12.4", features = [] }
 tauri-plugin-wdio-webdriver = { version = "1.5.1", optional = true }
-tokio = { workspace = true, features = ["signal", "time"] }
+tokio = { workspace = true, features = ["signal", "sync", "time"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = { workspace = true, features = ["std"] }

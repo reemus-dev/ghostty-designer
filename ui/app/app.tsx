@@ -5,6 +5,7 @@ import {ThemesView} from "@/features/themes";
 import {showsSetup, useStore} from "@/lib/store";
 import {CloseDialog} from "./close-dialog";
 import {CommandPalette} from "./command-palette";
+import {ConfigDialog} from "./config-dialog";
 import {CustomiseView} from "./customise";
 import {useGlobalKeys} from "./global-keys";
 import {NoticeLine} from "./notices";
@@ -79,6 +80,7 @@ function Shell() {
       <CommandPalette />
       <SaveSheet />
       <SaveThemeDialog />
+      <ConfigDialog />
       <CloseDialog />
     </div>
   );

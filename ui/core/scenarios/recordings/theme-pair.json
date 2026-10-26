@@ -2177,7 +2177,8 @@
             }
           ],
           "themeSettings": [],
-          "replacesColors": true
+          "replacesColors": true,
+          "overrides": []
         }
       },
       "apply": {"state":"applied"},
@@ -3919,7 +3920,8 @@
             }
           ],
           "themeSettings": [],
-          "replacesColors": true
+          "replacesColors": true,
+          "overrides": []
         }
       },
       "apply": {"state":"applied"},

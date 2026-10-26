@@ -178,7 +178,8 @@ class Seen {
         break;
       }
       case "themes":
-      case "close-requested": {
+      case "close-requested":
+      case "switch-requested": {
         break;
       }
     }

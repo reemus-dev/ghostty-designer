@@ -1,6 +1,7 @@
 //! One designer per state folder. The lock on `<state>/lock` decides the
-//! owner, and the owner's socket accepts one message from later launches:
-//! `focus`, optionally followed by an activation token, answered with `ok`.
+//! owner, and the owner's socket accepts one request from later launches,
+//! answered with `ok`: a `focus` line, optionally with an activation token,
+//! then optionally a `config <path>` line for `--config`.
 //! Not `tauri-plugin-single-instance`: keyed by app id, it joins sandboxes to
 //! the real designer, it runs after `gtk::init`, too late for a later launch
 //! that must never start a `Host`, and it drops the Wayland activation token.
@@ -31,14 +32,23 @@ pub struct Owner {
     listener: UnixListener,
 }
 
+/// What a later launch asks of the owner.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Request {
+    /// The activation token that lets Wayland raise the window.
+    pub token: Option<String>,
+    /// The config file the launch was given to edit, absolute.
+    pub config: Option<PathBuf>,
+}
+
 /// Whether a designer holds the lock for `state` right now.
 pub fn running(state: &Path) -> bool {
     File::open(state.join("lock"))
         .is_ok_and(|lock| matches!(lock.try_lock(), Err(TryLockError::WouldBlock)))
 }
 
-/// Takes the lock and the socket, or asks the owner to raise its window.
-pub fn claim(state: &Path, runtime: &Path, token: Option<&str>) -> Result<Claim, String> {
+/// Takes the lock and the socket, or passes `request` to the owner.
+pub fn claim(state: &Path, runtime: &Path, request: &Request) -> Result<Claim, String> {
     let socket = socket_path(state, runtime)?;
     fs::create_dir_all(state)
         .map_err(|error| format!("could not create {}: {error}", state.display()))?;
@@ -63,7 +73,7 @@ pub fn claim(state: &Path, runtime: &Path, token: Option<&str>) -> Result<Claim,
             Ok(Claim::Owner(Owner { lock, listener }))
         }
         Err(TryLockError::WouldBlock) => {
-            focus(&socket, token)?;
+            send(&socket, request)?;
             Ok(Claim::Focused)
         }
         Err(TryLockError::Error(error)) => {
@@ -73,15 +83,15 @@ pub fn claim(state: &Path, runtime: &Path, token: Option<&str>) -> Result<Claim,
 }
 
 impl Owner {
-    /// Answers focus requests for the rest of the process. `on_focus` gets
-    /// the activation token and returns once the window has been raised.
-    pub fn serve(self, on_focus: impl Fn(Option<String>) + Send + 'static) {
+    /// Answers requests for the rest of the process. `on_request` returns
+    /// once the window has been raised.
+    pub fn serve(self, on_request: impl Fn(Request) + Send + 'static) {
         thread::spawn(move || {
             let _lock = self.lock;
             for stream in self.listener.incoming() {
                 let Ok(mut stream) = stream else { continue };
-                if let Some(token) = read_request(&stream) {
-                    on_focus(token);
+                if let Some(request) = read_request(&stream) {
+                    on_request(request);
                     let _ = stream.write_all(b"ok\n");
                 }
             }
@@ -89,25 +99,32 @@ impl Owner {
     }
 }
 
-#[expect(
-    clippy::option_option,
-    reason = "None rejects the request; Some(None) is a focus request without a token"
-)]
-fn read_request(stream: &UnixStream) -> Option<Option<String>> {
+fn read_request(stream: &UnixStream) -> Option<Request> {
     stream.set_read_timeout(Some(Duration::from_secs(1))).ok()?;
+    let mut reader = BufReader::new(stream.take(MAX_MESSAGE));
     let mut line = String::new();
-    BufReader::new(stream.take(MAX_MESSAGE))
-        .read_line(&mut line)
-        .ok()?;
+    reader.read_line(&mut line).ok()?;
     let rest = line.strip_suffix('\n')?.strip_prefix("focus")?;
-    match rest.strip_prefix(' ') {
-        None if rest.is_empty() => Some(None),
-        Some(token) if !token.is_empty() => Some(Some(token.to_owned())),
-        _ => None,
-    }
+    let token = match rest.strip_prefix(' ') {
+        None if rest.is_empty() => None,
+        Some(token) if !token.is_empty() => Some(token.to_owned()),
+        _ => return None,
+    };
+    line.clear();
+    reader.read_line(&mut line).ok()?;
+    let config = if line.is_empty() {
+        None
+    } else {
+        let path = PathBuf::from(line.strip_suffix('\n')?.strip_prefix("config ")?);
+        if !path.is_absolute() {
+            return None;
+        }
+        Some(path)
+    };
+    Some(Request { token, config })
 }
 
-fn focus(socket: &Path, token: Option<&str>) -> Result<(), String> {
+fn send(socket: &Path, request: &Request) -> Result<(), String> {
     let not_answering = |error: io::Error| {
         format!(
             "the running designer did not answer at {}: {error}",
@@ -122,14 +139,26 @@ fn focus(socket: &Path, token: Option<&str>) -> Result<(), String> {
             Err(error) => return Err(not_answering(error)),
         }
     };
-    let message =
-        match token.filter(|token| !token.is_empty() && !token.contains(char::is_whitespace)) {
-            Some(token) => format!("focus {token}\n"),
-            None => "focus\n".to_owned(),
-        };
+    let token = request
+        .token
+        .as_deref()
+        .filter(|token| !token.is_empty() && !token.contains(char::is_whitespace));
+    let mut message = match token {
+        Some(token) => format!("focus {token}\n"),
+        None => "focus\n".to_owned(),
+    };
+    if let Some(path) = &request.config {
+        let path = path
+            .to_str()
+            .filter(|path| !path.contains('\n'))
+            .ok_or_else(|| format!("cannot pass {} to the running designer", path.display()))?;
+        message = format!("{message}config {path}\n");
+    }
+    // Closing the write side ends the request.
     stream
         .set_read_timeout(Some(CONNECT_FOR))
         .and_then(|()| stream.write_all(message.as_bytes()))
+        .and_then(|()| stream.shutdown(std::net::Shutdown::Write))
         .map_err(not_answering)?;
     let mut reply = String::new();
     BufReader::new(stream.take(8))
@@ -215,12 +244,19 @@ mod tests {
         }
     }
 
-    /// Serves focus requests, recording each token before the reply.
-    fn serve(owner: Owner) -> Arc<Mutex<Vec<Option<String>>>> {
+    /// Serves requests, recording each before the reply.
+    fn serve(owner: Owner) -> Arc<Mutex<Vec<Request>>> {
         let focused = Arc::new(Mutex::new(Vec::new()));
         let record = Arc::clone(&focused);
-        owner.serve(move |token| record.lock().unwrap().push(token));
+        owner.serve(move |request| record.lock().unwrap().push(request));
         focused
+    }
+
+    fn focus(token: Option<&str>) -> Request {
+        Request {
+            token: token.map(str::to_owned),
+            config: None,
+        }
     }
 
     // Separate `File`s are separate open file descriptions, so their locks
@@ -236,7 +272,7 @@ mod tests {
                     thread::spawn(move || {
                         barrier.wait();
                         let token = format!("token-{launch}");
-                        match claim(&dir, &dir, Some(&token)).unwrap() {
+                        match claim(&dir, &dir, &focus(Some(&token))).unwrap() {
                             Claim::Owner(owner) => Err(serve(owner)),
                             Claim::Focused => Ok(launch),
                         }
@@ -250,7 +286,7 @@ mod tests {
             // The owner raised its window for that launch before it reported.
             assert_eq!(
                 *owners[0].lock().unwrap(),
-                [Some(format!("token-{}", focused[0]))]
+                [focus(Some(&format!("token-{}", focused[0])))]
             );
         }
     }
@@ -262,15 +298,15 @@ mod tests {
         drop(UnixListener::bind(&socket).unwrap());
         assert!(socket.exists());
 
-        let Claim::Owner(owner) = claim(&dir.0, &dir.0, None).unwrap() else {
+        let Claim::Owner(owner) = claim(&dir.0, &dir.0, &focus(None)).unwrap() else {
             panic!("expected to own a state folder with a dead owner's socket");
         };
         let focused = serve(owner);
         assert!(matches!(
-            claim(&dir.0, &dir.0, None).unwrap(),
+            claim(&dir.0, &dir.0, &focus(None)).unwrap(),
             Claim::Focused
         ));
-        assert_eq!(*focused.lock().unwrap(), [None]);
+        assert_eq!(*focused.lock().unwrap(), [focus(None)]);
     }
 
     #[test]
@@ -280,12 +316,12 @@ mod tests {
         let stranger = UnixListener::bind(&socket).unwrap();
         stranger.set_nonblocking(true).unwrap();
 
-        let Claim::Owner(owner) = claim(&dir.0, &dir.0, None).unwrap() else {
+        let Claim::Owner(owner) = claim(&dir.0, &dir.0, &focus(None)).unwrap() else {
             panic!("expected to own a state folder nobody has locked");
         };
         let focused = serve(owner);
         assert!(matches!(
-            claim(&dir.0, &dir.0, None).unwrap(),
+            claim(&dir.0, &dir.0, &focus(None)).unwrap(),
             Claim::Focused
         ));
         assert_eq!(focused.lock().unwrap().len(), 1);
@@ -298,12 +334,21 @@ mod tests {
     #[test]
     fn ignores_anything_but_a_focus_request() {
         let dir = Dir::new("junk");
-        let Claim::Owner(owner) = claim(&dir.0, &dir.0, None).unwrap() else {
+        let Claim::Owner(owner) = claim(&dir.0, &dir.0, &focus(None)).unwrap() else {
             panic!("expected to own a fresh state folder");
         };
         let focused = serve(owner);
         let socket = socket_path(&dir.0, &dir.0).unwrap();
-        for junk in ["quit\n", "focusx\n", "focus \n", "focus"] {
+        for junk in [
+            "quit\n",
+            "focusx\n",
+            "focus \n",
+            "focus",
+            "focus\nconfig\n",
+            "focus\nconfig \n",
+            "focus\nconfig f\n",
+            "focus\nconfig /f",
+        ] {
             let mut stream = UnixStream::connect(&socket).unwrap();
             stream.write_all(junk.as_bytes()).unwrap();
             stream.shutdown(std::net::Shutdown::Write).unwrap();

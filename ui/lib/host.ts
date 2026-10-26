@@ -1,6 +1,6 @@
 import {Channel, invoke, type InvokeArgs} from "@tauri-apps/api/core";
 import {getCurrentWindow} from "@tauri-apps/api/window";
-import type {CommandError, HostMessage} from "@/core/bindings";
+import type {CommandError, ConfigChoice, HostMessage} from "@/core/bindings";
 import {SessionError} from "@/core/errors";
 import {createHost} from "@/core/host";
 
@@ -33,6 +33,26 @@ export const closePromptShown = () => call<void>("close_prompt_shown");
 export const closeWindow = () => call<void>("close_window");
 
 export const canPin = () => call<boolean>("can_pin");
+
+export const configChoices = () => call<ConfigChoice[]>("config_choices");
+
+/**
+ * Edits Ghostty's config with a null `path`, else the file at `path`, with
+ * Ghostty's config as its base as `ghosttyBase` says, else as last chosen.
+ * Reload the page once it resolves.
+ */
+export const switchConfig = (
+  path: string | null,
+  ghosttyBase: boolean | null,
+) => call<void>("switch_config", {path, ghosttyBase});
+
+/** The config file a later launch asked for, once. */
+export const takeSwitchRequest = () =>
+  call<string | null>("take_switch_request");
+
+/** Takes `path` off the recent files. */
+export const forgetConfig = (path: string) =>
+  call<void>("forget_config", {path});
 
 /** Keeps the window above other windows, or lets them cover it again. */
 export const pinWindow = (pinned: boolean) =>

@@ -18,6 +18,7 @@ import {
   type Pin,
   revertAll,
   send,
+  setConfigOpen,
   setPaletteOpen,
   setSaveOpen,
   stepHistory,
@@ -93,18 +94,25 @@ function actionItems(state: SessionState, pin: Pin): Item[] {
     const other = state.appearance === "dark" ? "light" : "dark";
     actions.push({
       value: "action:appearance",
-      label: `Preview the ${other} theme of the pair`,
+      label: `Show the pair's ${other} theme`,
       run: () => void send({type: "appearance", appearance: other}),
     });
   }
-  actions.push({
-    value: "action:live-preview",
-    label: "Live preview",
-    hint: state.livePreview ? (
-      <span className="text-xs text-muted-foreground">On</span>
-    ) : undefined,
-    run: () => void send({type: "live-preview", on: !state.livePreview}),
-  });
+  actions.push(
+    {
+      value: "action:live-preview",
+      label: "Live preview",
+      hint: state.livePreview ? (
+        <span className="text-xs text-muted-foreground">On</span>
+      ) : undefined,
+      run: () => void send({type: "live-preview", on: !state.livePreview}),
+    },
+    {
+      value: "action:switch-config",
+      label: "Switch config…",
+      run: () => setConfigOpen(true),
+    },
+  );
   if (pin !== "unsupported") {
     actions.push({
       value: "action:pin",

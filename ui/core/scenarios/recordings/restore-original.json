@@ -478,7 +478,8 @@
           ],
           "conflicts": [],
           "themeSettings": [],
-          "replacesColors": false
+          "replacesColors": false,
+          "overrides": []
         }
       },
       "apply": {"state":"applied"},
@@ -652,7 +653,8 @@
           ],
           "conflicts": [],
           "themeSettings": [],
-          "replacesColors": false
+          "replacesColors": false,
+          "overrides": []
         }
       },
       "apply": {"state":"applied"},

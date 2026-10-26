@@ -2,6 +2,8 @@
 
 export const PREVIEW_FILE_NAME = "ghostty-designer.conf";
 
+export type AppConfig = { app: string, file: ConfigFile, };
+
 export type Appearance = "light" | "dark";
 
 /**
@@ -21,6 +23,11 @@ export type CommandError = { "kind": "input", "message": string } | { "kind": "i
  */
 export type CommandResult = { "command": "load_config", "result": LoadedConfig } | { "command": "show_config", "result": string } | { "command": "validate_config", "result": string } | { "command": "system_appearance", "result": Appearance } | { "command": "load_themes", "result": Array<ThemeFile> } | { "command": "write_theme", "result": SavedTheme | null } | { "command": "reset_font_size", "result": boolean } | { "command": "apply_save", "result": SavedFiles } | { "command": "restore_original", "result": SavedFiles } | { "command": "write_state" };
 
+/**
+ * A config the designer can switch to.
+ */
+export type ConfigChoice = { "type": "ghostty", path: string, } | { "type": "app", app: string, path: string, } | { "type": "recent", path: string, };
+
 export type ConfigFile = { path: string, 
 /**
  * The file decoded as UTF-8, invalid bytes as U+FFFD, with its byte
@@ -31,6 +38,11 @@ text: string,
  * False when the file is not valid UTF-8, so `text` is not its content.
  */
 utf8: boolean, };
+
+/**
+ * Whose config the designer edits.
+ */
+export type EditedConfig = { "type": "ghostty" } | { "type": "file", app: string | null, ghosttyBase: boolean, };
 
 export type FontAxis = { tag: string, name: string, min: number, max: number, default: number, };
 
@@ -52,7 +64,7 @@ export type GhosttyInfo = { version: string, platform: Platform,
 /**
  * The main config the designer edits.
  */
-configPath: string, };
+configPath: string, edited: EditedConfig, };
 
 /**
  * What `connect` returns.
@@ -84,7 +96,7 @@ stash: string | null, };
 /**
  * Messages on the panel's channel.
  */
-export type HostMessage = { "type": "config-changed" } | { "type": "themes-changed" } | { "type": "fonts", fonts: Array<FontFamily>, } | { "type": "instances", count: number, } | { "type": "appearance-changed" } | { "type": "preview-status", id: string, apply: PreviewStatus, } | { "type": "close-requested" };
+export type HostMessage = { "type": "config-changed" } | { "type": "themes-changed" } | { "type": "fonts", fonts: Array<FontFamily>, } | { "type": "instances", count: number, } | { "type": "appearance-changed" } | { "type": "preview-status", id: string, apply: PreviewStatus, } | { "type": "close-requested" } | { "type": "switch-requested" };
 
 /**
  * A `config-file` line with an empty value, which drops the includes still
@@ -108,7 +120,16 @@ previewClearedBy: IncludeReset | null,
 /**
  * True when a backup of the pre-designer config exists.
  */
-canRestoreOriginal: boolean, };
+canRestoreOriginal: boolean, 
+/**
+ * Files of `files` a save does not write: Ghostty's, below another file.
+ */
+readOnly: Array<string>, 
+/**
+ * With Ghostty's config edited: other apps' config files, which they
+ * load over it.
+ */
+apps: Array<AppConfig>, };
 
 /**
  * The panel's commands that return at once. They run in the order the

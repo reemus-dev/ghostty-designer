@@ -1,6 +1,6 @@
 import {useSyncExternalStore} from "react";
 import type {ColorModel} from "@/core/color";
-import {errorText} from "@/core/errors";
+import {errorText, SessionError} from "@/core/errors";
 import {isLive} from "@/core/preview";
 import {type Session, startSession} from "@/core/session";
 import type {
@@ -10,7 +10,14 @@ import type {
   SessionState,
   Snapshot,
 } from "@/core/types";
-import {canPin, closePromptShown, host, pinWindow} from "./host";
+import {
+  canPin,
+  closePromptShown,
+  host,
+  pinWindow,
+  switchConfig,
+  takeSwitchRequest,
+} from "./host";
 import {MOD} from "./keys";
 import type {ThemeChoice} from "./pick";
 import type {SlotId} from "./slots";
@@ -47,6 +54,12 @@ type Store = {
   view: View;
   paletteOpen: boolean;
   saveOpen: boolean;
+  configOpen: boolean;
+  /** The config switch waiting for the user to discard unsaved changes. */
+  switchConfirm: ConfigTarget | null;
+  /** A config switch runs, and the page reloads once it ends. */
+  switching: boolean;
+  switchError: string | null;
   /** The open "Save as theme" dialog: what it saves, and the name it suggests. */
   saveTheme: {source: SaveThemeSource; name: string} | null;
   /** The colour in Customise's editor. */
@@ -69,6 +82,10 @@ const current: {store: Store; session?: Session} = {
     view: "customise",
     paletteOpen: false,
     saveOpen: false,
+    configOpen: false,
+    switchConfirm: null,
+    switching: false,
+    switchError: null,
     saveTheme: null,
     color: "background",
     optionColorModel: "oklch",
@@ -132,6 +149,10 @@ export function start() {
         snapshot: session.snapshot,
         theme: themePair?.[appearance] ?? null,
       });
+      const switchError = sessionStorage.getItem(SWITCH_ERROR);
+      sessionStorage.removeItem(SWITCH_ERROR);
+      if (switchError !== null) update({configOpen: true, switchError});
+      takeRequest();
     })
     .catch((error: unknown) => update({failure: errorText(error)}));
 }
@@ -159,6 +180,10 @@ function receive(message: SessionMessage) {
       // The window closes anyway unless the page answers in time, so a page
       // still loading lets it close.
       if (current.store.snapshot) void closePromptShown().catch(console.error);
+      break;
+    }
+    case "switch-requested": {
+      takeRequest();
       break;
     }
   }
@@ -323,6 +348,68 @@ export const setView = (view: View) => update({view, notice: null});
 export const setPaletteOpen = (paletteOpen: boolean) => update({paletteOpen});
 
 export const setSaveOpen = (saveOpen: boolean) => update({saveOpen});
+
+/**
+ * A config to edit: Ghostty's with a null `path`. Without `ghosttyBase`, a file
+ * has Ghostty's config as its base as last chosen.
+ */
+export type ConfigTarget = {path: string | null; ghosttyBase?: boolean};
+
+/** Opens the config switcher, or closes it unless a switch runs. */
+export const setConfigOpen = (configOpen: boolean) => {
+  if (current.store.switching) return;
+  update(configOpen ? {configOpen, switchError: null} : {configOpen});
+};
+
+/** Switches to `target`, after asking when there are unsaved changes. */
+export function chooseConfig(target: ConfigTarget) {
+  if (current.store.switching) return;
+  if (current.store.snapshot!.state.changes > 0) {
+    update({switchConfirm: target});
+  } else {
+    startSwitch(target);
+  }
+}
+
+/** Answers the question about unsaved changes: discard them and switch, or not. */
+export function confirmSwitch(discard: boolean) {
+  const target = current.store.switchConfirm;
+  update({switchConfirm: null});
+  if (discard && target) startSwitch(target);
+}
+
+/** Keeps a failed switch's error across the reload onto the restarted host. */
+const SWITCH_ERROR = "switch-error";
+
+function startSwitch(target: ConfigTarget) {
+  update({switching: true, switchError: null});
+  switchConfig(target.path, target.ghosttyBase ?? null)
+    .then(() => location.reload())
+    .catch((error: unknown) => {
+      // A refused path leaves the host as it was. Any other failure restarted it.
+      if (error instanceof SessionError && error.kind === "input") {
+        update({switching: false, switchError: errorText(error)});
+        return;
+      }
+      sessionStorage.setItem(SWITCH_ERROR, errorText(error));
+      location.reload();
+    });
+}
+
+/** Switches to the config file a later launch asked for, once it can. */
+function takeRequest() {
+  const ghostty = current.store.snapshot?.ghostty;
+  if (!ghostty || current.store.switching) return;
+  takeSwitchRequest()
+    .then((path) => {
+      const open =
+        ghostty.edited.type === "file" && ghostty.configPath === path;
+      if (path === null || open) return;
+      update({configOpen: true, switchError: null});
+      chooseConfig({path});
+    })
+    .catch(console.error);
+}
 
 /** Opens the "Save as theme" dialog for `source`. */
 export const openSaveTheme = (source: SaveThemeSource) =>

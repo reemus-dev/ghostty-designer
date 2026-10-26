@@ -11,11 +11,13 @@ import {
 import {errorText} from "@/core/errors";
 import {closeWindow} from "@/lib/host";
 import {notify, setCloseRequested, useSnapshot, useStore} from "@/lib/store";
+import {useAppName} from "@/lib/views";
 
 /** Asks before the window closes with unsaved changes. */
 export function CloseDialog() {
   const changes = useSnapshot((snapshot) => snapshot.state.changes);
   const open = useStore((store) => store.closeRequested);
+  const app = useAppName();
 
   return (
     <AlertDialog open={open} onOpenChange={setCloseRequested}>
@@ -25,8 +27,7 @@ export function CloseDialog() {
             Close with {changes} unsaved {changes === 1 ? "change" : "changes"}?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Closing stops Ghostty Designer and discards them. Ghostty shows your
-            saved config again.
+            Your changes are lost, and {app} goes back to your saved config.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

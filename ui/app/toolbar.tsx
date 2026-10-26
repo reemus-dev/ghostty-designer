@@ -3,9 +3,9 @@ import {cn} from "cn";
 import {
   ChevronDownIcon,
   Columns2Icon,
-  CopyIcon,
   EllipsisIcon,
   EraserIcon,
+  FileCogIcon,
   Redo2Icon,
   RotateCcwIcon,
   SearchIcon,
@@ -38,21 +38,24 @@ import {
   revertAll,
   send,
   session,
+  setConfigOpen,
   setPaletteOpen,
   setPeek,
   setSaveOpen,
   stepHistory,
   useSnapshot,
 } from "@/lib/store";
+import {useAppName} from "@/lib/views";
 import {ChangeValues} from "./change-values";
 import {LiveStatus} from "./live-status";
 
 /**
- * Search and the live status on the left. The draft on the right: its changes,
- * undo, redo and save. The change count grows into the gap between them, so
- * nothing moves as the draft changes. On macOS it starts after the traffic
- * lights. In a narrow window, search shows only its icon, and the live status
- * and the change count drop their words.
+ * What you edit and where it shows on the left: search, the edited file and the
+ * live status. The draft on the right: its changes, undo, redo and save. The
+ * change count grows into the gap between them, so nothing moves as the draft
+ * changes. On macOS it starts after the traffic lights. In a narrow window,
+ * search shows only its icon, and the live status and the change count drop
+ * their words.
  */
 export function Toolbar() {
   const platform = useSnapshot((snapshot) => snapshot.ghostty.platform);
@@ -69,6 +72,7 @@ export function Toolbar() {
         platform === "macos" ? "pl-[92px]" : "pl-14",
       )}>
       <SearchButton />
+      <EditedFile />
       <LiveStatus />
       <div className="ml-auto flex min-w-0 items-center gap-1 lg:gap-1.5 lg:pl-3">
         <ChangeList
@@ -115,6 +119,37 @@ export function Toolbar() {
         <OverflowMenu />
       </div>
     </header>
+  );
+}
+
+/**
+ * Names the file edited when it is not Ghostty's config, and opens the config
+ * switcher.
+ */
+function EditedFile() {
+  const edited = useSnapshot((snapshot) => snapshot.ghostty.edited);
+  const configPath = useSnapshot((snapshot) => snapshot.ghostty.configPath);
+  if (edited.type === "ghostty") return null;
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            className="min-w-0 inset-ring inset-ring-input"
+            onClick={() => setConfigOpen(true)}
+          />
+        }>
+        <span className="truncate">
+          {edited.app ?? configPath.slice(configPath.lastIndexOf("/") + 1)}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        Editing{" "}
+        <span className="font-mono wrap-anywhere">{tildePath(configPath)}</span>
+        {edited.ghosttyBase ? ", on top of Ghostty's config" : ""}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -171,6 +206,7 @@ function HistoryButton(props: {
 
 /** Ghostty shows the saved config while the button is held, like holding `\`. */
 function CompareButton() {
+  const app = useAppName();
   // The popover can close while the button is held, which unmounts it before
   // the pointer comes up.
   useEffect(() => () => setPeek(false), []);
@@ -198,7 +234,7 @@ function CompareButton() {
         <Kbd>\</Kbd>
       </TooltipTrigger>
       <TooltipContent side="bottom">
-        Shows your saved config in Ghostty while held
+        Shows your saved config in {app} while held
       </TooltipContent>
     </Tooltip>
   );
@@ -282,15 +318,15 @@ function ChangeRow(props: {change: DraftChange}) {
       <span className="flex min-w-0 flex-1 items-baseline gap-2">
         <Truncate className="font-medium">{change.label}</Truncate>
         {rejected && (
-          <small className="shrink-0 text-sm text-warn">Not applied</small>
+          <small className="shrink-0 text-sm text-warn">Not accepted</small>
         )}
       </span>
       <ChangeValues change={change} />
       <Button
         variant="ghost"
         size="icon-xs"
-        aria-label={`Undo the ${change.label} change`}
-        title={`Undo the ${change.label} change`}
+        aria-label={`Undo change to ${change.label}`}
+        title={`Undo change to ${change.label}`}
         onClick={() => void send(undoChange(change))}>
         <XIcon />
       </Button>
@@ -323,24 +359,20 @@ function OverflowMenu() {
                 disabled={!canRestore}
                 hint={
                   canRestore
-                    ? "Your config from before your first save"
-                    : "Available after your first save"
+                    ? "Your config before Ghostty Designer changed it"
+                    : "Nothing to restore yet"
                 }
                 onClick={() => setConfirm(true)}
               />
               <MenuItem
-                icon={<CopyIcon />}
-                label="Copy the config file path"
+                icon={<FileCogIcon />}
+                label="Switch config…"
                 hint={
                   <span className="font-mono wrap-anywhere">
                     {tildePath(configPath)}
                   </span>
                 }
-                onClick={() =>
-                  void navigator.clipboard
-                    .writeText(configPath)
-                    .then(() => notify(`Copied ${configPath}`))
-                }
+                onClick={() => setConfigOpen(true)}
               />
             </Menu.Popup>
           </Menu.Positioner>
@@ -351,10 +383,11 @@ function OverflowMenu() {
           <AlertDialogHeader>
             <AlertDialogTitle>Restore your original config?</AlertDialogTitle>
             <AlertDialogDescription>
-              Puts back{" "}
+              Returns{" "}
               <code className="text-foreground">{tildePath(configPath)}</code>{" "}
-              and its included files as they were before Ghostty Designer first
-              saved them. Later saves and unsaved changes are discarded.
+              and the files it includes to how they were before Ghostty Designer
+              first changed them. You lose every save since then, and any
+              unsaved changes.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

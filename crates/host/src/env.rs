@@ -6,13 +6,31 @@ use std::fs;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
-use crate::api::Platform;
+use crate::api::{PREVIEW_FILE_NAME, Platform};
 
 pub(crate) const BUNDLE_ID: &str = "com.mitchellh.ghostty";
+
+/// The config the designer edits.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Config {
+    /// Ghostty's own config.
+    Ghostty,
+    /// Another config file, which loads after Ghostty's main config files
+    /// when it has Ghostty's config as its base.
+    File { path: PathBuf, ghostty_base: bool },
+}
+
+struct KnownApp {
+    name: &'static str,
+    files: Vec<PathBuf>,
+    /// Whether it loads Ghostty's config before its own file.
+    ghostty_base: bool,
+}
 
 #[derive(Clone, Debug)]
 pub struct Env {
     pub platform: Platform,
+    pub config: Config,
     /// $HOME: `~/` includes and the XDG defaults.
     pub home: PathBuf,
     /// `CFFIXED_USER_HOME` or the passwd home: Application Support.
@@ -20,8 +38,6 @@ pub struct Env {
     xdg_config: PathBuf,
     /// The designer's own state folder.
     pub state_dir: PathBuf,
-    /// `GHOSTTY_CONFIG_PATH`, which only the macOS app reads.
-    config_path_override: Option<PathBuf>,
     /// Folders where installing or removing a font file changes the scan.
     pub font_dirs: Vec<PathBuf>,
     /// `GHOSTTY_DESIGNER_TARGET_PID`: the instances to reload instead of the
@@ -76,6 +92,7 @@ impl Env {
 
         Ok(Env {
             platform,
+            config: Config::Ghostty,
             user_home: path("CFFIXED_USER_HOME")
                 .or(passwd_home)
                 .unwrap_or_else(|| home.clone()),
@@ -83,7 +100,6 @@ impl Env {
             state_dir: path("XDG_STATE_HOME")
                 .unwrap_or_else(|| home.join(".local/state"))
                 .join("ghostty-designer"),
-            config_path_override: path("GHOSTTY_CONFIG_PATH"),
             font_dirs,
             target_pids,
             ghostty_bin: path("GHOSTTY_DESIGNER_GHOSTTY"),
@@ -94,6 +110,14 @@ impl Env {
 
     fn xdg_dir(&self) -> PathBuf {
         self.xdg_config.join("ghostty")
+    }
+
+    /// Where the designer's temporary files go: `TMPDIR`, else `/tmp`.
+    pub(crate) fn temp_dir(&self) -> PathBuf {
+        self.child_env
+            .iter()
+            .find(|(key, value)| key == "TMPDIR" && !value.is_empty())
+            .map_or_else(|| "/tmp".into(), |(_, value)| value.into())
     }
 
     pub(crate) fn user_themes_dir(&self) -> PathBuf {
@@ -108,8 +132,32 @@ impl Env {
             .join(BUNDLE_ID)
     }
 
-    /// Main config files, in Ghostty's load order, as they exist now.
+    /// The files that load first, in load order, as they exist now. Their
+    /// includes load after all of them.
     pub(crate) fn main_config_files(&self) -> Vec<PathBuf> {
+        let (ghostty_base, file) = match &self.config {
+            Config::Ghostty => (true, None),
+            Config::File { path, ghostty_base } => (*ghostty_base, Some(path.clone())),
+        };
+        let mut files = if ghostty_base {
+            self.ghostty_files()
+        } else {
+            Vec::new()
+        };
+        files.extend(file);
+        once_each(files)
+    }
+
+    /// The main config files a save may write: Ghostty's, or the chosen file.
+    pub(crate) fn writable_config_files(&self) -> Vec<PathBuf> {
+        match &self.config {
+            Config::Ghostty => self.main_config_files(),
+            Config::File { path, .. } => once_each(vec![path.clone()]),
+        }
+    }
+
+    /// Ghostty's main config files, in its load order.
+    fn ghostty_files(&self) -> Vec<PathBuf> {
         // Load order: src/config/Config.zig:3994-4057.
         let mut files = vec![
             self.xdg_dir().join("config"),
@@ -120,26 +168,82 @@ impl Env {
             files.push(support.join("config"));
             files.push(preferred_file(&support));
         }
-        // A file reached through several paths (symlinks) counts once, at its
-        // last path: that one wins, and is the one config_to_write picks.
-        let existing: Vec<_> = files.into_iter().filter(|file| file.exists()).collect();
-        let real: Vec<_> = existing
-            .iter()
-            .map(|file| fs::canonicalize(file).ok())
-            .collect();
-        existing
+        files
+    }
+
+    /// Other apps built on libghostty with a config file of their own, in
+    /// their default setup: the first candidate with content.
+    /// - cmux: CmuxGhosttyConfigPathResolver.swift in manaflow-ai/cmux
+    /// - Supacode: SupacodePaths.swift and GhosttyRuntime.swift in supabitapp/supacode
+    /// - Ghostex: packages/paths/src/lib.rs and `runtime_config.rs` in maddada/Ghostex
+    /// - agterm: ConfigPaths.swift and GhosttyApp.swift in umputun/agterm
+    /// - macterm: Macterm/Config/MactermConfigFile.swift in thdxg/macterm
+    fn known_apps(&self) -> [KnownApp; 5] {
+        let cmux = self
+            .user_home
+            .join("Library/Application Support/com.cmuxterm.app");
+        [
+            KnownApp {
+                name: "cmux",
+                files: vec![cmux.join("config.ghostty"), cmux.join("config")],
+                ghostty_base: true,
+            },
+            KnownApp {
+                name: "Supacode",
+                files: vec![self.xdg_config.join("supacode/config.ghostty")],
+                ghostty_base: true,
+            },
+            KnownApp {
+                name: "Ghostex",
+                files: vec![self.xdg_config.join("ghostex/ghostty/config.ghostty")],
+                ghostty_base: false,
+            },
+            KnownApp {
+                name: "agterm",
+                files: vec![self.home.join(".config/agterm/ghostty.conf")],
+                ghostty_base: false,
+            },
+            KnownApp {
+                name: "macterm",
+                files: vec![self.home.join(".config/macterm/config.ghostty")],
+                ghostty_base: true,
+            },
+        ]
+    }
+
+    /// Each known app's config file, when it has one.
+    pub(crate) fn app_config_files(&self) -> Vec<(&'static str, PathBuf)> {
+        self.known_apps()
             .into_iter()
-            .enumerate()
-            .filter(|(i, _)| !real[i + 1..].contains(&real[*i]))
-            .map(|(_, file)| file)
+            .filter_map(|app| Some((app.name, app.files.into_iter().find(|f| has_content(f))?)))
             .collect()
     }
 
-    /// The file Ghostty opens for editing (`+edit-config`, Open Config):
-    /// src/config/file_load.zig:96-121. On macOS, Application Support wins
-    /// when it has content, then XDG, and with neither it is Application
-    /// Support.
+    fn known_app(&self, path: &Path) -> Option<KnownApp> {
+        self.known_apps()
+            .into_iter()
+            .find(|app| app.files.iter().any(|file| file == path))
+    }
+
+    /// The known app whose config file `path` is.
+    pub(crate) fn app_of(&self, path: &Path) -> Option<&'static str> {
+        self.known_app(path).map(|app| app.name)
+    }
+
+    /// Whether the file at `path` has Ghostty's config as its base, unless the
+    /// user chose otherwise: as its known app does by default, else yes.
+    pub(crate) fn default_ghostty_base(&self, path: &Path) -> bool {
+        self.known_app(path).is_none_or(|app| app.ghostty_base)
+    }
+
+    /// The chosen file, or the file Ghostty opens for editing (`+edit-config`,
+    /// Open Config): src/config/file_load.zig:96-121. On macOS, Application
+    /// Support wins when it has content, then XDG, and with neither it is
+    /// Application Support.
     pub(crate) fn config_to_write(&self) -> PathBuf {
+        if let Config::File { path, .. } = &self.config {
+            return path.clone();
+        }
         let xdg = preferred_file(&self.xdg_dir());
         if self.platform == Platform::Linux {
             return xdg;
@@ -152,38 +256,42 @@ impl Env {
         }
     }
 
-    /// The macOS app loads only `GHOSTTY_CONFIG_PATH` when it is set
-    /// (macos/Sources/App/macOS/AppDelegate.swift:166), but the CLI, and so
-    /// `+show-config`, ignores it. The designer reads and writes what the CLI
-    /// loads, so it accepts the override only when it names that same file.
-    pub(crate) fn check_config_override(&self, config_path: &Path) -> Result<(), String> {
-        let Some(path) = &self.config_path_override else {
-            return Ok(());
+    /// A config file to edit, from a path the user gave: `~/` is the home
+    /// folder, and a relative path starts from the working folder.
+    pub fn config_file(&self, path: &Path) -> Result<PathBuf, String> {
+        let path = match path.strip_prefix("~") {
+            Ok(rest) => self.home.join(rest),
+            Err(_) => path.to_owned(),
         };
-        if self.platform != Platform::Macos {
-            return Ok(());
+        // The preview file goes beside the config, under this name.
+        if path.file_name() == Some(PREVIEW_FILE_NAME.as_ref()) {
+            return Err(format!(
+                "{} is Ghostty Designer's preview file",
+                path.display()
+            ));
         }
-        let loaded = self.main_config_files();
-        if std::path::absolute(path).is_ok_and(|path| path == config_path)
-            && loaded.iter().all(|file| file == config_path)
-        {
-            return Ok(());
-        }
-        let reads = if loaded.is_empty() {
-            config_path.display().to_string()
-        } else {
-            let names: Vec<_> = loaded
-                .iter()
-                .map(|file| file.display().to_string())
-                .collect();
-            names.join(", ")
-        };
-        Err(format!(
-            "GHOSTTY_CONFIG_PATH={} is not supported: Ghostty's CLI reads {reads} instead. Unset it, or set it to {} with no other config file.",
-            path.display(),
-            config_path.display()
-        ))
+        std::path::absolute(&path)
+            .ok()
+            .filter(|path| path.is_file())
+            .ok_or_else(|| format!("{} is not a file", path.display()))
     }
+}
+
+/// The files that exist, each once. A file reached through several paths
+/// (symlinks) counts at its last path: that one wins, and is the one
+/// `config_to_write` picks.
+fn once_each(files: Vec<PathBuf>) -> Vec<PathBuf> {
+    let existing: Vec<_> = files.into_iter().filter(|file| file.exists()).collect();
+    let real: Vec<_> = existing
+        .iter()
+        .map(|file| fs::canonicalize(file).ok())
+        .collect();
+    existing
+        .into_iter()
+        .enumerate()
+        .filter(|(i, _)| !real[i + 1..].contains(&real[*i]))
+        .map(|(_, file)| file)
+        .collect()
 }
 
 /// Ghostty treats a missing, empty or non-regular file as absent
@@ -263,12 +371,10 @@ mod tests {
             ("XDG_CONFIG_HOME", ""),
             ("XDG_STATE_HOME", ""),
             ("CFFIXED_USER_HOME", ""),
-            ("GHOSTTY_CONFIG_PATH", ""),
         ]);
         assert_eq!(env.xdg_config, Path::new("/h/.config"));
         assert_eq!(env.state_dir, Path::new("/h/.local/state/ghostty-designer"));
         assert_eq!(env.user_home, Path::new("/passwd"));
-        assert_eq!(env.config_path_override, None);
     }
 
     #[test]
@@ -347,38 +453,5 @@ mod tests {
         write(&xdg.join("config"), "font-size = 12\n");
         std::os::unix::fs::symlink(xdg.join("config"), xdg.join("config.ghostty")).unwrap();
         assert_eq!(t.env.main_config_files(), [xdg.join("config.ghostty")]);
-    }
-
-    #[test]
-    fn config_override() {
-        let mut t = TestEnv::default();
-        let config = t.root.join("xdg/ghostty/config");
-        assert_eq!(t.env.config_to_write(), config);
-        assert_eq!(t.env.check_config_override(&config), Ok(()));
-
-        t.env.config_path_override = Some(t.root.join("other"));
-        t.env.platform = Platform::Linux;
-        assert_eq!(t.env.check_config_override(&config), Ok(()));
-        t.env.platform = Platform::Macos;
-        let error = t.env.check_config_override(&config).unwrap_err();
-        assert!(
-            error.contains(&format!("reads {} instead", config.display())),
-            "{error}"
-        );
-
-        t.env.config_path_override = Some(config.clone());
-        let support = t
-            .root
-            .join("home/Library/Application Support/com.mitchellh.ghostty/config");
-        write(&support, "");
-        let error = t.env.check_config_override(&config).unwrap_err();
-        assert!(
-            error.contains(&format!(
-                "reads {}, {} instead",
-                config.display(),
-                support.display()
-            )),
-            "{error}"
-        );
     }
 }

@@ -1,4 +1,5 @@
 import {flushSync} from "react-dom";
+import type {EditedConfig} from "@/core/bindings";
 import type {NotShowing} from "@/core/preview";
 import type {SlotId} from "./slots";
 import {
@@ -7,6 +8,7 @@ import {
   setColor,
   setTheme,
   setView,
+  useSnapshot,
 } from "./store";
 
 export const VIEWS = ["customise", "themes"] as const;
@@ -18,10 +20,25 @@ export const VIEW_LABEL: Record<View, string> = {
   themes: "Themes",
 };
 
+/**
+ * The app whose windows show the preview: Ghostty, the known app of another
+ * config file, or "the app".
+ */
+export function appName(edited: EditedConfig, start = false) {
+  if (edited.type === "ghostty") return "Ghostty";
+  return edited.app ?? (start ? "The app" : "the app");
+}
+
+export const useAppName = (start = false) =>
+  appName(
+    useSnapshot((snapshot) => snapshot.ghostty.edited),
+    start,
+  );
+
 /** Why the draft does not show, in the views' words. */
 export const NOT_SHOWING_TEXT: Record<NotShowing, string> = {
-  off: "Shows in Ghostty after you save",
-  paused: "Ghostty shows your saved config",
+  off: "Shows after you save",
+  paused: "Showing your saved config",
   rejected: "Ghostty didn't accept this",
   shadowed: "Partly hidden",
 };

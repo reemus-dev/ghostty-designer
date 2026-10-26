@@ -4,10 +4,11 @@ import {Truncate} from "@/components/truncate";
 import {Button} from "@/components/ui/button";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Switch} from "@/components/ui/switch";
+import type {EditedConfig} from "@/core/bindings";
 import {isLive} from "@/core/preview";
 import type {OptionMeta, SessionState} from "@/core/types";
 import {send, useSnapshot} from "@/lib/store";
-import {NOT_SHOWING_TEXT, revealOption} from "@/lib/views";
+import {appName, NOT_SHOWING_TEXT, revealOption} from "@/lib/views";
 
 type Status = {
   label: string;
@@ -22,21 +23,28 @@ const DOT = {
   live: "bg-live ring-3 ring-live/16",
   off: "bg-muted-foreground",
   warn: "bg-warn ring-3 ring-warn/12",
+  /** Written, but nothing reports whether the app reloads it. */
+  unsure: "ring-[1.5px] ring-live ring-inset",
 };
 
-function liveStatus(state: SessionState, options: OptionMeta[]): Status {
+function liveStatus(
+  state: SessionState,
+  options: OptionMeta[],
+  edited: EditedConfig,
+): Status {
+  const app = appName(edited);
   if (!isLive(state)) {
     return {
       label: "Live preview off",
       dot: DOT.off,
-      detail: "Ghostty updates only when you save.",
+      detail: `${appName(edited, true)} updates only when you save.`,
     };
   }
   if (state.apply.state === "paused") {
     return {
       label: "Preview paused",
       dot: DOT.off,
-      detail: "Ghostty shows your saved config while you compare.",
+      detail: `${appName(edited, true)} shows your saved config while you compare.`,
     };
   }
   if (state.apply.state === "error") {
@@ -45,7 +53,7 @@ function liveStatus(state: SessionState, options: OptionMeta[]): Status {
     const key = rejected[0];
     if (key === undefined) {
       return {
-        label: "Ghostty didn't accept that value",
+        label: "Couldn't update the preview",
         dot: DOT.warn,
         warn: true,
         detail: `${error}\nGhostty keeps showing the last changes it accepted.`,
@@ -56,7 +64,7 @@ function liveStatus(state: SessionState, options: OptionMeta[]): Status {
       label: `Ghostty didn't accept ${label}`,
       dot: DOT.warn,
       warn: true,
-      detail: `${error}\nYour other changes show in Ghostty.`,
+      detail: `${error}\nYour other changes show in ${app}.`,
       action: {label: `Go to ${label}`, run: () => revealOption(key)},
     };
   }
@@ -66,7 +74,14 @@ function liveStatus(state: SessionState, options: OptionMeta[]): Status {
       dot: DOT.warn,
       warn: true,
       detail:
-        "A config file that loads after the preview sets some of the same settings, so Ghostty shows those instead.",
+        "A config file loaded after the preview overrides some of your changes.",
+    };
+  }
+  if (edited.type === "file") {
+    return {
+      label: `Preview for ${app}`,
+      dot: DOT.unsure,
+      detail: `${appName(edited, true)} shows your changes when it reloads its config. Some apps reload on their own. Your config changes only when you save.`,
     };
   }
   if (state.instances === 0) {
@@ -74,21 +89,22 @@ function liveStatus(state: SessionState, options: OptionMeta[]): Status {
       label: "Live · no open windows",
       dot: DOT.live,
       detail:
-        "Ghostty isn't running. Your changes show once a window opens. Nothing is written to your config until you save.",
+        "Ghostty isn't running. Your changes show when you open a window. Your config changes only when you save.",
     };
   }
   return {
     label: "Live in Ghostty",
     dot: DOT.live,
     detail:
-      "Every change shows in your Ghostty windows right away. Nothing is written to your config until you save.",
+      "Changes preview in your Ghostty windows. Your config changes only when you save.",
   };
 }
 
 function useLiveStatus() {
   const state = useSnapshot((snapshot) => snapshot.state);
   const options = useSnapshot((snapshot) => snapshot.options);
-  return liveStatus(state, options);
+  const edited = useSnapshot((snapshot) => snapshot.ghostty.edited);
+  return liveStatus(state, options, edited);
 }
 
 /**

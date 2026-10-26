@@ -30,6 +30,7 @@ session in TypeScript.
 | `crates/host/src/watch.rs`       | Folder watches that report once their events settle                    |
 | `crates/host/src/specimen.rs`    | `specimen` printout of `specimen.json`, which the panel renders too    |
 | `crates/host/src/env.rs`         | Process environment read once, so tests and sandboxes stay isolated    |
+| `crates/host/src/app_state.rs`   | `app.json`: config to open, recent files, Ghostty base choices         |
 | `crates/host/src/testkit.rs`     | Temporary `Env` and a fake Ghostty CLI for tests                       |
 | `crates/host/tests/fixtures/`    | Ghostty 1.3.1 outputs, the baseline config, font fixtures              |
 | `ui/`                            | React panel: two views, Customise and Themes, both kept mounted        |

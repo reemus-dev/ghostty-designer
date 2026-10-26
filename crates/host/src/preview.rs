@@ -47,7 +47,7 @@
 use std::ffi::OsString;
 use std::fs;
 use std::io::{self, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError, Weak};
 
 use tokio::sync::watch;
@@ -235,7 +235,14 @@ impl Preview {
         if file.cleared {
             return Ok(None);
         }
-        replace_own_file(&self.0.ghostty.preview_path, "")?;
+        let path = &self.0.ghostty.preview_path;
+        if let Err(error) = replace_own_file(path, "") {
+            // A missing or empty file shows nothing either, as in a read-only
+            // folder, where no draft was ever written.
+            if fs::metadata(path).is_ok_and(|meta| meta.len() > 0) {
+                return Err(error);
+            }
+        }
         file.cleared = true;
         Ok(Some(file.font_size.take().is_some()))
     }
@@ -424,7 +431,7 @@ pub(crate) async fn validate(env: &Env, ghostty: &Ghostty, text: &str) -> io::Re
     let mut file = tempfile::Builder::new()
         .prefix("ghostty-designer-")
         .suffix(".conf")
-        .tempfile_in(temp_dir(env))?;
+        .tempfile_in(env.temp_dir())?;
     file.write_all(text.as_bytes())?;
     let mut arg = OsString::from("--config-file=");
     arg.push(file.path());
@@ -559,17 +566,10 @@ pub(crate) fn replace_own_file(path: &Path, text: &str) -> io::Result<()> {
     Ok(())
 }
 
-/// The temporary folder the Env's children use.
-fn temp_dir(env: &Env) -> PathBuf {
-    env.child_env
-        .iter()
-        .find(|(key, value)| key == "TMPDIR" && !value.is_empty())
-        .map_or_else(|| "/tmp".into(), |(_, value)| value.into())
-}
-
 #[cfg(test)]
 mod tests {
     use std::os::unix::fs::PermissionsExt;
+    use std::path::PathBuf;
     use std::process::{Child, Command};
     use std::sync::atomic::{AtomicU32, Ordering};
     use std::time::Duration;

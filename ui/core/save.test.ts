@@ -56,7 +56,16 @@ function save(
     themeValues = {},
     loaded = [CONFIG],
     configPath = CONFIG,
-  }: {themeValues?: Values; loaded?: string[]; configPath?: string} = {},
+    readOnly = [],
+    apps = {},
+  }: {
+    themeValues?: Values;
+    loaded?: string[];
+    configPath?: string;
+    readOnly?: string[];
+    /** Each app's own config text, by app name. */
+    apps?: Record<string, string>;
+  } = {},
 ) {
   const planned = planSave({
     files: loaded.map((file) => parseConfig(file, disk.get(file)!)),
@@ -64,6 +73,11 @@ function save(
     draft: {theme: null, values: {}, ...draft},
     themeValues,
     repeatable: REPEATABLE,
+    readOnly: new Set(readOnly),
+    apps: Object.entries(apps).map(([app, text]) => ({
+      app,
+      file: parseConfig(`/apps/${app}`, text),
+    })),
   });
   for (const edit of planned.edits) {
     expect(disk.get(edit.path) ?? null).toBe(edit.before);
@@ -231,4 +245,71 @@ it("creates the main config for keys no file defines", () => {
   expect(disk.get(main)).toBe(
     "# ghostty-designer: saved settings\ncursor-opacity = 0.8\n",
   );
+});
+
+it("names the changes an app's own config overrides", () => {
+  const plan = save(
+    setup(),
+    {
+      theme: "Dracula",
+      values: {
+        "font-size": ["18"],
+        "font-family": ["JetBrains Mono"],
+        keybind: ["ctrl+b=new_tab"],
+        palette: ["1=#ff0000", "5=#ff00ff"],
+      },
+    },
+    {
+      themeValues: {background: ["#282a36"]},
+      apps: {
+        Term: 'background = #000000\nfont-size = 14\nfont-family = Menlo\nkeybind = ""\npalette = 1=#000000\n',
+        Quiet: "font-family = Menlo\npalette = 2=#000000\n",
+      },
+    },
+  );
+
+  // Its background hides the theme, its keybind reset drops the saved list,
+  // and an added font family or another palette entry overrides nothing.
+  expect(plan.overrides).toEqual([
+    {
+      by: "Term",
+      paths: ["/apps/Term"],
+      keys: ["theme", "font-size", "keybind", "palette:1"],
+    },
+  ]);
+});
+
+it("writes only the chosen file over Ghostty's config, and names what Ghostty's still decides", () => {
+  const app = "/apps/config";
+  const disk = setup({
+    [INCLUDE]: "cursor-style = bar\n",
+    [app]: "font-size = 13\n",
+  });
+  const plan = save(
+    disk,
+    {
+      theme: "Dracula",
+      values: {
+        "font-size": ["18"],
+        "cursor-style": ["block"],
+        keybind: ["ctrl+b=new_tab"],
+      },
+    },
+    {
+      themeValues: {background: ["#282a36"]},
+      // Ghostty's include loads after the chosen file.
+      loaded: [CONFIG, app, INCLUDE],
+      configPath: app,
+      readOnly: [CONFIG, INCLUDE],
+    },
+  );
+
+  expect(plan.files.map((file) => file.path)).toEqual([app]);
+  expect(disk.get(app)).toBe(
+    'font-size = 18\n\n# ghostty-designer: saved settings\ntheme = Dracula\ncursor-style = block\nkeybind = ""\nkeybind = ctrl+b=new_tab\n',
+  );
+  expect(plan.conflicts).toEqual([]);
+  expect(plan.overrides).toEqual([
+    {by: "Ghostty", paths: [CONFIG, INCLUDE], keys: ["theme", "cursor-style"]},
+  ]);
 });

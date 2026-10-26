@@ -206,10 +206,9 @@ export async function startSession(
         design.status(message.id, message.apply);
         break;
       }
-      case "close-requested": {
-        listener({type: "close-requested"});
-        break;
-      }
+      case "close-requested":
+      case "switch-requested":
+        listener(message);
     }
   };
   for (const message of early.splice(0)) receive(message);

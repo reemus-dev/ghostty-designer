@@ -60,7 +60,6 @@ export function startTestHost(root: string, ghostty: string): TestHost {
       XDG_CONFIG_HOME: path.join(root, "xdg"),
       XDG_STATE_HOME: path.join(root, "state"),
       XDG_CACHE_HOME: path.join(home, ".cache"),
-      GHOSTTY_CONFIG_PATH: path.join(root, "xdg/ghostty/config"),
       TMPDIR: path.join(root, "tmp"),
       GHOSTTY_DESIGNER_GHOSTTY: ghostty,
       // Set but empty: no instances, and no discovery.

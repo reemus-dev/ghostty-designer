@@ -19,7 +19,7 @@ import {
   useEffective,
   useSnapshot,
 } from "@/lib/store";
-import {NOT_SHOWING_TEXT} from "@/lib/views";
+import {NOT_SHOWING_TEXT, useAppName} from "@/lib/views";
 import {FontControls, FontMetricsAndStyles} from "./controls";
 import {DEFAULT_FONT, DEFAULT_NAME, FamilyList} from "./family-list";
 
@@ -51,6 +51,7 @@ const ghosttyChain = () =>
  * undo step.
  */
 export function FontSection() {
+  const app = useAppName();
   const fonts = useSnapshot((snapshot) => snapshot.fonts);
   const chain = useEffective("font-family") ?? EMPTY;
   const savedFont = useSnapshot(
@@ -174,7 +175,7 @@ export function FontSection() {
               : "Scanning fonts…"}
             <span className="flex items-center gap-1.5">
               <Kbd>↑</Kbd>
-              <Kbd>↓</Kbd> try fonts in Ghostty
+              <Kbd>↓</Kbd> try fonts in {app}
             </span>
           </p>
           {/* About ten rows, or half the height when stacked so the page can
@@ -214,6 +215,7 @@ function FontHeader(props: {
   saved: boolean;
 }) {
   const {family, name, saved} = props;
+  const app = useAppName();
   const scanning = useSnapshot((snapshot) => snapshot.fonts === null);
   const notShowing = useSnapshot((snapshot) =>
     whyNotShowing(snapshot.state, FONT_KEYS),
@@ -237,7 +239,7 @@ function FontHeader(props: {
   let status: ReactNode = (
     <>
       <LiveDot />
-      Showing in Ghostty
+      Showing in {app}
     </>
   );
   if (saved) {

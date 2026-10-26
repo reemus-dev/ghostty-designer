@@ -13,6 +13,7 @@ import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import type {OptionMeta} from "@/core/types";
 import {PLATFORM_LABEL, windowCards} from "@/lib/customise";
 import {send, sendLive, useEffective, useSnapshot} from "@/lib/store";
+import {useAppName} from "@/lib/views";
 
 /**
  * Window and cursor options in cards, then every option only for the other
@@ -109,14 +110,15 @@ function useFirstValue(option: OptionMeta) {
 }
 
 function FocusNote() {
+  const app = useAppName();
   return (
     <p className="flex items-start gap-2 border-t pt-3 text-sm text-muted-foreground">
       <MousePointerClickIcon
         aria-hidden
         className="mt-0.5 size-3.5 shrink-0 text-muted-foreground"
       />
-      Ghostty draws a hollow block in windows that aren't focused. Click into
-      Ghostty to see your cursor.
+      Unfocused windows show a hollow block. Click into {app} to see your
+      cursor.
     </p>
   );
 }
@@ -172,7 +174,7 @@ function PaddingOption(props: {option: OptionMeta}) {
         <NumberField
           whole
           aria-label={`${option.label} value`}
-          reason="Whole points, or two such as 2,4"
+          reason={`Whole points, or two for ${option.key.endsWith("-x") ? "left and right" : "top and bottom"}, such as 2,4`}
           value={value}
           min={0}
           onCommit={(next) => set(String(next))}
@@ -304,7 +306,9 @@ function BlurOption(props: {option: OptionMeta}) {
         </SubRow>
       )}
       {mode === "glass" && (
-        <SubRow label="Glass" note="macOS 26 and later · fully in new windows">
+        <SubRow
+          label="Glass"
+          note="macOS 26 and later · the titlebar changes in new windows">
           <ToggleGroup
             aria-label="Glass style"
             value={[value]}

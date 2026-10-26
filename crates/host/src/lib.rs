@@ -1,6 +1,7 @@
 //! Ghostty Designer's native side, with no Tauri or GUI dependency.
 
 pub mod api;
+pub mod app_state;
 mod config_file;
 pub mod env;
 mod fonts;

@@ -52,6 +52,24 @@ pub struct GhosttyInfo {
     pub platform: Platform,
     /// The main config the designer edits.
     pub config_path: String,
+    pub edited: EditedConfig,
+}
+
+/// Whose config the designer edits.
+#[derive(Serialize, TS, Clone, Debug, PartialEq, Eq)]
+#[serde(
+    tag = "type",
+    rename_all = "kebab-case",
+    rename_all_fields = "camelCase"
+)]
+pub enum EditedConfig {
+    /// Ghostty's own, which the preview reloads.
+    Ghostty,
+    /// Another file, which nothing reloads. `app` names a known app's file.
+    File {
+        app: Option<String>,
+        ghostty_base: bool,
+    },
 }
 
 /// What `connect` returns.
@@ -112,6 +130,34 @@ pub struct LoadedConfig {
     pub preview_cleared_by: Option<IncludeReset>,
     /// True when a backup of the pre-designer config exists.
     pub can_restore_original: bool,
+    /// Files of `files` a save does not write: Ghostty's, below another file.
+    pub read_only: Vec<String>,
+    /// With Ghostty's config edited: other apps' config files, which they
+    /// load over it.
+    pub apps: Vec<AppConfig>,
+}
+
+#[derive(Serialize, TS, Clone, Debug, PartialEq, Eq)]
+pub struct AppConfig {
+    pub app: String,
+    pub file: ConfigFile,
+}
+
+/// A config the designer can switch to.
+#[derive(Serialize, TS, Clone, Debug, PartialEq, Eq)]
+#[serde(tag = "type", rename_all = "kebab-case")]
+pub enum ConfigChoice {
+    Ghostty {
+        path: String,
+    },
+    App {
+        app: String,
+        path: String,
+    },
+    /// A file opened by path lately.
+    Recent {
+        path: String,
+    },
 }
 
 #[derive(Serialize, TS, Clone, Copy, Debug, PartialEq, Eq)]
@@ -267,6 +313,10 @@ pub enum HostMessage {
     /// The window wants to close while there are unsaved changes. The panel
     /// asks the user and acknowledges with `close_prompt_shown`.
     CloseRequested,
+    /// A later launch asked to edit a config file. The panel takes it with
+    /// `take_switch_request` once it can switch, asking first when there are
+    /// unsaved changes.
+    SwitchRequested,
 }
 
 /// A command failure. `input` refuses a request the files or the arguments do
@@ -329,6 +379,7 @@ mod tests {
         decls.visit::<ThemeFile>();
         decls.visit::<SavedTheme>();
         decls.visit::<SavedFiles>();
+        decls.visit::<ConfigChoice>();
         decls.visit::<Command>();
         decls.visit::<CommandResult>();
         decls.visit::<OrderedCommand>();

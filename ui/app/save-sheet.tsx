@@ -3,6 +3,7 @@ import {cn} from "cn";
 import {
   ChevronRightIcon,
   CircleCheckIcon,
+  LayersIcon,
   PaletteIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
@@ -17,10 +18,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {errorText} from "@/core/errors";
-import type {SavePlan, SaveResult} from "@/core/types";
+import type {ConfigOverride, SavePlan, SaveResult} from "@/core/types";
 import {draftChanges} from "@/lib/changes";
 import {tildePath} from "@/lib/paths";
 import {session, setSaveOpen, useSnapshot, useStore} from "@/lib/store";
+import {appName} from "@/lib/views";
 import {ChangeValues} from "./change-values";
 
 type Phase =
@@ -124,7 +126,7 @@ function SaveFlow(props: {
       <div className="-mx-6 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6">
         {phase.type === "loading" && (
           <p className="text-sm text-muted-foreground">
-            Working out what changes…
+            Checking what will change…
           </p>
         )}
         {alert !== undefined && (
@@ -184,9 +186,8 @@ function PlanHeader() {
         </span>
       </DialogTitle>
       <DialogDescription className="leading-normal">
-        Only the lines that changed are edited, in place. A backup of the file
-        is kept first, and “Restore original config” in the ··· menu puts it
-        back any time.
+        Edits only the lines that changed and backs up each file first. You can
+        return to your original config from the ··· menu.
       </DialogDescription>
     </DialogHeader>
   );
@@ -219,7 +220,15 @@ function Notes(props: {
   const {plan, backup, onBackup} = props;
   const lines = plan.conflicts.length;
   const settings = plan.themeSettings.length;
-  if (lines === 0 && settings === 0 && !plan.replacesColors) return null;
+  const overrides = plan.overrides.length;
+  if (
+    lines === 0 &&
+    settings === 0 &&
+    overrides === 0 &&
+    !plan.replacesColors
+  ) {
+    return null;
+  }
   return (
     <div className="flex flex-col gap-4 text-sm leading-normal text-muted-foreground">
       {(lines > 0 || plan.replacesColors) && (
@@ -231,9 +240,9 @@ function Notes(props: {
           <div className="flex flex-col gap-3">
             {lines > 0 && (
               <p>
-                Your config sets its own colours, which would hide the theme.
-                We'll comment out{" "}
-                {lines === 1 ? "that line" : `those ${lines} lines`} instead of
+                Your config sets colours that would hide the theme. Saving
+                comments out{" "}
+                {lines === 1 ? "that line" : `those ${lines} lines`} without
                 deleting {lines === 1 ? "it" : "them"}.
               </p>
             )}
@@ -247,10 +256,10 @@ function Notes(props: {
                 />
                 <span className="flex flex-col gap-0.5">
                   <b className="text-base font-medium text-foreground">
-                    Back up my current colours as a theme
+                    Keep my previous colours as a theme
                   </b>
                   <small className="text-sm text-muted-foreground">
-                    It appears under My themes, so you can switch back any time.
+                    Find it in My themes to switch back.
                   </small>
                 </span>
               </label>
@@ -266,10 +275,9 @@ function Notes(props: {
           />
           <div className="flex min-w-0 flex-col gap-2">
             <p>
-              The theme file also sets{" "}
-              {settings === 1 ? "this setting" : "these settings"}, which the
-              preview didn't show. Saving applies{" "}
-              {settings === 1 ? "it" : "them"}:
+              Saving also applies{" "}
+              {settings === 1 ? "this setting" : "these settings"} from the
+              theme, which the preview didn't show:
             </p>
             <ul className="flex flex-col gap-1">
               {plan.themeSettings.map(({key, value}, i) => (
@@ -284,6 +292,50 @@ function Notes(props: {
           </div>
         </div>
       )}
+      {plan.overrides.map((override) => (
+        <OverrideNote key={override.by} override={override} />
+      ))}
+    </div>
+  );
+}
+
+const LIST = new Intl.ListFormat("en", {type: "conjunction"});
+
+/**
+ * Changes a file the save does not write decides: another app's own config over
+ * Ghostty's, or Ghostty's config under another app's.
+ */
+function OverrideNote(props: {override: ConfigOverride}) {
+  const {by, paths, keys} = props.override;
+  const edited = useSnapshot((snapshot) => snapshot.ghostty.edited);
+  const state = useSnapshot((snapshot) => snapshot.state);
+  const options = useSnapshot((snapshot) => snapshot.options);
+  const colorDefaults = useSnapshot((snapshot) => snapshot.colorDefaults);
+  const labels = draftChanges(state, options, colorDefaults)
+    .filter((change) => keys.includes(change.key))
+    .map((change) => change.label);
+  // Apps' own configs override Ghostty's, and Ghostty's lies under another's.
+  const [source, shownIn] =
+    edited.type === "ghostty"
+      ? [`${by}'s own config`, by]
+      : [`${by}'s config`, appName(edited)];
+  return (
+    <div className="flex gap-3">
+      <LayersIcon
+        aria-hidden
+        className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+      />
+      <div className="flex min-w-0 flex-col gap-1">
+        <p>
+          {source} overrides {LIST.format(labels)}, so {shownIn} won't show{" "}
+          {labels.length === 1 ? "that change" : "those changes"}.
+        </p>
+        {paths.map((path) => (
+          <span key={path} className="font-mono text-xs break-all">
+            {tildePath(path)}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -345,18 +397,16 @@ function Saved(props: {result: SaveResult}) {
         </DialogTitle>
         <DialogDescription className="flex flex-col gap-2 leading-normal">
           <span>
-            Ghostty now loads your saved settings. Until your next save, the
-            previous version is kept in{" "}
+            Backups of the changed files stay in{" "}
             <code className="text-sm break-all text-foreground">
               {tildePath(backupDir)}
-            </code>
-            .
+            </code>{" "}
+            until your next save.
           </span>
           {backupTheme && (
             <span>
-              Your previous colours are saved as the theme{" "}
-              <b className="font-medium text-foreground">{backupTheme}</b>,
-              under My themes.
+              Your previous colours are in My themes as{" "}
+              <b className="font-medium text-foreground">{backupTheme}</b>.
             </span>
           )}
         </DialogDescription>

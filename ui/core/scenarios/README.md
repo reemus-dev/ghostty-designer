@@ -15,12 +15,12 @@ the session runs on the app's Rust host. `../testing/host.ts` sends each host
 call to `crates/host/examples/stdio-host.rs`, which `test:scenarios` builds
 first. Only Tauri's command registration and channel are left out. The host runs
 with HOME and CFFIXED_USER_HOME at `home`, XDG_CONFIG_HOME at `xdg`,
-XDG_STATE_HOME at `state`, XDG_CACHE_HOME at `home/.cache`, TMPDIR at `tmp`, and
-GHOSTTY_CONFIG_PATH and the config at `xdg/ghostty/config`. It has no target
-instances, so nothing is reloaded. The preview file is
-`xdg/ghostty/ghostty-designer.conf`, and only bundled themes exist. A stand-in
-`defaults` in `home/bin` makes the system appearance dark. The font list is the
-machine's, and the recordings leave it out. Four scenarios run at once.
+XDG_STATE_HOME at `state`, XDG_CACHE_HOME at `home/.cache` and TMPDIR at `tmp`.
+The config is `xdg/ghostty/config`. It has no target instances, so nothing is
+reloaded. The preview file is `xdg/ghostty/ghostty-designer.conf`, and only
+bundled themes exist. A stand-in `defaults` in `home/bin` makes the system
+appearance dark. The font list is the machine's, and the recordings leave it
+out. Four scenarios run at once.
 
 ## Scenario
 

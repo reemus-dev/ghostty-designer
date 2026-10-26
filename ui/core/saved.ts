@@ -119,7 +119,7 @@ export function savedConfig(
     (result, answered) => {
       if (result instanceof Error) {
         const error = new SessionError(
-          `Cannot load the themes: ${result.message}`,
+          `Could not load the themes: ${result.message}`,
           "internal",
         );
         if (answered.length === 0) on.fail(error);
@@ -135,14 +135,14 @@ export function savedConfig(
   const checkInclude = () => {
     if (include !== "absent") return;
     if (!includeReset) {
-      throw inputError(`The preview include in ${configPath} does not load`);
+      throw inputError(`The live preview lines in ${configPath} don't load`);
     }
     const {path, line} = includeReset;
     // The host reports a line of a file it loaded with the same config.
     const file = sources.files.find((loaded) => loaded.path === path)!;
     const text = file.lines[line - 1]!.text.trim();
     throw inputError(
-      `Line ${line} of ${path} (${text}) stops the preview include from loading. Remove it to turn on live preview.`,
+      `Line ${line} of ${path} (${text}) stops the live preview lines from loading. Remove it to turn on live preview.`,
     );
   };
 
@@ -263,6 +263,11 @@ export function saveReviews(
         draft: kept,
         themeValues,
         repeatable: sources.catalog.repeatable,
+        readOnly: new Set(loaded.readOnly),
+        apps: loaded.apps.map(({app, file}) => ({
+          app,
+          file: parseConfig(file.path, file.text, file.utf8),
+        })),
       });
     };
   };

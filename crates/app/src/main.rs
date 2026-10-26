@@ -1,13 +1,12 @@
 use std::io::IsTerminal as _;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, mpsc};
 use std::time::Duration;
 
 use clap::{Parser, Subcommand};
-use ghostty_designer_host::Host;
-use ghostty_designer_host::env::Env;
-use ghostty_designer_host::specimen;
+use ghostty_designer_host::env::{Config, Env};
+use ghostty_designer_host::{app_state, specimen};
 use tauri::webview::NewWindowResponse;
 use tauri::{
     AppHandle, Manager, RunEvent, Url, WebviewUrl, WebviewWindowBuilder, Window, WindowEvent,
@@ -35,7 +34,7 @@ mod instance;
 mod launch;
 mod panel;
 
-use panel::CloseGuard;
+use panel::{ActiveHost, CloseGuard};
 
 const LABEL: &str = "panel";
 
@@ -46,6 +45,11 @@ const LABEL: &str = "panel";
 struct Cli {
     #[command(subcommand)]
     command: Option<Cmd>,
+    /// Edit this config file instead of Ghostty's, such as another app's
+    /// built on libghostty. Without it, the designer edits the config it last
+    /// edited
+    #[arg(long, value_name = "FILE")]
+    config: Option<PathBuf>,
 }
 
 #[derive(Subcommand)]
@@ -56,7 +60,8 @@ enum Cmd {
 
 fn main() {
     launch::init();
-    if let Some(Cmd::Specimen) = Cli::parse().command {
+    let cli = Cli::parse();
+    if let Some(Cmd::Specimen) = cli.command {
         let force = std::env::var_os("FORCE_COLOR");
         let color = match force {
             Some(force) => force != "0" && force != "false",
@@ -70,39 +75,60 @@ fn main() {
         return;
     }
 
-    let env = Env::from_process().unwrap_or_else(|error| launch::fail(&error));
+    let mut env = Env::from_process().unwrap_or_else(|error| launch::fail(&error));
+    let requested = cli.config.map(|path| {
+        env.config_file(&path)
+            .unwrap_or_else(|error| launch::fail(&error))
+    });
+    env.config = match &requested {
+        Some(path) => Config::File {
+            path: path.clone(),
+            ghostty_base: app_state::ghostty_base(&env, path),
+        },
+        None => app_state::opened(&env),
+    };
     let state = env.state_dir.clone();
     launch::use_state_dir(&state);
     if launch::should_detach() && !instance::running(&state) {
         launch::detach(&state);
     }
-    let token = std::env::var("XDG_ACTIVATION_TOKEN").ok();
+    let request = instance::Request {
+        token: std::env::var("XDG_ACTIVATION_TOKEN").ok(),
+        config: requested,
+    };
     let owner = match instance::runtime_dir()
-        .and_then(|runtime| instance::claim(&state, &runtime, token.as_deref()))
+        .and_then(|runtime| instance::claim(&state, &runtime, &request))
     {
         Ok(instance::Claim::Owner(owner)) => owner,
         Ok(instance::Claim::Focused) => return launch::report("focused"),
         Err(error) => launch::fail(&error),
     };
+    if request.config.is_some()
+        && let Err(error) = app_state::remember(&env, &env.config)
+    {
+        errln!("ghostty-designer: {error}");
+    }
 
-    let host =
-        tauri::async_runtime::block_on(Host::start(env, |line| errln!("ghostty-designer: {line}")))
-            .unwrap_or_else(|error| launch::fail(&error));
+    let host = Arc::new(
+        tauri::async_runtime::block_on(ActiveHost::start(env))
+            .unwrap_or_else(|error| launch::fail(&error)),
+    );
     // From here on, every exit path ends in the shutdown sequence.
-    let on_panic = host.clone();
+    let on_panic = Arc::clone(&host);
     let report = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         report(info);
-        let _ = on_panic.clear_now();
+        let _ = on_panic.get().clear_now();
     }));
 
     let frame_path = state.join("window-frame");
     let exit_frame_path = frame_path.clone();
     let guard = Arc::new(CloseGuard::default());
-    let (on_window, guard_on_close) = (host.clone(), Arc::clone(&guard));
+    let (on_window, guard_on_close) = (Arc::clone(&host), Arc::clone(&guard));
+    let on_request = Arc::clone(&host);
 
     let builder = tauri::Builder::default()
-        .manage(host.clone())
+        .manage(Arc::clone(&host))
         .manage(guard)
         .invoke_handler(tauri::generate_handler![
             panel::connect,
@@ -111,25 +137,34 @@ fn main() {
             panel::close_prompt_shown,
             panel::close_window,
             panel::can_pin,
+            panel::config_choices,
+            panel::switch_config,
+            panel::forget_config,
+            panel::take_switch_request,
         ])
         .register_asynchronous_uri_scheme_protocol("font", fonts::serve)
         .on_window_event(move |window, event| {
             if let WindowEvent::CloseRequested { api, .. } = event {
                 errln!("[close] close requested");
                 save_frame(window, &frame_path);
-                if guard_on_close.holds(window, on_window.changes()) {
+                if guard_on_close.holds(window, on_window.get().changes()) {
                     api.prevent_close();
                 }
             } else if let WindowEvent::ThemeChanged(_) = event {
                 // The window follows the system's appearance.
-                on_window.appearance_changed();
+                on_window.get().appearance_changed();
             }
         })
         .setup(move |app| {
             open_panel(app.handle(), &state)?;
             tauri::async_runtime::spawn(exit_on_signal(app.handle().clone()));
             let app = app.handle().clone();
-            owner.serve(move |token| raise_panel(&app, token));
+            owner.serve(move |request| {
+                raise_panel(&app, request.token);
+                if let Some(path) = request.config {
+                    on_request.request(path);
+                }
+            });
             Ok(())
         });
     #[cfg(feature = "webdriver")]
@@ -179,8 +214,9 @@ fn main() {
 
 /// The shutdown sequence, bounded so a hung write cannot keep the process
 /// alive: `close`, else `clear_now`.
-fn shut_down(host: &Host) {
+fn shut_down(host: &ActiveHost) {
     const CLOSE_WAIT: Duration = Duration::from_secs(3);
+    let host = host.get();
     let closed = tauri::async_runtime::block_on(async {
         tokio::time::timeout(CLOSE_WAIT, host.close()).await
     });
