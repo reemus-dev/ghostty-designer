@@ -231,7 +231,8 @@ target on its own runner. Each build job then checks its files with
 `release.sh check`: every check runs `--version`, then opens the window until
 the panel reports ready.
 
-- macOS: the archive's app, the Intel one through Rosetta.
+- macOS: the archive's app, the Intel one through Rosetta. A further job checks
+  both archives again on macOS 15, the deployment target.
 - Linux: each file installed in a fresh container the way the README says, but
   without recommended packages, so the declared dependencies must suffice. The
   `.deb` on Ubuntu 22.04, the latest Ubuntu and Debian 12, the `.rpm` on the
@@ -241,7 +242,7 @@ the panel reports ready.
   installed globally, runs the build through `npm/bin.js`: `--version`, and on
   macOS the window.
 
-Once CI and every build pass, the workflow publishes the GitHub release with the
+Once CI and every check pass, the workflow publishes the GitHub release with the
 tag's message as its notes and `checksums.txt`, and writes
 `Formula/ghostty-designer.rb` to `reemus-dev/homebrew-tap`, through the
 `HOMEBREW_TAP_DEPLOY_KEY` secret: the private half of a deploy key with write

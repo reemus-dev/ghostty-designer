@@ -74,8 +74,42 @@ jobs:
           path: dist/release/*
           if-no-files-found: error
 
+  # The macOS builds run on macOS 27, so this job launches them on macOS 15, the
+  # deployment target.
+  check-macos-15:
+    needs: build
+    timeout-minutes: 30
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6.1.0
+        with:
+          persist-credentials: false
+
+      - uses: jdx/mise-action@v4.3.0
+        with:
+          version: 2026.10.13
+          cache: true
+
+      - name: Set the version from the tag
+        if: github.ref_type == 'tag'
+        run: mise run release:version "${GITHUB_REF_NAME#v}"
+
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          pattern: "*-apple-darwin"
+          path: dist/release
+          merge-multiple: true
+
+      - name: Install Rosetta
+        run: softwareupdate --install-rosetta --agree-to-license
+
+      - name: Check the release files
+        run: |
+          mise run release:check aarch64-apple-darwin
+          mise run release:check x86_64-apple-darwin
+
   publish:
-    needs: [verify, build]
+    needs: [verify, build, check-macos-15]
     permissions:
       contents: write
     runs-on: ubuntu-24.04
