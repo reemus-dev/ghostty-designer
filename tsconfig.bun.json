@@ -1,8 +1,10 @@
 {
   "extends": "./tsconfig.app.json",
-  "include": ["scripts", "ui/core/testing", "**/*.test.ts"],
+  "include": ["scripts", "ui/core/testing", "**/*.test.ts", "npm"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "types": ["bun"]
+    "types": ["bun"],
+    "allowJs": true,
+    "checkJs": true
   }
 }

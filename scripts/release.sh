@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
-# Sets the release version, builds and checks the release files, and prints the
-# Homebrew formula that installs them. The release workflow runs all four.
+# Sets the release version, builds and checks the release files, and writes the
+# Homebrew formula and npm package that install them. The release workflow runs
+# all five.
 #
 #   release.sh version <version>  write the version into Cargo.toml and Cargo.lock
 #   release.sh build [target]     archive for this machine or target, plus .deb and .rpm on Linux, into dist/release
 #   release.sh check [target]     install and launch the target's files: on macOS here, on Linux in Docker containers
 #   release.sh formula            Homebrew formula for the macOS archives in dist/release/checksums.txt
+#   release.sh npm                npm package in dist/npm, with a build from each archive in dist/release
 #
 # The version tag is the only record of a release's version. The repository
 # keeps 0.0.0, and the workflow writes the tag's version before it builds.
 set -euo pipefail
 
-USAGE="usage: release.sh version <version>|build [target]|check [target]|formula"
+USAGE="usage: release.sh version <version>|build [target]|check [target]|formula|npm"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 OUT=$ROOT/dist/release
 cd "$ROOT"
@@ -62,6 +64,15 @@ build() {
   ls -l "$OUT"
 }
 
+check_version() {
+  local printed
+  printed=$("$1" --version)
+  if [ "$printed" != "ghostty-designer $VERSION" ]; then
+    echo "release.sh: $1 --version printed '$printed', not 'ghostty-designer $VERSION'" >&2
+    exit 1
+  fi
+}
+
 check() {
   platform "$1"
   dir=$(mktemp -d)
@@ -69,15 +80,22 @@ check() {
   tar -xzf "$OUT/$(archive "$os" "$arch")" -C "$dir"
   local binary=$dir/ghostty-designer
   [ "$os" = darwin ] && binary="$dir/Ghostty Designer.app/Contents/MacOS/ghostty-designer"
-  local printed
-  printed=$("$binary" --version)
-  if [ "$printed" != "ghostty-designer $VERSION" ]; then
-    echo "release.sh: $target --version printed '$printed', not 'ghostty-designer $VERSION'" >&2
-    exit 1
+  check_version "$binary"
+
+  # The npm package runs the build for the machine's own architecture, so only
+  # this machine's target runs through it.
+  local launcher=
+  if [ "$target" = "$(rustc -vV | sed -n 's/^host: //p')" ]; then
+    npm_package
+    npm pack --silent --pack-destination "$dir" ./dist/npm >/dev/null
+    npm install --global --silent --prefix "$dir/npm" "$dir"/ghostty-designer-*.tgz
+    launcher=$dir/npm/bin/ghostty-designer
+    check_version "$launcher"
   fi
 
   if [ "$os" = darwin ]; then
     scripts/smoke.sh "$binary"
+    [ -z "$launcher" ] || scripts/smoke.sh "$launcher"
     return
   fi
   local deb=ghostty-designer_${VERSION}_${arch/x86_64/amd64}.deb
@@ -162,10 +180,29 @@ end
 EOF
 }
 
+npm_package() {
+  local package=$ROOT/dist/npm file build
+  rm -rf "$package"
+  mkdir -p "$package"
+  cp npm/package.json npm/bin.js README.md LICENSE "$package"
+  (cd "$package" && npm pkg set version="$VERSION")
+  for file in "$OUT/ghostty-designer_${VERSION}_"*.tar.gz; do
+    # bin.js finds a build by Node's platform and arch names.
+    build=${file%.tar.gz}
+    build=${build#"$OUT/ghostty-designer_${VERSION}_"}
+    build=${build/_/-}
+    build=${build/x86_64/x64}
+    mkdir -p "$package/bin/$build"
+    tar -xzf "$file" -C "$package/bin/$build" --exclude LICENSE
+  done
+  ls "$package/bin"
+}
+
 case ${1:-} in
   version) version "${2:-}" ;;
   build) build "${2:-}" ;;
   check) check "${2:-}" ;;
   formula) formula ;;
+  npm) npm_package ;;
   *) echo "$USAGE" >&2; exit 2 ;;
 esac

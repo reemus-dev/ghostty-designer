@@ -218,7 +218,7 @@ Without GTK either, the first missing library is `libgdk-3.so.0`.
 To release, tag a commit `v<version>` and push the tag. The tag is the only
 record of the version: the repository keeps `0.0.0`, and the release workflow
 writes the tag's version into `Cargo.toml` and `Cargo.lock` before it builds.
-Builds from source report `0.0.0`.
+The npm package takes its version from there. Builds from source report `0.0.0`.
 
 `.github/workflows/release.yml` runs CI and, at the same time, builds each
 target on its own runner. Each build job then checks its files with
@@ -231,13 +231,19 @@ the panel reports ready.
   `.deb` on Ubuntu 22.04, the latest Ubuntu and Debian 12, the `.rpm` on the
   latest Fedora, and the tarball on Ubuntu 22.04 and, for x86_64, Arch. The
   containers run in parallel.
+- npm: on the runner's own target, the package from `release.sh npm`, packed and
+  installed globally, runs the build through `npm/bin.js`: `--version`, and on
+  macOS the window.
 
 Once CI and every build pass, the workflow publishes the GitHub release with
 `checksums.txt`, and writes `Formula/ghostty-designer.rb` to
 `reemus-dev/homebrew-tap`, through the `HOMEBREW_TAP_DEPLOY_KEY` secret: the
-private half of a deploy key with write access to the tap. A manual run of the
-workflow builds the same files as workflow artifacts, checks the formula with
-`brew style` as a tag run does, and publishes nothing.
+private half of a deploy key with write access to the tap. A job of its own then
+publishes the npm package, which holds the build from each archive, through
+npm's trusted publishing for this workflow, so it needs no token. A manual run
+of the workflow builds the same files as workflow artifacts, checks the formula
+with `brew style` as a tag run does, writes the npm package, and publishes
+nothing.
 
 | Runner             | Target                      | Files                                                 |
 | ------------------ | --------------------------- | ----------------------------------------------------- |

@@ -48,6 +48,16 @@ brew install reemus-dev/tap/ghostty-designer
 mise use -g github:reemus-dev/ghostty-designer
 ```
 
+### npm
+
+```sh
+npx ghostty-designer          # or: bunx ghostty-designer
+npm install -g ghostty-designer
+```
+
+On Linux, install the runtime libraries for the tarball first, listed under
+[Linux packages](#linux-packages).
+
 ### Linux packages
 
 Download the `.deb` or `.rpm` for your platform from the

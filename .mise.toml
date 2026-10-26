@@ -80,6 +80,10 @@ run = "scripts/release.sh check"
 description = "Print the Homebrew formula for the macOS archives in dist/release/checksums.txt"
 run = "scripts/release.sh formula"
 
+[tasks."release:npm"]
+description = "Write the npm package to dist/npm, with a build from each archive in dist/release"
+run = "scripts/release.sh npm"
+
 # ── UI bundle ───────────────────────────────────────────────────────────────
 
 [tasks."ui:build"]

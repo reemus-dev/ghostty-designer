@@ -1,0 +1,27 @@
+{
+  "name": "ghostty-designer",
+  "version": "0.0.0",
+  "description": "Design Ghostty's appearance, with your own Ghostty windows as the live preview",
+  "homepage": "https://github.com/reemus-dev/ghostty-designer",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reemus-dev/ghostty-designer.git"
+  },
+  "bin": {
+    "ghostty-designer": "bin.js"
+  },
+  "files": [
+    "bin.js",
+    "bin/"
+  ],
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "cpu": [
+    "arm64",
+    "x64"
+  ],
+  "type": "module"
+}

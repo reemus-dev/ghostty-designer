@@ -43,6 +43,7 @@ session in TypeScript.
 | `ui/lib/`                        | Store, host commands, view helpers, the theme card specimen                |
 | `scripts/`                       | On the PATH: sandbox, panel driver, tour, VMs, smoke, icon, release        |
 | `docs/`                          | Architecture and distribution decisions, running and driving the app       |
+| `npm/`                           | npm package manifest, and the launcher that runs the machine's build       |
 | `.github/workflows/`             | CI on macOS and Linux, releases from version tags                          |
 
 ## Design constraints
