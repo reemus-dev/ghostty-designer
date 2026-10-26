@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 // Walks the panel through its main stops in a fresh sandbox and screenshots
-// each one, for a visual audit of the whole UI.
+// each one, in a wide and a narrow window, for a visual audit of the whole UI.
 //
 //   tour.ts
 //
-// Writes `.cache/tour/`: a PNG per stop, and `index.html` with a map of how the
-// stops connect, then every screenshot in tour order. From a terminal, it opens
-// the page in the browser. The sandbox starts from
-// the baseline config, so runs on one machine match. The font list and theme
+// Writes `.cache/tour/`: a PNG per stop and window size, and `index.html` with
+// a map of how the stops connect, then each stop's screenshots side by side.
+// From a terminal, it opens the page in the browser. Each size starts from the
+// baseline config, so runs on one machine match. The font list and theme
 // catalog come from the machine. Native parts, such as the window frame, menus
 // and the close dialog, are out of reach (docs/verify.md).
 import {mkdirSync, rmSync, writeFileSync} from "node:fs";
@@ -33,13 +33,27 @@ type Stop = {
   /** What the user does to get here, for the map. */
   via?: string;
   steps: Action[];
+  /** Replaces `steps` in the narrow window, where the control moves. */
+  narrowSteps?: Action[];
+  /** Only the narrow window has this stop. */
+  narrowOnly?: true;
   /** Escape closes the stop after the screenshot, back at `from`. */
   popup?: true;
 };
 
 const NAME = "tour";
+/** The default window, and the narrowest one the window allows. */
+const SIZES = [
+  {id: "wide", width: 1200, height: 800},
+  {id: "narrow", width: 540, height: 800},
+] as const;
 const POPUPS = '[role="dialog"], [role="alertdialog"], [role="menu"]';
 const MORE_ACTIONS: Action = ["click", '[aria-label="More actions"]'];
+const THEME = "12-bit Rainbow";
+/** The narrow window moves the theme's detail into a sheet. */
+const DETAILS: Action = ["click", `button[aria-label="${THEME} details"]`];
+
+type Size = (typeof SIZES)[number];
 
 const STOPS: Stop[] = [
   {
@@ -80,6 +94,22 @@ const STOPS: Stop[] = [
     popup: true,
   },
   {
+    id: "palette-empty",
+    title: "Command palette: no matches",
+    from: "colours",
+    via: "⌘K, then text that matches nothing",
+    steps: [
+      ["key", "Meta+k"],
+      [
+        "fill",
+        '[aria-label="Search settings, themes, fonts and actions"]',
+        "qxqxqx",
+      ],
+      ["wait", '//p[starts-with(normalize-space(), "Nothing matches")]'],
+    ],
+    popup: true,
+  },
+  {
     id: "font",
     title: "Customise: font",
     from: "colours",
@@ -94,6 +124,17 @@ const STOPS: Stop[] = [
     steps: [["click", '[aria-label="Window & cursor"]']],
   },
   {
+    id: "picker",
+    title: "Colour picker",
+    from: "window",
+    via: "Cursor's swatch",
+    steps: [
+      ["click", '[aria-label="Pick Cursor"]'],
+      ["wait", '[role="dialog"]'],
+    ],
+    popup: true,
+  },
+  {
     id: "themes",
     title: "Themes",
     from: "window",
@@ -106,9 +147,18 @@ const STOPS: Stop[] = [
     from: "themes",
     via: "Click a theme",
     steps: [
-      ["click", '[data-theme="12-bit Rainbow"]'],
+      ["click", `[data-theme="${THEME}"]`],
       ["wait", '//button[contains(., "1 unsaved change")]'],
     ],
+  },
+  {
+    id: "details",
+    title: "Themes: the detail sheet",
+    from: "theme-chosen",
+    via: "Details",
+    steps: [DETAILS, ["wait", '[role="dialog"]']],
+    narrowOnly: true,
+    popup: true,
   },
   {
     id: "changes",
@@ -138,6 +188,11 @@ const STOPS: Stop[] = [
     from: "theme-chosen",
     via: "Save as theme…",
     steps: [
+      ["click", '//button[.="Save as theme…"]'],
+      ["wait", '[aria-label="Theme name"]'],
+    ],
+    narrowSteps: [
+      DETAILS,
       ["click", '//button[.="Save as theme…"]'],
       ["wait", '[aria-label="Theme name"]'],
     ],
@@ -175,6 +230,34 @@ const STOPS: Stop[] = [
     ],
     popup: true,
   },
+  {
+    id: "saved",
+    title: "Saved",
+    from: "theme-chosen",
+    via: "⌘S, then Save",
+    steps: [
+      ["key", "Meta+s"],
+      ["click", '//*[@role="dialog"]//button[.="Save"]'],
+      ["wait", '//*[@role="dialog"]//*[text()="Saved to your config"]'],
+    ],
+    popup: true,
+  },
+  {
+    id: "pinned",
+    title: "Themes: pinned, with its notice",
+    from: "theme-chosen",
+    via: "Pin as reference",
+    steps: [
+      ["click", '//button[.="Pin as reference"]'],
+      ["wait", '//*[@role="status"][starts-with(., "Pinned")]'],
+    ],
+    narrowSteps: [
+      DETAILS,
+      ["click", '//button[.="Pin as reference"]'],
+      ["key", "Escape"],
+      ["wait", '//*[@role="status"][starts-with(., "Pinned")]'],
+    ],
+  },
 ];
 
 const root = path.join(import.meta.dir, "..");
@@ -196,25 +279,31 @@ async function closePopups(session: Session) {
   }
 }
 
-async function walk(session: Session) {
-  const files: string[] = [];
+const shows = (stop: Stop, size: Size) =>
+  size.id === "narrow" || stop.narrowOnly !== true;
+
+const fileName = (index: number, stop: Stop) =>
+  `${String(index + 1).padStart(2, "0")}-${stop.id}.png`;
+
+async function walk(session: Session, size: Size) {
   let at: string | undefined;
   for (const [index, stop] of STOPS.entries()) {
+    if (!shows(stop, size)) continue;
     if (stop.from !== at) {
       throw new Error(
         `stop ${stop.id} starts from ${stop.from}, but the tour is at ${at}`,
       );
     }
-    for (const [command, ...args] of stop.steps) {
+    const steps =
+      size.id === "narrow" ? (stop.narrowSteps ?? stop.steps) : stop.steps;
+    for (const [command, ...args] of steps) {
       await drive(session, command, args);
     }
-    const file = `${String(index + 1).padStart(2, "0")}-${stop.id}.png`;
-    await drive(session, "shot", [path.join(out, file)]);
-    files.push(file);
+    const file = path.join(out, size.id, fileName(index, stop));
+    await drive(session, "shot", [file]);
     if (stop.popup) await closePopups(session);
     at = stop.popup ? stop.from : stop.id;
   }
-  return files;
 }
 
 const html = Bun.escapeHTML;
@@ -227,26 +316,40 @@ function map(from?: string): string {
   const items = STOPS.filter((stop) => stop.from === from).map((stop) => {
     const via = stop.via === undefined ? "" : `${html(stop.via)} → `;
     const link = `<a href="#${stop.id}">${html(stop.title)}</a>`;
-    return `<li>${via}${link}${map(stop.id)}</li>`;
+    const narrow = stop.narrowOnly ? " <small>(narrow only)</small>" : "";
+    return `<li>${via}${link}${narrow}${map(stop.id)}</li>`;
   });
   return items.length === 0 ? "" : `<ul>${items.join("")}</ul>`;
 }
 
-/** The map of the stops, then each screenshot. */
-function indexPage(files: string[]) {
+/** A stop's screenshot in one window size, scaled to its share of the row. */
+function figure(stop: Stop, index: number, size: Size) {
+  const label = `${size.width} × ${size.height}`;
+  const shot = shows(stop, size)
+    ? `<img src="${size.id}/${fileName(index, stop)}" alt="${html(stop.title)}, ${label}">`
+    : `<div class="none" style="aspect-ratio: ${size.width} / ${size.height}">Not in this window</div>`;
+  return `<figure style="flex: ${size.width}">${shot}<figcaption>${label}</figcaption></figure>`;
+}
+
+/** The map of the stops, then each stop's screenshots side by side. */
+function indexPage() {
   const shots = STOPS.map(
     (stop, i) =>
       `<h2 id="${stop.id}">${i + 1}. ${html(stop.title)}</h2>\n` +
-      `<img src="${files[i]}" alt="${html(stop.title)}">`,
+      `<div class="sizes">${SIZES.map((size) => figure(stop, i, size)).join("")}</div>`,
   );
   return `<!doctype html>
 <meta charset="utf-8">
 <title>Panel tour</title>
 <style>
-  body { margin: 2rem auto; max-width: 1200px; padding: 0 1rem; font: 15px/1.6 system-ui; color: #ddd; background: #1a1a1a; }
+  body { margin: 2rem auto; max-width: 1800px; padding: 0 1rem; font: 15px/1.6 system-ui; color: #ddd; background: #1a1a1a; }
   a { color: #8ab4f8; }
-  img { display: block; width: 100%; border-radius: 10px; }
   h2 { margin-top: 3rem; }
+  small, figcaption { color: #888; }
+  .sizes { display: flex; gap: 1rem; align-items: flex-start; }
+  figure { margin: 0; min-width: 0; }
+  img, .none { display: block; width: 100%; border-radius: 10px; }
+  .none { display: grid; place-items: center; box-sizing: border-box; border: 1px dashed #444; color: #888; }
 </style>
 <h1>Panel tour</h1>
 <p>Written by <code>tour.ts</code> from a sandbox with the baseline config.</p>
@@ -256,21 +359,24 @@ ${shots.join("\n")}
 }
 
 rmSync(out, {recursive: true, force: true});
-mkdirSync(out, {recursive: true});
 await $`${sandbox} --name ${NAME} stop`.quiet();
-await $`${sandbox} --name ${NAME} reset --no-include`;
-await $`${sandbox} --name ${NAME} start`;
-
-const {port, label} = sandboxTarget(NAME);
-const session = await startSession(port, label);
-try {
-  const files = await walk(session);
-  writeFileSync(page, indexPage(files));
-  console.log(`${page}: ${files.length} stops`);
-} finally {
-  await session.end();
-  await $`${sandbox} --name ${NAME} stop`.quiet();
+for (const size of SIZES) {
+  mkdirSync(path.join(out, size.id), {recursive: true});
+  await $`${sandbox} --name ${NAME} reset --no-include`;
+  await $`${sandbox} --name ${NAME} start`;
+  const {port, label} = sandboxTarget(NAME);
+  const session = await startSession(port, label);
+  try {
+    const {width, height} = size;
+    await session.call("POST", "/window/rect", {width, height});
+    await walk(session, size);
+  } finally {
+    await session.end();
+    await $`${sandbox} --name ${NAME} stop`.quiet();
+  }
 }
+writeFileSync(page, indexPage());
+console.log(`${page}: ${STOPS.length} stops`);
 if (process.stdout.isTTY) {
   await $`${process.platform === "darwin" ? "open" : "xdg-open"} ${page}`;
 }

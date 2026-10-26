@@ -44,11 +44,12 @@ panel.ts --name <name> shot .cache/nord.png '[data-theme="Nord"]'
 ## Tour the panel
 
 `tour.ts` resets a `tour` sandbox, walks the panel through its views, popups and
-dialogs, and screenshots each stop into `.cache/tour/`. Its `index.html` maps
-how the stops connect, then shows every screenshot, for a visual audit of the
-whole panel. From a terminal, the tour opens the page in the browser. Runs on
-one machine give the same screenshots. When you add a view, popup or dialog, add
-a stop to `STOPS` in `tour.ts`.
+dialogs, and screenshots each stop into `.cache/tour/`. It walks twice: in the
+default 1200 × 800 window, and in the narrowest one the window allows. Its
+`index.html` maps how the stops connect, then shows each stop's screenshots side
+by side, for a visual audit of the whole panel. From a terminal, the tour opens
+the page in the browser. Runs on one machine give the same screenshots. When you
+add a view, popup or dialog, add a stop to `STOPS` in `tour.ts`.
 
 ## Real input
 
