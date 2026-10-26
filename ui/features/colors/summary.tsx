@@ -16,23 +16,23 @@ const COLOUR_SLOTS = [...THEME_COLOR_KEYS, ...TERMINAL_SLOTS];
 
 /**
  * "Theme: Rose Pine", "Rose Pine, with some of your own colours", or "Your own
- * colours · closest theme: …", and whether the config's own colours hide all of
- * its theme.
+ * colours" with the theme they match or come closest to, and whether they hide
+ * all of the config's theme.
  */
 export function ColorSummary(props: {state: SessionState}) {
   const {colorMatch, themePair, themeHidden, appearance, provenance} =
     props.state;
   const named = themePair?.[appearance];
   const sources = COLOUR_SLOTS.map((id) => provenance[id]);
+  const fromTheme = sources.includes("theme");
+  const own = sources.some(
+    (source) => source === "config" || source === "draft",
+  );
 
   let colours: ReactNode;
-  if (colorMatch?.exact) {
-    colours = `Theme: ${colorMatch.theme}`;
-  } else if (
-    named &&
-    sources.includes("theme") &&
-    sources.some((source) => source === "config" || source === "draft")
-  ) {
+  if (named && fromTheme && !own) {
+    colours = `Theme: ${named}`;
+  } else if (named && fromTheme) {
     colours = `${named}, with some of your own colours`;
   } else {
     colours = (
@@ -40,8 +40,7 @@ export function ColorSummary(props: {state: SessionState}) {
         Your own colours
         {colorMatch && (
           <>
-            {" "}
-            · closest theme:{" "}
+            {colorMatch.exact ? " · same as " : " · closest theme: "}
             <Tooltip>
               <TooltipTrigger
                 className="rounded-sm underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
@@ -61,7 +60,7 @@ export function ColorSummary(props: {state: SessionState}) {
 
   const hide =
     themeHidden === "all" && named
-      ? `Colours set in your config hide all of your theme, ${named}.`
+      ? `These colours hide all of ${named}, your config's theme.`
       : null;
 
   return (
