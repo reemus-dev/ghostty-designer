@@ -240,8 +240,16 @@ record of the version: the repository keeps `0.0.0`, and the release workflow
 writes the tag's version into `Cargo.toml` and `Cargo.lock` before it builds.
 Builds from source report `0.0.0`.
 
-`.github/workflows/release.yml` runs CI, builds each target on its own runner,
-and publishes the GitHub release with `checksums.txt`. It then writes
+`.github/workflows/release.yml` runs CI and builds each target on its own
+runner. Each build job then checks its files with `release.sh check`: every
+check runs `--version`, then opens the window until the panel reports ready.
+
+- macOS: the archive's app, the Intel one through Rosetta.
+- Linux: each file installed in a fresh container the way the README says. The
+  `.deb` on Ubuntu 22.04, the latest Ubuntu and Debian 12, the `.rpm` on the
+  latest Fedora, and the tarball on Ubuntu 22.04 and, for x86_64, Arch.
+
+The workflow then publishes the GitHub release with `checksums.txt`, and writes
 `Formula/ghostty-designer.rb` to `reemus-dev/homebrew-tap`, through the
 `HOMEBREW_TAP_DEPLOY_KEY` secret: the private half of a deploy key with write
 access to the tap. A manual run of the workflow builds the same files as

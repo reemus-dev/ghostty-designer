@@ -27,10 +27,10 @@ cargo build --release --locked -p ghostty-designer
 cp target/release/ghostty-designer dist/ghostty-designer
 '''
 
-[tasks."smoke:linux"]
-description = "Launch the Linux window under Xvfb in a sandbox and close it with SIGTERM"
+[tasks.smoke]
+description = "Launch the window in a sandbox, under Xvfb on Linux, and close it with SIGTERM"
 depends = ["ui:build"]
-run = "scripts/smoke-linux.sh"
+run = "scripts/smoke.sh"
 
 # ── Release ─────────────────────────────────────────────────────────────────
 
@@ -42,6 +42,10 @@ run = "scripts/release.sh version"
 description = "Build the release files for this machine, or for a target triple, into dist/release"
 depends = ["ui:build"]
 run = "scripts/release.sh build"
+
+[tasks."release:check"]
+description = "Install and launch the release files for this machine or a target triple: on macOS here, on Linux in Docker containers"
+run = "scripts/release.sh check"
 
 [tasks."release:formula"]
 description = "Print the Homebrew formula for the macOS archives in dist/release/checksums.txt"

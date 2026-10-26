@@ -1,21 +1,28 @@
 #!/usr/bin/env bash
-# Launch-and-close smoke for the Linux window: builds the app with the embedded
-# UI, runs it under Xvfb in a throwaway sandbox, then checks it reports ready
-# once the panel connects and exits cleanly on SIGTERM with no preview left
-# behind.
+# Launch-and-close smoke for the window: runs the app in a throwaway sandbox,
+# under Xvfb on Linux, then checks it reports ready once the panel connects and
+# exits cleanly on SIGTERM with no preview left behind.
+#
+#   smoke.sh            build the app with the embedded UI and smoke it
+#   smoke.sh <binary>   smoke an installed or released binary
 set -euo pipefail
 
-if [ -z "${GD_SMOKE_XVFB:-}" ]; then
+scripts=$(cd "$(dirname "$0")" && pwd)
+if [ $# -eq 0 ]; then
   cargo build --locked -p ghostty-designer
-  GD_SMOKE_XVFB=1 exec xvfb-run -a "$0"
+  set -- target/debug/ghostty-designer
 fi
+if [ "$(uname -s)" = Linux ] && [ -z "${GD_SMOKE_XVFB:-}" ]; then
+  GD_SMOKE_XVFB=1 exec xvfb-run -a "$0" "$@"
+fi
+binary=$1
 
 sandbox=$(mktemp -d)
 trap 'kill "${pid:-}" 2>/dev/null || true; rm -rf "$sandbox"' EXIT
 mkdir -p "$sandbox"/{home,xdg,state}
 
-GHOSTTY_DESIGNER_TARGET_PID= GHOSTTY_DESIGNER_ATTACHED=1 \
-  scripts/sandbox-env.sh "$sandbox" target/debug/ghostty-designer >"$sandbox/out" 2>"$sandbox/err" &
+GHOSTTY_DESIGNER_TARGET_PID='' GHOSTTY_DESIGNER_ATTACHED=1 \
+  "$scripts/sandbox-env.sh" "$sandbox" "$binary" >"$sandbox/out" 2>"$sandbox/err" &
 pid=$!
 
 deadline=$((SECONDS + 30))
@@ -24,7 +31,7 @@ until grep -qsx ready "$sandbox/out"; do
     status=0
     wait "$pid" || status=$?
     echo "app exited with status $status during startup" >&2
-    cat "$sandbox/err" >&2
+    cat "$sandbox/out" "$sandbox/err" >&2
     exit 1
   fi
   if [ "$SECONDS" -ge "$deadline" ]; then

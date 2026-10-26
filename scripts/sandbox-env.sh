@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The environment that confines a designer run to a sandbox folder, for every
-# runner: sandbox.ts, the Linux smoke and vm.sh.
+# runner: sandbox.ts, the smoke and vm.sh.
 #
 #   sandbox-env.sh <sandbox-dir> <command...>   exec the command in the sandbox
 #   sandbox-env.sh <sandbox-dir>                print export lines for a shell

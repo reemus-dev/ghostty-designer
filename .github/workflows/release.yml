@@ -60,6 +60,14 @@ jobs:
       - name: Build the release files
         run: mise run release:build ${{ matrix.target }}
 
+      # The arm64 runner runs the Intel build through Rosetta.
+      - name: Install Rosetta
+        if: matrix.target == 'x86_64-apple-darwin'
+        run: softwareupdate --install-rosetta --agree-to-license
+
+      - name: Check the release files
+        run: mise run release:check ${{ matrix.target }}
+
       - uses: actions/upload-artifact@v7.0.2
         with:
           name: ${{ matrix.target }}

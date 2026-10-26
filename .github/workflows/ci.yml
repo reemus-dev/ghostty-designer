@@ -55,7 +55,7 @@ jobs:
 
       - name: Launch and close the window
         if: runner.os == 'Linux'
-        run: mise run smoke:linux
+        run: mise run smoke
 
   scenarios:
     runs-on: macos-15
