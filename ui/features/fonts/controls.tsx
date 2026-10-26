@@ -142,7 +142,7 @@ function SizeOption(props: {option: OptionMeta}) {
       return <FontSize option={option} />;
     }
     case "adjust-cell-height": {
-      return <SpacingRow option={option} unit="%" min={0} max={50} />;
+      return <SpacingRow option={option} unit="%" min={-20} max={50} />;
     }
     case "adjust-cell-width": {
       return <SpacingRow option={option} unit="px" min={-2} max={8} />;
@@ -188,7 +188,8 @@ function FontSize(props: {option: OptionMeta}) {
 
 /**
  * Line height or letter spacing: an adjust-cell-* metric in one unit. A value
- * in the other unit shows as written and the slider rests at zero.
+ * in the other unit shows with its unit, so steps keep it, and the slider rests
+ * at zero.
  */
 function SpacingRow(props: {
   option: OptionMeta;
@@ -200,6 +201,8 @@ function SpacingRow(props: {
   const value = useEffective(option.key)?.[0] ?? "";
   const amount = Number(value.replace(/%$/, "")) || 0;
   const inUnit = amount === 0 || value.endsWith("%") === (unit === "%");
+  let shown = value === "" ? "" : String(amount);
+  if (!inUnit) shown = value.endsWith("%") ? value : `${value}px`;
   const set = (next: string) =>
     sendLive({type: "set", key: option.key, values: [next]});
   return (
@@ -216,7 +219,7 @@ function SpacingRow(props: {
           aria-label={`${option.label} value`}
           placeholder="0"
           whole={unit === "px"}
-          value={inUnit && value !== "" ? String(amount) : value}
+          value={shown}
           reason={
             unit === "%"
               ? "A percentage such as 12.5%, or whole pixels such as 2px"
