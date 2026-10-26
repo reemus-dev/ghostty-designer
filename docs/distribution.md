@@ -140,8 +140,6 @@ does through the exec script.
 mise strips an archive's single top-level folder, which would drop the `.app`
 name. The archive holds `LICENSE` beside the app to prevent that.
 
-Unverified until the first release: the Dock name of a mise install.
-
 ## Linux
 
 ### glibc floor
@@ -215,10 +213,18 @@ Without GTK either, the first missing library is `libgdk-3.so.0`.
 
 ## Releases
 
-To release, tag a commit `v<version>` and push the tag. The tag is the only
-record of the version: the repository keeps `0.0.0`, and the release workflow
-writes the tag's version into `Cargo.toml` and `Cargo.lock` before it builds.
-The npm package takes its version from there. Builds from source report `0.0.0`.
+To release, tag a commit `v<version>` with an annotated tag whose message is the
+release notes, and push the tag. `--cleanup=whitespace` keeps Markdown headings,
+which git otherwise strips as comments:
+
+```sh
+git tag -a v<version> --cleanup=whitespace -F notes.md <commit>
+```
+
+The tag is the only record of the version: the repository keeps `0.0.0`, and the
+release workflow writes the tag's version into `Cargo.toml` and `Cargo.lock`
+before it builds. The npm package takes its version from there. Builds from
+source report `0.0.0`.
 
 `.github/workflows/release.yml` runs CI and, at the same time, builds each
 target on its own runner. Each build job then checks its files with
@@ -235,15 +241,15 @@ the panel reports ready.
   installed globally, runs the build through `npm/bin.js`: `--version`, and on
   macOS the window.
 
-Once CI and every build pass, the workflow publishes the GitHub release with
-`checksums.txt`, and writes `Formula/ghostty-designer.rb` to
-`reemus-dev/homebrew-tap`, through the `HOMEBREW_TAP_DEPLOY_KEY` secret: the
-private half of a deploy key with write access to the tap. A job of its own then
-publishes the npm package, which holds the build from each archive, through
-npm's trusted publishing for this workflow, so it needs no token. A manual run
-of the workflow builds the same files as workflow artifacts, checks the formula
-with `brew style` as a tag run does, writes the npm package, and publishes
-nothing.
+Once CI and every build pass, the workflow publishes the GitHub release with the
+tag's message as its notes and `checksums.txt`, and writes
+`Formula/ghostty-designer.rb` to `reemus-dev/homebrew-tap`, through the
+`HOMEBREW_TAP_DEPLOY_KEY` secret: the private half of a deploy key with write
+access to the tap. A job of its own then publishes the npm package, which holds
+the build from each archive, through npm's trusted publishing for this workflow,
+so it needs no token. A manual run of the workflow builds the same files as
+workflow artifacts, checks the formula with `brew style` as a tag run does,
+writes the npm package, and publishes nothing.
 
 | Runner             | Target                      | Files                                                 |
 | ------------------ | --------------------------- | ----------------------------------------------------- |
