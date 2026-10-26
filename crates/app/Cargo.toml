@@ -35,6 +35,7 @@ objc2-foundation = { workspace = true, features = [
   "std",
   "NSAppleEventDescriptor",
   "NSAppleEventManager",
+  "NSProcessInfo",
 ] }
 
 [target.'cfg(target_os = "linux")'.dependencies]

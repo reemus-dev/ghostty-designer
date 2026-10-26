@@ -290,12 +290,26 @@ fn open_panel(app: &AppHandle, state: &Path) -> tauri::Result<()> {
             NewWindowResponse::Deny
         });
     // The panel draws its own toolbar under the traffic lights, centred in its
-    // top 48px.
+    // top 48px. The inset sets the height of the buttons' title bar view, and
+    // macOS 15's window style sits the buttons 4pt lower in it than macOS 26's.
     #[cfg(target_os = "macos")]
-    let builder = builder
-        .title_bar_style(tauri::TitleBarStyle::Overlay)
-        .hidden_title(true)
-        .traffic_light_position(tauri::LogicalPosition::new(18.0, 26.0));
+    let builder = {
+        use objc2_foundation::{NSOperatingSystemVersion, NSProcessInfo};
+        let macos_26 = NSOperatingSystemVersion {
+            majorVersion: 26,
+            minorVersion: 0,
+            patchVersion: 0,
+        };
+        let top = if NSProcessInfo::processInfo().isOperatingSystemAtLeastVersion(macos_26) {
+            26.0
+        } else {
+            22.0
+        };
+        builder
+            .title_bar_style(tauri::TitleBarStyle::Overlay)
+            .hidden_title(true)
+            .traffic_light_position(tauri::LogicalPosition::new(18.0, top))
+    };
 
     // Beside Ghostty on a 1440pt-wide MacBook screen, the minimum width leaves
     // Ghostty 80 columns at font sizes up to 18pt. The minimum height
