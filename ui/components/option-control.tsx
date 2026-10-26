@@ -301,8 +301,11 @@ function OptionInput(props: ControlProps) {
     case "metric": {
       return <MetricInput {...props} />;
     }
+    case "text": {
+      const {placeholder} = props.option.control;
+      return <TextInput {...props} placeholder={placeholder} />;
+    }
     // The views give their flags options switches; Ghostty's flag syntax is the fallback.
-    case "text":
     case "flags": {
       return <TextInput {...props} />;
     }
@@ -441,20 +444,25 @@ export function SliderField(props: {
 function MetricInput(props: ControlProps) {
   const {option, value, commit} = props;
   return (
-    <NumberField
-      whole
-      aria-label={option.label}
-      placeholder="0"
-      reason="Whole pixels, or a percentage such as 12.5%"
-      value={value}
-      className="w-12"
-      onCommit={(next) => commit(String(next), true)}
-      onCommitText={(text) => {
-        const next = parseMetric(text, "px");
-        if (next === null) return false;
-        commit(next, true);
-      }}
-    />
+    <span className="flex items-center gap-1.5">
+      <NumberField
+        whole
+        aria-label={option.label}
+        placeholder="0"
+        reason="Whole pixels, or a percentage such as 12.5%"
+        value={value}
+        className="w-12"
+        onCommit={(next) => commit(String(next), true)}
+        onCommitText={(text) => {
+          const next = parseMetric(text, "px");
+          if (next === null) return false;
+          commit(next, true);
+        }}
+      />
+      {!value.endsWith("%") && (
+        <span className="text-xs text-muted-foreground">px</span>
+      )}
+    </span>
   );
 }
 

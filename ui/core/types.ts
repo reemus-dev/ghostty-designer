@@ -36,7 +36,8 @@ export type Control =
   | {kind: "enum"; values: string[]}
   | {kind: "bool"}
   | {kind: "font-family"}
-  | {kind: "text"}
+  /** `placeholder` shows the format of a value. */
+  | {kind: "text"; placeholder?: string}
   /**
    * Ghostty's comma-separated feature flags. Values list the flags that differ
    * from Ghostty's default, in its order, each as `name` or `no-name`. Change
