@@ -73,10 +73,15 @@ export function ColorSummary(props: {state: SessionState}) {
 
 /**
  * The line over the swatches: which colours are hard to read, or else how to
- * drag them. It keeps one height either way, so the swatches never move.
+ * drag them, and whose colours the strips under them show. It keeps one height
+ * either way, so the swatches never move.
  */
-export function SwatchHint(props: {warnings: ReadabilityWarning[]}) {
-  const {warnings} = props;
+export function SwatchHint(props: {
+  warnings: ReadabilityWarning[];
+  /** The pinned theme. */
+  reference: string | undefined;
+}) {
+  const {warnings, reference} = props;
   const first = warnings[0];
   const makeReadable = () => {
     const values = colorValues(
@@ -120,6 +125,15 @@ export function SwatchHint(props: {warnings: ReadabilityWarning[]}) {
       ) : (
         <span>
           Drag to swap · hold <Kbd>{ALT_KEY}</Kbd> to copy
+        </span>
+      )}
+      {reference !== undefined && (
+        <span className="ml-auto flex min-w-0 items-center gap-1.5">
+          <span aria-hidden className="flex w-2.5 shrink-0 flex-col gap-px">
+            <span className="h-2 rounded-[2px] inset-ring inset-ring-input" />
+            <span className="h-1 rounded-[1px] bg-muted-foreground" />
+          </span>
+          <Truncate className="max-w-40">Strips: {reference}</Truncate>
         </span>
       )}
     </div>

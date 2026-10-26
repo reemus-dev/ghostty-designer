@@ -126,9 +126,13 @@ export function FontMetricsAndStyles() {
 function Group(props: {label: string; aside?: string; children: ReactNode}) {
   return (
     <div className="flex flex-col">
-      <h3 className="flex items-baseline gap-2 pb-1 text-sm text-muted-foreground">
+      <h3 className="flex items-baseline gap-2 pb-1 text-sm font-medium">
         {props.label}
-        {props.aside && <span className="text-xs">{props.aside}</span>}
+        {props.aside && (
+          <span className="text-xs font-normal text-muted-foreground">
+            {props.aside}
+          </span>
+        )}
       </h3>
       <div className="flex flex-col">{props.children}</div>
     </div>

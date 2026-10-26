@@ -185,23 +185,23 @@ export function ColorsSection() {
       <div className="grid grid-cols-1 items-start gap-5 split:editor-columns split:grid-rows-[auto_1fr]">
         <div className="flex flex-col gap-5 card p-4 sm:p-6 split:contents">
           <div className="flex flex-col gap-5 split:card split:p-6">
-            <SwatchHint warnings={state.warnings} />
+            <SwatchHint warnings={state.warnings} reference={reference?.name} />
             <div
               role="group"
               aria-label="Colours"
               className="flex flex-col gap-5"
               onKeyDown={onArrow}>
               <div className="flex flex-col gap-3">
-                <h3 className="text-sm text-muted-foreground">Basics</h3>
+                <h3 className="text-sm font-medium">Basics</h3>
                 <div className="grid grid-cols-8 gap-x-2">
                   <div
                     className={cn(
-                      "col-span-2 flex flex-col text-2xs text-muted-foreground",
+                      "col-span-2 flex flex-col text-sm text-muted-foreground",
                       reference && "gap-1.5",
                     )}>
                     <span className="flex flex-1 items-center">Background</span>
                     <span className="flex flex-1 items-center">Text</span>
-                    <span aria-hidden className="mt-1.5 h-lh" />
+                    <span aria-hidden className="mt-1.5 h-lh text-2xs" />
                   </div>
                   {BASICS.map((basic) =>
                     column(basic.name, basic.background, basic.text),
@@ -210,9 +210,7 @@ export function ColorsSection() {
               </div>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-                  <h3 className="text-sm text-muted-foreground">
-                    Terminal colours
-                  </h3>
+                  <h3 className="text-sm font-medium">Terminal colours</h3>
                   <span className="text-2xs text-muted-foreground">
                     Top: normal · Bottom: bright
                   </span>
