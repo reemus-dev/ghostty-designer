@@ -72,6 +72,16 @@ export function CommitInput(props: CommitInputProps) {
   const ref = useRef<HTMLInputElement>(null);
   // oxlint-disable-next-line unicorn/no-useless-undefined -- React 19's useRef requires its initial value
   const typing = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // A new value replaces invalid text left from an edit, unless the user is
+  // still typing.
+  const [lastValue, setLastValue] = useState(value);
+  if (value !== lastValue) {
+    setLastValue(value);
+    if (!focused) {
+      setEdit(null);
+      setInvalid(false);
+    }
+  }
   const text = edit?.text ?? value;
 
   const commitTyped = (next: string) => {
@@ -142,6 +152,8 @@ export function CommitInput(props: CommitInputProps) {
       value={text}
       className={cn("font-mono text-sm", className)}
       onChange={(event) => type(event.target.value)}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}
       onBlur={() => {
         setFocused(false);
@@ -164,9 +176,7 @@ export function CommitInput(props: CommitInputProps) {
     reason === undefined ? (
       input
     ) : (
-      <Tooltip
-        open={invalid && (focused || hovered)}
-        onOpenChange={(open) => setHovered(open)}>
+      <Tooltip open={invalid && (focused || hovered)}>
         <TooltipTrigger render={input} />
         <TooltipContent side="bottom">{reason}</TooltipContent>
       </Tooltip>
