@@ -266,14 +266,14 @@ impl Env {
         // The preview file goes beside the config, under this name.
         if path.file_name() == Some(PREVIEW_FILE_NAME.as_ref()) {
             return Err(format!(
-                "{} is Ghostty Designer's preview file",
+                "Ghostty Designer's preview file, not a config: {}",
                 path.display()
             ));
         }
         std::path::absolute(&path)
             .ok()
             .filter(|path| path.is_file())
-            .ok_or_else(|| format!("{} is not a file", path.display()))
+            .ok_or_else(|| format!("Not a file: {}", path.display()))
     }
 }
 

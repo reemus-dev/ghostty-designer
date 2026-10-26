@@ -254,11 +254,15 @@ impl Host {
             .into_iter()
             .map(|(app, file)| ConfigChoice::App {
                 app: app.to_owned(),
+                ghostty_base: app_state::ghostty_base(env, &file),
                 path: path(file),
             });
         let recent = app_state::recent(env)
             .into_iter()
-            .map(|file| ConfigChoice::Recent { path: path(file) });
+            .map(|file| ConfigChoice::Recent {
+                ghostty_base: app_state::ghostty_base(env, &file),
+                path: path(file),
+            });
         std::iter::once(ConfigChoice::Ghostty {
             path: path(ghostty.config_to_write()),
         })

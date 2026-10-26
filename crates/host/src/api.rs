@@ -140,9 +140,14 @@ pub struct AppConfig {
     pub file: ConfigFile,
 }
 
-/// A config the designer can switch to.
+/// A config the designer can switch to. `ghostty_base` is as last chosen for
+/// the file, else its default.
 #[derive(Serialize, TS, Clone, Debug, PartialEq, Eq)]
-#[serde(tag = "type", rename_all = "kebab-case")]
+#[serde(
+    tag = "type",
+    rename_all = "kebab-case",
+    rename_all_fields = "camelCase"
+)]
 pub enum ConfigChoice {
     Ghostty {
         path: String,
@@ -150,10 +155,12 @@ pub enum ConfigChoice {
     App {
         app: String,
         path: String,
+        ghostty_base: bool,
     },
     /// A file opened by path lately.
     Recent {
         path: String,
+        ghostty_base: bool,
     },
 }
 

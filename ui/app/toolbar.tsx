@@ -145,12 +145,15 @@ function EditedFile() {
           {edited.app ?? configPath.slice(configPath.lastIndexOf("/") + 1)}
         </span>
       </TooltipTrigger>
-      <TooltipContent side="bottom">
-        Editing{" "}
+      <TooltipContent side="bottom" className="flex-col items-start gap-0.5">
         <span className="font-mono wrap-anywhere">
           <Path path={configPath} />
         </span>
-        {edited.ghosttyBase ? ", on top of Ghostty's config" : ""}
+        {edited.ghosttyBase && (
+          <span className="text-muted-foreground">
+            Uses Ghostty's config as a base
+          </span>
+        )}
       </TooltipContent>
     </Tooltip>
   );

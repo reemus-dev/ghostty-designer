@@ -131,8 +131,9 @@ designer opens the config you last edited, also one given with `--config`.
 Some apps load Ghostty's config first and their own file on top, and some load
 only their own. The designer shows the file the way the app loads it: known apps
 as they do by default, other files on top of Ghostty's config. If colours or
-fonts in the designer don't match the app, change **Does this app use Ghostty's
-config as a base?** in the switcher. The designer remembers it for that file.
+fonts in the designer don't match the app, select the file in the switcher and
+change **Does this app use Ghostty's config as a base?**. The designer remembers
+it for that file.
 
 - A save writes only that file and the files it includes. When a line in
   Ghostty's config still decides a setting, the save review says so.

@@ -24,9 +24,10 @@ export type CommandError = { "kind": "input", "message": string } | { "kind": "i
 export type CommandResult = { "command": "load_config", "result": LoadedConfig } | { "command": "show_config", "result": string } | { "command": "validate_config", "result": string } | { "command": "system_appearance", "result": Appearance } | { "command": "load_themes", "result": Array<ThemeFile> } | { "command": "write_theme", "result": boolean } | { "command": "rename_theme", "result": boolean } | { "command": "delete_theme" } | { "command": "reset_font_size" } | { "command": "apply_save", "result": SavedFiles } | { "command": "restore_original" } | { "command": "write_state" };
 
 /**
- * A config the designer can switch to.
+ * A config the designer can switch to. `ghostty_base` is as last chosen for
+ * the file, else its default.
  */
-export type ConfigChoice = { "type": "ghostty", path: string, } | { "type": "app", app: string, path: string, } | { "type": "recent", path: string, };
+export type ConfigChoice = { "type": "ghostty", path: string, } | { "type": "app", app: string, path: string, ghosttyBase: boolean, } | { "type": "recent", path: string, ghosttyBase: boolean, };
 
 export type ConfigFile = { path: string, 
 /**
