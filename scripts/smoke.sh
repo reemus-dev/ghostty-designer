@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Launch-and-close smoke for the window: runs the app in a throwaway sandbox,
-# under Xvfb on Linux, then checks it reports ready once the panel connects and
+# under Xvfb on Linux, then checks it reports ready once the panel has drawn and
 # exits cleanly on SIGTERM with no preview left behind. A fake Ghostty CLI
-# answers from the Ghostty 1.3.1 fixtures, so no Ghostty install is needed.
+# answers from the Ghostty 1.3.1 fixtures, so no Ghostty install is needed. The
+# sandbox has no config, so Ghostty shows its defaults.
 #
 #   smoke.sh            build the app with the embedded UI and smoke it
 #   smoke.sh <binary>   smoke an installed or released binary
@@ -28,7 +29,11 @@ cat >"$sandbox/ghostty" <<EOF
 case \$1 in
   +version) cat "$fixtures/version.txt" ;;
   +list-fonts) cat "$fixtures/list-fonts.txt" ;;
-  +show-config) echo 'font-size = 13' ;;
+  +show-config)
+    case " \$* " in
+      *" --docs "*) cat "$fixtures/show-config-default-docs.txt" ;;
+      *) grep -v -e '^#' -e '^\$' "$fixtures/show-config-default-docs.txt" ;;
+    esac ;;
 esac
 EOF
 chmod +x "$sandbox/ghostty"
@@ -39,6 +44,11 @@ pid=$!
 
 deadline=$((SECONDS + 30))
 until grep -qsx ready "$sandbox/out"; do
+  if grep -qs '^error ' "$sandbox/out"; then
+    echo "app reported a startup error" >&2
+    cat "$sandbox/err" >&2
+    exit 1
+  fi
   if ! kill -0 "$pid" 2>/dev/null; then
     status=0
     wait "$pid" || status=$?

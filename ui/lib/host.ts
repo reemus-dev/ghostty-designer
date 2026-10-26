@@ -28,6 +28,10 @@ export const host = createHost({
   callOrdered: (command) => call("call_ordered", {command}),
 });
 
+/** Reports the launch: null once the session has drawn, else why it failed. */
+export const reportStart = (error: string | null) =>
+  call<void>("report_start", {error});
+
 export const closePromptShown = () => call<void>("close_prompt_shown");
 
 export const closeWindow = () => call<void>("close_window");

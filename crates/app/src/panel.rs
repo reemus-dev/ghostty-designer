@@ -173,8 +173,20 @@ pub async fn connect(
     let connected = host
         .get()
         .connect(Box::new(move |message| drop(events.send(message))));
-    crate::launch::report("ready");
     Ok(connected)
+}
+
+/// Reports the launch once the panel has drawn its session, or the error that
+/// stopped the session from starting.
+#[tauri::command]
+pub fn report_start(error: Option<String>) {
+    match error {
+        None => crate::launch::report("ready"),
+        Some(error) => {
+            errln!("ghostty-designer: {error}");
+            crate::launch::report(&format!("error {error}"));
+        }
+    }
 }
 
 #[tauri::command]

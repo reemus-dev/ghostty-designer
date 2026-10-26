@@ -133,6 +133,7 @@ fn main() {
         .manage(guard)
         .invoke_handler(tauri::generate_handler![
             panel::connect,
+            panel::report_start,
             panel::call,
             panel::call_ordered,
             panel::close_prompt_shown,

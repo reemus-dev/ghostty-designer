@@ -1,7 +1,8 @@
-import {Activity} from "react";
+import {Activity, useEffect} from "react";
 import {cn} from "cn";
 import {TooltipProvider} from "@/components/ui/tooltip";
 import {ThemesView} from "@/features/themes";
+import {reportStart} from "@/lib/host";
 import {showsSetup, useStore} from "@/lib/store";
 import {CloseDialog} from "./close-dialog";
 import {CommandPalette} from "./command-palette";
@@ -18,6 +19,13 @@ import {Toolbar} from "./toolbar";
 export function App() {
   const loaded = useStore((store) => store.snapshot !== null);
   const failure = useStore((store) => store.failure);
+
+  // Effects run after the commit, so a render that throws never reports ready.
+  useEffect(() => {
+    if (loaded || failure !== null) {
+      reportStart(loaded ? null : failure).catch(console.error);
+    }
+  }, [loaded, failure]);
 
   if (!loaded) {
     return (
