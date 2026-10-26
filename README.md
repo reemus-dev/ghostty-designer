@@ -252,6 +252,10 @@ side.
 A sandboxed app never reloads Ghostty, so previews land only in the sandbox's
 config files.
 
+`mise run dev:reset` makes the next `mise run dev` a first launch. It deletes
+the designer's state, the preview file and the include line, and keeps your
+saved settings and themes.
+
 Development builds, from `mise run dev` and sandboxes, serve WebDriver on
 127.0.0.1, so `panel.ts` can drive the panel. `docs/verify.md` describes it.
 

@@ -18,6 +18,35 @@ run = "bun install --frozen-lockfile"
 description = "Run the app from source with the real environment and a hot-reloading UI (only the user runs this)"
 run = "TAURI_APP_PATH=crates/app tauri dev --features webdriver"
 
+[tasks."dev:reset"]
+description = "Make the next `dev` run a first launch: delete the designer's state, preview files and include lines, keeping saved settings and themes (only the user runs this)"
+run = '''
+set -eu
+state=${XDG_STATE_HOME:-$HOME/.local/state}/ghostty-designer
+# A running designer holds an flock on the lock file.
+if [ -e "$state/lock" ] && ! perl -MFcntl=:flock -e 'open my $f, "<", shift or die; flock $f, LOCK_EX | LOCK_NB or exit 1' "$state/lock"; then
+  echo "A designer is running. Quit it first." >&2
+  exit 1
+fi
+# An interrupted save can leave the only copy of the files it replaced here.
+for backup in "$state"/previous-*; do
+  if [ -d "$backup" ]; then
+    echo "$backup holds files an interrupted save replaced. Recover or delete it first." >&2
+    exit 1
+  fi
+done
+
+for dir in "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty" "$HOME/Library/Application Support/com.mitchellh.ghostty"; do
+  rm -f "$dir/ghostty-designer.conf"
+  for config in "$dir/config" "$dir/config.ghostty"; do
+    if [ -f "$config" ]; then
+      perl -0777 -pi -e 's/^\n?(# ghostty-designer: live preview.*\n)?config-file = \?ghostty-designer\.conf(\n|\z)//mg' "$config"
+    fi
+  done
+done
+rm -rf "$state"
+'''
+
 [tasks.build]
 description = "Build the release app for this machine at dist/ghostty-designer"
 depends = ["ui:build"]
