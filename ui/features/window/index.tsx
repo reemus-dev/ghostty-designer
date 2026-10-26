@@ -201,8 +201,8 @@ const BLINK = [
     label: "Default",
     title: "Blinks, unless a program asks it to stop",
   },
-  {value: "true", write: "true", label: "On", title: "Always blinks"},
-  {value: "false", write: "false", label: "Off", title: "Never blinks"},
+  {value: "true", write: "true", label: "True", title: "Always blinks"},
+  {value: "false", write: "false", label: "False", title: "Never blinks"},
 ];
 
 function BlinkOption(props: {option: OptionMeta}) {
@@ -357,7 +357,7 @@ const CURSOR_SHAPES = [
   },
   {
     value: "block_hollow",
-    label: "Hollow",
+    label: "Block hollow",
     icon: (
       <rect
         x="5.25"
