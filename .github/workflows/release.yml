@@ -19,7 +19,7 @@ jobs:
       contents: read
 
   build:
-    needs: verify
+    timeout-minutes: 30
     strategy:
       matrix:
         include:
@@ -75,7 +75,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: build
+    needs: [verify, build]
     permissions:
       contents: write
     runs-on: ubuntu-24.04

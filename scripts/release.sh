@@ -94,21 +94,41 @@ EOF
   fi
   local deb=ghostty-designer_${VERSION}_${arch/x86_64/amd64}.deb
   local rpm=ghostty-designer-${VERSION}-1.${arch/arm64/aarch64}.rpm
-  local apt='apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq'
-  # Each container installs a file the way the README says, then smokes it.
+  # Recommended packages stay out, so the declared dependencies must suffice.
+  local apt='apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends'
+  local dnf='dnf install -y -q --setopt=install_weak_deps=False'
+  # Each container installs a file the way the README says, then smokes it. The
+  # containers run in parallel. --init gives xvfb-run, which would otherwise be
+  # PID 1, a parent that passes on Xvfb's ready signal.
+  local names=() pids=()
   contained() {
-    echo "=== $1"
-    docker run --rm -v "$ROOT:$ROOT:ro" -v "$dir:$dir:ro" -w "$ROOT" -e GHOSTTY_DESIGNER_GHOSTTY \
-      "$1" bash -ec "$2 >/dev/null; scripts/smoke.sh $3"
+    names+=("$1 on $2")
+    docker run --init --rm -v "$ROOT:$ROOT:ro" -v "$dir:$dir:ro" -w "$ROOT" -e GHOSTTY_DESIGNER_GHOSTTY \
+      "$2" bash -ec "$3 >/dev/null; scripts/smoke.sh $4" >"$dir/${#names[@]}.log" 2>&1 &
+    pids+=($!)
   }
-  contained ubuntu:22.04 "$apt ./dist/release/$deb xvfb xauth" ghostty-designer
-  contained ubuntu:latest "$apt ./dist/release/$deb xvfb xauth" ghostty-designer
-  contained debian:12 "$apt ./dist/release/$deb xvfb xauth" ghostty-designer
-  contained fedora:latest "dnf install -y -q ./dist/release/$rpm xorg-x11-server-Xvfb /usr/bin/xvfb-run" ghostty-designer
-  contained ubuntu:22.04 "$apt libwebkit2gtk-4.1-0 libgtk-3-0 procps fontconfig xvfb xauth" "$binary"
+  # Two containers use this image, and parallel runs race to pull it.
+  docker pull -q ubuntu:22.04 >/dev/null
+  contained .deb ubuntu:22.04 "$apt ./dist/release/$deb xvfb xauth" ghostty-designer
+  contained .deb ubuntu:latest "$apt ./dist/release/$deb xvfb xauth" ghostty-designer
+  contained .deb debian:12 "$apt ./dist/release/$deb xvfb xauth" ghostty-designer
+  contained .rpm fedora:latest "$dnf ./dist/release/$rpm xorg-x11-server-Xvfb /usr/bin/xvfb-run" ghostty-designer
+  contained tarball ubuntu:22.04 "$apt libwebkit2gtk-4.1-0 libgtk-3-0 procps fontconfig xvfb xauth" "$binary"
   if [ "$arch" = x86_64 ]; then
-    contained archlinux:latest "pacman -Sy --noconfirm --needed webkit2gtk-4.1 gtk3 procps-ng fontconfig xorg-server-xvfb xorg-xauth" "$binary"
+    contained tarball archlinux:latest "pacman -Sy --noconfirm --needed webkit2gtk-4.1 gtk3 procps-ng fontconfig xorg-server-xvfb xorg-xauth" "$binary"
   fi
+
+  local i failed=0
+  for i in "${!pids[@]}"; do
+    if wait "${pids[$i]}"; then
+      echo "ok: ${names[$i]}"
+    else
+      echo "failed: ${names[$i]}"
+      cat "$dir/$((i + 1)).log"
+      failed=1
+    fi
+  done
+  return "$failed"
 }
 
 formula() {
