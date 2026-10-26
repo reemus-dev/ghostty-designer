@@ -3,7 +3,8 @@ resolver = "3"
 members = ["crates/*"]
 
 [workspace.package]
-version = "0.1.0"
+# The release workflow sets the version from the version tag.
+version = "0.0.0"
 edition = "2024"
 license = "MIT"
 publish = false

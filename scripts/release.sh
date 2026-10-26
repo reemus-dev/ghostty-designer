@@ -1,19 +1,28 @@
 #!/usr/bin/env bash
-# Builds the release files and prints the Homebrew formula that installs them.
-# The release workflow runs both.
+# Sets the release version, builds the release files and prints the Homebrew
+# formula that installs them. The release workflow runs all three.
 #
-#   release.sh build [target]   archive for this machine or target, plus .deb and .rpm on Linux, into dist/release
-#   release.sh formula          Homebrew formula for the macOS archives in dist/release/checksums.txt
+#   release.sh version <version>  write the version into Cargo.toml and Cargo.lock
+#   release.sh build [target]     archive for this machine or target, plus .deb and .rpm on Linux, into dist/release
+#   release.sh formula            Homebrew formula for the macOS archives in dist/release/checksums.txt
 #
-# The version is the crate's, so a release tags the commit that sets it.
+# The version tag is the only record of a release's version. The repository
+# keeps 0.0.0, and the workflow writes the tag's version before it builds.
 set -euo pipefail
 
-USAGE="usage: release.sh build [target]|formula"
+USAGE="usage: release.sh version <version>|build [target]|formula"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 OUT=$ROOT/dist/release
 cd "$ROOT"
 VERSION=$(cargo pkgid -p ghostty-designer)
 VERSION=${VERSION##*@}
+
+version() {
+  local version=${1:?$USAGE}
+  sed "s/^version = \".*\"$/version = \"$version\"/" Cargo.toml >Cargo.toml.new
+  mv Cargo.toml.new Cargo.toml
+  cargo update --workspace --quiet
+}
 
 archive() { echo "ghostty-designer_${VERSION}_$1_$2.tar.gz"; }
 
@@ -92,6 +101,7 @@ EOF
 }
 
 case ${1:-} in
+  version) version "${2:-}" ;;
   build) build "${2:-}" ;;
   formula) formula ;;
   *) echo "$USAGE" >&2; exit 2 ;;

@@ -34,6 +34,10 @@ run = "scripts/smoke-linux.sh"
 
 # ── Release ─────────────────────────────────────────────────────────────────
 
+[tasks."release:version"]
+description = "Write a release version into Cargo.toml and Cargo.lock, as the release workflow does from the tag"
+run = "scripts/release.sh version"
+
 [tasks."release:build"]
 description = "Build the release files for this machine, or for a target triple, into dist/release"
 depends = ["ui:build"]

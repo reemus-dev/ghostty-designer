@@ -238,15 +238,13 @@ Without GTK either, the first missing library is `libgdk-3.so.0`.
 
 ## Releases
 
-The workspace version in `Cargo.toml` is the release version. To release:
-
-1. Set `version` in `[workspace.package]`, run `cargo check` to update
-   `Cargo.lock`, and commit.
-2. Tag the commit `v<version>` and push the tag.
+To release, tag a commit `v<version>` and push the tag. The tag is the only
+record of the version: the repository keeps `0.0.0`, and the release workflow
+writes the tag's version into `Cargo.toml` and `Cargo.lock` before it builds.
+Builds from source report `0.0.0`.
 
 `.github/workflows/release.yml` runs CI, builds each target on its own runner,
-and publishes the GitHub release with `checksums.txt`. It fails before
-publishing if the tag does not match the version. It then writes
+and publishes the GitHub release with `checksums.txt`. It then writes
 `Formula/ghostty-designer.rb` to `reemus-dev/homebrew-tap`, through the
 `HOMEBREW_TAP_DEPLOY_KEY` secret: the private half of a deploy key with write
 access to the tap. A manual run of the workflow builds the same files as

@@ -1237,7 +1237,7 @@ dependencies = [
 
 [[package]]
 name = "ghostty-designer"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "clap",
  "ghostty-designer-host",
@@ -1254,7 +1254,7 @@ dependencies = [
 
 [[package]]
 name = "ghostty-designer-host"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "indexmap 2.14.2",
  "libc",
