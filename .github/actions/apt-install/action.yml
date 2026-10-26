@@ -31,11 +31,18 @@ runs:
         key: ${{ steps.plan.outputs.key }}
         restore-keys: ${{ steps.plan.outputs.prefix }}
 
-    # autoclean drops cached versions the mirror no longer lists.
+    # On a cache miss, each download attempt gets 5 minutes, so a slow mirror
+    # costs a retry rather than the job. autoclean drops cached versions the
+    # mirror no longer lists.
     - shell: bash
       env:
         PACKAGES: ${{ inputs.packages }}
       run: |
+        for try in 1 2 3; do
+          sudo timeout 300 apt-get install -y -q --download-only \
+            --no-install-recommends $PACKAGES && break
+          [ "$try" -lt 3 ] || exit 1
+        done
         sudo apt-get install -y --no-install-recommends \
           -o APT::Keep-Downloaded-Packages=true $PACKAGES
         sudo apt-get autoclean

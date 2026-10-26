@@ -105,12 +105,26 @@ check() {
   local dnf='dnf install -y -q --setopt=install_weak_deps=False'
   # Each container installs a file the way the README says, then smokes it. The
   # containers run in parallel. --init gives xvfb-run, which would otherwise be
-  # PID 1, a parent that passes on Xvfb's ready signal.
+  # PID 1, a parent that passes on Xvfb's ready signal. A slow or broken distro
+  # mirror can stall an install for half an hour, so each install gets 5 minutes
+  # and up to 3 fresh containers. Exit status 75 marks a failed install, the only
+  # failure that retries.
   local names=() pids=()
   contained() {
     names+=("$1 on $2")
-    docker run --init --rm -v "$ROOT:$ROOT:ro" -v "$dir:$dir:ro" -w "$ROOT" \
-      "$2" bash -ec "$3 >/dev/null; scripts/smoke.sh $4" >"$dir/${#names[@]}.log" 2>&1 &
+    (
+      local try status
+      for try in 1 2 3; do
+        status=0
+        docker run --init --rm -v "$ROOT:$ROOT:ro" -v "$dir:$dir:ro" -w "$ROOT" \
+          -e INSTALL="$3" -e SMOKE="$4" "$2" bash -ec \
+          'timeout 300 bash -ec "$INSTALL" >/dev/null || exit 75; scripts/smoke.sh "$SMOKE"' ||
+          status=$?
+        [ "$status" = 75 ] || exit "$status"
+        echo "release.sh: install attempt $try failed"
+      done
+      exit 75
+    ) >"$dir/${#names[@]}.log" 2>&1 &
     pids+=($!)
   }
   # Two containers use this image, and parallel runs race to pull it.

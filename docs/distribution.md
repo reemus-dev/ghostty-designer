@@ -237,7 +237,9 @@ the panel reports ready.
   without recommended packages, so the declared dependencies must suffice. The
   `.deb` on Ubuntu 22.04, the latest Ubuntu and Debian 12, the `.rpm` on the
   latest Fedora, and the tarball on Ubuntu 22.04 and, for x86_64, Arch. The
-  containers run in parallel.
+  containers run in parallel. Distro mirrors sometimes stall or fail, so an
+  install that fails or exceeds 5 minutes retries in a fresh container, up to 3
+  times.
 - npm: on the runner's own target, the package from `release.sh npm`, packed and
   installed globally, runs the build through `npm/bin.js`: `--version`, and on
   macOS the window.
