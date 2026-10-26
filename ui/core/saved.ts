@@ -46,6 +46,9 @@ const STYLE_FAMILY_KEYS = [
   "font-family-bold-italic",
 ];
 
+const nameTaken = (name: string) =>
+  inputError(`A theme named ${name} already exists`);
+
 /**
  * Reads the config and the themes through `host`, and keeps the sources of the
  * reads that count. Reads may overlap: `latestLoads` decides which count.
@@ -131,6 +134,12 @@ export function savedConfig(
     },
   );
 
+  /**
+   * Reads the themes after a theme file changed. The change happened, so a
+   * failed read is a background error.
+   */
+  const rereadThemes = () => themeReads.request("load").catch(on.fail);
+
   /** Throws unless the last read shows that the preview include loads. */
   const checkInclude = () => {
     if (include !== "absent") return;
@@ -190,15 +199,32 @@ export function savedConfig(
 
     /**
      * Writes `colors` as a new user theme named `name`, which checkThemeName
-     * allows, then reads the themes again. The theme is written, so a failed
-     * read is a background error.
+     * allows, then reads the themes again.
      */
     async writeTheme(name: string, colors: Values) {
       const text = themeText(colors, catalog.colorDefaults.palette!);
-      const written = await host.writeTheme(name, text);
-      if (!written) throw inputError(`A theme named ${name} already exists`);
-      await themeReads.request("load").catch(on.fail);
-      return written;
+      if (!(await host.writeTheme(name, text))) throw nameTaken(name);
+      await rereadThemes();
+    },
+
+    /**
+     * Renames the user theme `name` to `to`, which checkThemeName allows.
+     * `follow` runs before the themes read again.
+     */
+    async renameTheme(name: string, to: string, follow: () => Promise<void>) {
+      if (!(await host.renameTheme(name, to))) throw nameTaken(to);
+      await follow();
+      await rereadThemes();
+    },
+
+    /**
+     * Deletes the user theme `name`. `follow` runs before the themes read
+     * again.
+     */
+    async deleteTheme(name: string, follow: () => Promise<void>) {
+      await host.deleteTheme(name);
+      await follow();
+      await rereadThemes();
     },
 
     /**

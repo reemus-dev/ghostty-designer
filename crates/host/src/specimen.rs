@@ -1,6 +1,6 @@
 //! The specimen pages as a terminal prints them, in its own colours, plus rows
-//! only a real terminal can show. The content is `specimen.json`, which the
-//! panel renders too.
+//! only a real terminal can show. The content is the `pages` section of
+//! `specimen.json`. The panel renders its `card` section, in the same format.
 
 use std::fmt::Write;
 

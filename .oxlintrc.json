@@ -34,7 +34,6 @@
     "import/max-dependencies": "off",
     // Flags apostrophes in UI copy.
     "react/no-unescaped-entities": "off",
-    "max-classes-per-file": "off",
     // no-misused-promises catches the harmful case: a promise where nothing
     // awaits it. What remains is `cond && action()` in handlers.
     "typescript/strict-void-return": "off",

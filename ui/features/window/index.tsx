@@ -22,7 +22,7 @@ import {useAppName} from "@/lib/views";
  */
 export function WindowSection() {
   const options = useSnapshot((snapshot) => snapshot.options);
-  const platform = useSnapshot((snapshot) => snapshot.ghostty.platform);
+  const platform = useSnapshot((snapshot) => snapshot.platform);
 
   const layout = useMemo(
     () => windowCards(options, platform),
@@ -258,9 +258,7 @@ function blurMode(value: string, radius: number) {
 function BlurOption(props: {option: OptionMeta}) {
   const {option} = props;
   const value = useFirstValue(option);
-  const macos = useSnapshot(
-    (snapshot) => snapshot.ghostty.platform === "macos",
-  );
+  const macos = useSnapshot((snapshot) => snapshot.platform === "macos");
   const set = (next: string) =>
     void send({type: "set", key: option.key, values: [next]});
 

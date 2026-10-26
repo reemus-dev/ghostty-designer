@@ -45,9 +45,10 @@ impl Content {
 }
 
 /// Puts back each file of `scope`, the current config's files, as it was before
-/// the designer first wrote it. Runs against other configs (such as a sandbox)
-/// share the state dir, so their files stay untouched.
-pub fn restore_original(state_dir: &Path, scope: &[PathBuf]) -> Result<SavedFiles, Error> {
+/// the designer first wrote it. Other edited configs, such as an app's file or
+/// one opened with `--config`, share the state dir, so their files stay
+/// untouched.
+pub fn restore_original(state_dir: &Path, scope: &[PathBuf]) -> Result<(), Error> {
     let originals = original_files_dir(state_dir);
     let mut edits = Vec::new();
     for entry in read_manifest(state_dir).map_err(Error::Internal)? {
@@ -79,7 +80,7 @@ pub fn restore_original(state_dir: &Path, scope: &[PathBuf]) -> Result<SavedFile
             path,
         });
     }
-    apply_save(&edits, state_dir)
+    apply_save(&edits, state_dir).map(drop)
 }
 
 /// Whether the original snapshot covers a file of `scope`. False when the
@@ -102,10 +103,10 @@ fn theme_file(themes_dir: &Path, name: &str) -> Result<PathBuf, Error> {
     Ok(themes_dir.join(name))
 }
 
-/// Writes a new user theme, or gives None when a file has the name. It never
+/// Writes a new user theme, or gives false when a file has the name. It never
 /// replaces a file. The theme appears whole: it is written to a hidden temp
 /// file, which the theme list skips, then renamed to its name.
-pub fn write_theme(themes_dir: &Path, name: &str, text: &str) -> Result<Option<PathBuf>, Error> {
+pub fn write_theme(themes_dir: &Path, name: &str, text: &str) -> Result<bool, Error> {
     let file = theme_file(themes_dir, name)?;
     let written = fs::create_dir_all(themes_dir).and_then(|()| {
         let mut temp = tempfile::Builder::new()
@@ -116,8 +117,8 @@ pub fn write_theme(themes_dir: &Path, name: &str, text: &str) -> Result<Option<P
         Ok(())
     });
     match written {
-        Ok(()) => Ok(Some(file)),
-        Err(error) if error.kind() == io::ErrorKind::AlreadyExists => Ok(None),
+        Ok(()) => Ok(true),
+        Err(error) if error.kind() == io::ErrorKind::AlreadyExists => Ok(false),
         Err(error) => Err(Error::Internal(format!(
             "Could not write {}: {error}",
             file.display()
@@ -125,9 +126,9 @@ pub fn write_theme(themes_dir: &Path, name: &str, text: &str) -> Result<Option<P
     }
 }
 
-/// Renames a user theme, or gives None when a file has the new name. It never
+/// Renames a user theme, or gives false when a file has the new name. It never
 /// replaces a file: the new name links to the file before the old one goes.
-pub fn rename_theme(themes_dir: &Path, name: &str, to: &str) -> Result<Option<PathBuf>, Error> {
+pub fn rename_theme(themes_dir: &Path, name: &str, to: &str) -> Result<bool, Error> {
     let from = theme_file(themes_dir, name)?;
     let file = theme_file(themes_dir, to)?;
     let renamed = match fs::hard_link(&from, &file) {
@@ -136,14 +137,14 @@ pub fn rename_theme(themes_dir: &Path, name: &str, to: &str) -> Result<Option<Pa
         // that differs only in case.
         Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {
             if !same_file(&from, &file) {
-                return Ok(None);
+                return Ok(false);
             }
             fs::rename(&from, &file)
         }
         Err(error) => Err(error),
     };
     renamed
-        .map(|()| Some(file))
+        .map(|()| true)
         .map_err(|error| Error::Internal(format!("Could not rename {}: {error}", from.display())))
 }
 
@@ -287,7 +288,9 @@ fn discard(staged: &[Staged<'_>]) {
 pub fn apply_save(edits: &[FileEdit], state_dir: &Path) -> Result<SavedFiles, Error> {
     let backup_dir = state_dir.join("previous");
     if edits.is_empty() {
-        return Ok(saved_files(&backup_dir, edits));
+        return Ok(SavedFiles {
+            backup_dir: backup_dir.display().to_string(),
+        });
     }
 
     let mut targets: HashMap<PathBuf, &Path> = HashMap::new();
@@ -414,17 +417,9 @@ pub fn apply_save(edits: &[FileEdit], state_dir: &Path) -> Result<SavedFiles, Er
     }
     let moved = remove_dir_all_force(&backup_dir).and_then(|()| fs::rename(&staging, &backup_dir));
     let backup_dir = if moved.is_ok() { backup_dir } else { staging };
-    Ok(saved_files(&backup_dir, edits))
-}
-
-fn saved_files(backup_dir: &Path, edits: &[FileEdit]) -> SavedFiles {
-    SavedFiles {
+    Ok(SavedFiles {
         backup_dir: backup_dir.display().to_string(),
-        files: edits
-            .iter()
-            .map(|edit| edit.path.display().to_string())
-            .collect(),
-    }
+    })
 }
 
 /// What a save added to the original snapshot.
@@ -894,7 +889,7 @@ mod tests {
             names
         };
 
-        assert_eq!(rename_theme(&c.dir, "Mine", "Nord").unwrap(), None);
+        assert!(!rename_theme(&c.dir, "Mine", "Nord").unwrap());
         assert_eq!(read(&c.dir.join("Nord")), "background = #2e3440\n");
         assert!(matches!(
             rename_theme(&c.dir, "Mine", "../Mine"),

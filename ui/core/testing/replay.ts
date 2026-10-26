@@ -7,6 +7,7 @@
 // The file name is outside `bun test`'s pattern, so only
 // `mise run test:scenarios` runs it.
 
+// oxlint-disable-next-line max-classes-per-file -- Seen and Replay share one replay's state
 import {expect, test} from "bun:test";
 import {
   mkdirSync,
@@ -131,18 +132,18 @@ async function replay(scenario: Scenario): Promise<Recording> {
     let defaults: Values = {};
     const connect: TestHost["connect"] = async (listener) => {
       const info = await started.connect(listener);
+      if (info.ghosttyVersion !== GHOSTTY_VERSION) {
+        throw new Error(
+          `Ghostty is ${info.ghosttyVersion}, but the recordings need ${GHOSTTY_VERSION}`,
+        );
+      }
       defaults = parseShowConfig(info.defaultsWithDocs).values;
       return info;
     };
     const session = await startSession({...started, connect}, (message) =>
       seen.observe(message),
     );
-    const {ghostty, state, fonts} = session.snapshot;
-    if (ghostty.version !== GHOSTTY_VERSION) {
-      throw new Error(
-        `Ghostty is ${ghostty.version}, but the recordings need ${GHOSTTY_VERSION}`,
-      );
-    }
+    const {state, fonts} = session.snapshot;
     seen.state ??= state;
     seen.fonts ||= fonts !== null;
     return await new Replay(session, seen, root, defaults).run(scenario);

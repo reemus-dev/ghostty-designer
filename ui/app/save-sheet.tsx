@@ -90,7 +90,7 @@ function SaveFlow(props: {
         if (id !== plans.current) return;
         setPhase({type: "plan", plan: next, failure});
         // Lines commented out, or edits across files, are worth seeing before saving.
-        setShowDiff(next.conflicts.length > 0 || next.files.length > 1);
+        setShowDiff(next.conflicts > 0 || next.files.length > 1);
       })
       .catch((error: unknown) => {
         if (id !== plans.current) return;
@@ -181,7 +181,7 @@ function SaveFlow(props: {
 
 function PlanHeader() {
   const count = useSnapshot((snapshot) => snapshot.state.changes);
-  const configPath = useSnapshot((snapshot) => snapshot.ghostty.configPath);
+  const configPath = useSnapshot((snapshot) => snapshot.configPath);
   return (
     <DialogHeader className="gap-3">
       <DialogTitle className="leading-snug">
@@ -223,7 +223,7 @@ function Notes(props: {
   onBackup: (backup: boolean) => void;
 }) {
   const {plan, backup, onBackup} = props;
-  const lines = plan.conflicts.length;
+  const lines = plan.conflicts;
   const settings = plan.themeSettings.length;
   const overrides = plan.overrides.length;
   if (
@@ -312,7 +312,7 @@ const LIST = new Intl.ListFormat("en", {type: "conjunction"});
  */
 function OverrideNote(props: {override: ConfigOverride}) {
   const {by, paths, keys} = props.override;
-  const edited = useSnapshot((snapshot) => snapshot.ghostty.edited);
+  const edited = useSnapshot((snapshot) => snapshot.edited);
   const state = useSnapshot((snapshot) => snapshot.state);
   const options = useSnapshot((snapshot) => snapshot.options);
   const colorDefaults = useSnapshot((snapshot) => snapshot.colorDefaults);

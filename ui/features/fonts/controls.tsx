@@ -40,7 +40,7 @@ const EMPTY: string[] = [];
 /** The font section's cards for the platform and the thicken setting. */
 function useFontCards() {
   const options = useSnapshot((snapshot) => snapshot.options);
-  const platform = useSnapshot((snapshot) => snapshot.ghostty.platform);
+  const platform = useSnapshot((snapshot) => snapshot.platform);
   const thicken = useEffective("font-thicken")?.[0];
   return useMemo(
     () => fontCards(options, platform, thicken),
@@ -123,17 +123,10 @@ export function FontMetricsAndStyles() {
 }
 
 /** A captioned run of setting rows. */
-function Group(props: {label: string; aside?: string; children: ReactNode}) {
+function Group(props: {label: string; children: ReactNode}) {
   return (
     <div className="flex flex-col">
-      <h3 className="flex items-baseline gap-2 pb-1 text-sm font-medium">
-        {props.label}
-        {props.aside && (
-          <span className="text-xs font-normal text-muted-foreground">
-            {props.aside}
-          </span>
-        )}
-      </h3>
+      <h3 className="pb-1 text-sm font-medium">{props.label}</h3>
       <div className="flex flex-col">{props.children}</div>
     </div>
   );
@@ -163,9 +156,10 @@ function SizeOption(props: {option: OptionMeta}) {
 /** Font size in steps of one point; typed sizes may be fractional. */
 function FontSize(props: {option: OptionMeta}) {
   const {option} = props;
-  // The zoom reset runs through macOS automation.
+  // The zoom reset runs through macOS automation, in Ghostty's own windows.
   const resetsZoom = useSnapshot(
-    (snapshot) => snapshot.ghostty.platform === "macos",
+    (snapshot) =>
+      snapshot.platform === "macos" && snapshot.edited.type === "ghostty",
   );
   const value = useEffective(option.key)?.[0] ?? option.defaults[0] ?? "13";
   const {min = -Infinity, max = Infinity} =

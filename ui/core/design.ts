@@ -66,7 +66,7 @@ export class Design {
     private readonly host: Host,
     private readonly config: Pick<
       SavedConfig,
-      "sources" | "include" | "readThemes"
+      "sources" | "include" | "renameTheme" | "deleteTheme"
     >,
     persisted: string | null,
     onStatus: () => void,
@@ -194,16 +194,17 @@ export class Design {
         // The theme does not block its own name, so a rename may change case.
         const themes = library.themes.filter((item) => item.name !== theme);
         checkThemeName({...library, themes}, to);
-        if (!(await this.host.renameTheme(theme, to))) {
-          throw inputError(`A theme named ${to} already exists`);
-        }
-        await this.followTheme(theme, to);
+        await this.config.renameTheme(theme, to, () =>
+          this.followTheme(theme, to),
+        );
         break;
       }
       case "delete-theme": {
-        this.checkOwnTheme(intent.theme);
-        await this.host.deleteTheme(intent.theme);
-        await this.followTheme(intent.theme, null);
+        const {theme} = intent;
+        this.checkOwnTheme(theme);
+        await this.config.deleteTheme(theme, () =>
+          this.followTheme(theme, null),
+        );
         break;
       }
     }
@@ -322,7 +323,6 @@ export class Design {
     this.#draft = follow(this.draft);
     this.history.mapDrafts(follow);
     await this.persist(withThemeMoved(this.persisted, theme, to));
-    await this.config.readThemes();
   }
 
   private installed() {

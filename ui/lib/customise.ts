@@ -255,8 +255,7 @@ type CustomiseSection = {
 
 /** The sections in page order. */
 export function customiseSections(snapshot: Snapshot): CustomiseSection[] {
-  const {options, state} = snapshot;
-  const {platform} = snapshot.ghostty;
+  const {options, platform, state} = snapshot;
   const window = windowCards(options, platform);
   return [
     {

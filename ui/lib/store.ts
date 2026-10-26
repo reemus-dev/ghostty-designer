@@ -334,16 +334,12 @@ export function setPeek(on: boolean) {
 const notices = {lastId: 0};
 const NOTICE_MS = 4000;
 
-export function notify(
-  text: string,
-  tone: Notice["tone"] = "info",
-  ms = NOTICE_MS,
-) {
+export function notify(text: string, tone: Notice["tone"] = "info") {
   const notice = {id: ++notices.lastId, text, tone};
   update({notice});
   setTimeout(() => {
     if (current.store.notice?.id === notice.id) update({notice: null});
-  }, ms);
+  }, NOTICE_MS);
 }
 
 /** The notice floats over the view's content, so it leaves with that view. */
@@ -402,12 +398,12 @@ function startSwitch(target: ConfigTarget) {
 
 /** Switches to the config file a later launch asked for, once it can. */
 function takeRequest() {
-  const ghostty = current.store.snapshot?.ghostty;
-  if (!ghostty || current.store.switching) return;
+  const {snapshot} = current.store;
+  if (!snapshot || current.store.switching) return;
   takeSwitchRequest()
     .then((path) => {
       const open =
-        ghostty.edited.type === "file" && ghostty.configPath === path;
+        snapshot.edited.type === "file" && snapshot.configPath === path;
       if (path === null || open) return;
       update({configOpen: true, switchError: null});
       chooseConfig({path});
@@ -417,6 +413,7 @@ function takeRequest() {
 
 /** Opens the "Save as theme" dialog for `source`. */
 export const openSaveTheme = (source: SaveThemeSource) =>
+  // A new object each time, so the dialog's form resets even for the same source.
   update({saveTheme: {source}});
 
 export const closeSaveTheme = () => update({saveTheme: null});

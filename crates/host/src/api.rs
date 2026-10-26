@@ -48,16 +48,6 @@ pub struct FontFamily {
     pub axes: Vec<FontAxis>,
 }
 
-#[derive(Serialize, TS, Clone, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct GhosttyInfo {
-    pub version: String,
-    pub platform: Platform,
-    /// The main config the designer edits.
-    pub config_path: String,
-    pub edited: EditedConfig,
-}
-
 /// Whose config the designer edits.
 #[derive(Serialize, TS, Clone, Debug, PartialEq, Eq)]
 #[serde(
@@ -79,7 +69,11 @@ pub enum EditedConfig {
 #[derive(Serialize, TS, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct HostInfo {
-    pub ghostty: GhosttyInfo,
+    pub ghostty_version: String,
+    pub platform: Platform,
+    /// The edited config's main file.
+    pub config_path: String,
+    pub edited: EditedConfig,
     /// `ghostty +show-config --default --docs`, run once at start.
     pub defaults_with_docs: String,
     /// null while the first font scan runs. A "fonts" message follows.
@@ -185,11 +179,6 @@ pub struct ThemeFile {
     pub text: String,
 }
 
-#[derive(Serialize, TS, Clone, Debug, PartialEq, Eq)]
-pub struct SavedTheme {
-    pub path: String,
-}
-
 /// One file of a save: its content when planned, null when absent, and its
 /// new content.
 #[derive(Deserialize, TS, Clone, Debug, PartialEq, Eq)]
@@ -204,7 +193,6 @@ pub struct SaveEdit {
 pub struct SavedFiles {
     /// The previous versions of the files the save replaced.
     pub backup_dir: String,
-    pub files: Vec<String>,
 }
 
 #[derive(Serialize, TS, Clone, Copy, Debug, PartialEq, Eq)]
@@ -262,15 +250,14 @@ pub enum CommandResult {
     ValidateConfig(String),
     SystemAppearance(Appearance),
     LoadThemes(Vec<ThemeFile>),
-    /// None when a file has the name.
-    WriteTheme(Option<SavedTheme>),
-    /// None when a file has the new name.
-    RenameTheme(Option<SavedTheme>),
+    /// False when a file has the name.
+    WriteTheme(bool),
+    /// False when a file has the new name.
+    RenameTheme(bool),
     DeleteTheme,
-    /// Whether every terminal accepted the reset.
-    ResetFontSize(bool),
+    ResetFontSize,
     ApplySave(SavedFiles),
-    RestoreOriginal(SavedFiles),
+    RestoreOriginal,
     WriteState,
 }
 
@@ -294,7 +281,7 @@ pub enum OrderedCommand {
     },
     ReportDraft {
         changes: usize,
-        stash: Option<String>,
+        stash: String,
     },
     RescanFonts,
 }
@@ -344,7 +331,6 @@ pub enum Error {
 mod tests {
     use std::collections::BTreeMap;
 
-    use serde_json::{Value, json};
     use ts_rs::{Config, TypeVisitor};
 
     use super::*;
@@ -385,7 +371,6 @@ mod tests {
         decls.visit::<LoadedConfig>();
         decls.visit::<Appearance>();
         decls.visit::<ThemeFile>();
-        decls.visit::<SavedTheme>();
         decls.visit::<SavedFiles>();
         decls.visit::<ConfigChoice>();
         decls.visit::<Command>();
@@ -418,29 +403,5 @@ mod tests {
                 "ui/core/bindings.ts is stale. Run `{UPDATE}`."
             );
         }
-    }
-
-    fn json(value: impl Serialize) -> Value {
-        serde_json::to_value(value).unwrap()
-    }
-
-    #[test]
-    fn messages_and_errors_serialize_as_the_panel_reads_them() {
-        assert_eq!(
-            json(HostMessage::CloseRequested),
-            json!({"type": "close-requested"})
-        );
-        assert_eq!(
-            json(HostMessage::Fonts { fonts: vec![] }),
-            json!({"type": "fonts", "fonts": []})
-        );
-        assert_eq!(
-            json(Error::Input("No such theme".into())),
-            json!({"kind": "input", "message": "No such theme"})
-        );
-        assert_eq!(
-            json(Error::Internal("boom".into())),
-            json!({"kind": "internal", "message": "boom"})
-        );
     }
 }

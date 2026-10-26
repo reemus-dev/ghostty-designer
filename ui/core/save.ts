@@ -17,13 +17,7 @@ import {
 import {inputError} from "./errors";
 import {draftKeys, themeConflicts} from "./resolve";
 import {THEME_COLOR_KEYS} from "./theme";
-import type {
-  ConfigOverride,
-  Draft,
-  SaveConflict,
-  SavePlan,
-  Values,
-} from "./types";
+import type {ConfigOverride, Draft, SavePlan, Values} from "./types";
 import {paletteByIndex, paletteIndex} from "./values";
 
 const CONFLICT_PREFIX = "# ghostty-designer: ";
@@ -72,7 +66,7 @@ export function planSave(input: SaveInput): PlannedSave {
   const replacements = new Map<ConfigFile, Map<number, string[]>>();
   const insertions = new Map<ConfigFile, Map<number, string[]>>();
   const appended: string[] = [];
-  const conflicts: SaveConflict[] = [];
+  let conflicts = 0;
 
   const replace = (file: ConfigFile, index: number, texts: string[]) => {
     const lines = replacements.get(file) ?? new Map<number, string[]>();
@@ -141,12 +135,7 @@ export function planSave(input: SaveInput): PlannedSave {
 
   const comment = (def: Definition) => {
     replace(def.file, def.index, [CONFLICT_PREFIX + def.line.text]);
-    conflicts.push({
-      key: def.line.key,
-      path: def.file.path,
-      line: def.index + 1,
-      text: def.line.text,
-    });
+    conflicts++;
   };
 
   const themeChanged = draft.theme !== null;

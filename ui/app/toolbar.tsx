@@ -59,7 +59,7 @@ import {LiveStatus} from "./live-status";
  * their words.
  */
 export function Toolbar() {
-  const platform = useSnapshot((snapshot) => snapshot.ghostty.platform);
+  const platform = useSnapshot((snapshot) => snapshot.platform);
   const state = useSnapshot((snapshot) => snapshot.state);
   const options = useSnapshot((snapshot) => snapshot.options);
   const colorDefaults = useSnapshot((snapshot) => snapshot.colorDefaults);
@@ -128,8 +128,8 @@ export function Toolbar() {
  * switcher.
  */
 function EditedFile() {
-  const edited = useSnapshot((snapshot) => snapshot.ghostty.edited);
-  const configPath = useSnapshot((snapshot) => snapshot.ghostty.configPath);
+  const edited = useSnapshot((snapshot) => snapshot.edited);
+  const configPath = useSnapshot((snapshot) => snapshot.configPath);
   if (edited.type === "ghostty") return null;
   return (
     <Tooltip>
@@ -335,7 +335,7 @@ function ChangeRow(props: {change: DraftChange}) {
 }
 
 function OverflowMenu() {
-  const configPath = useSnapshot((snapshot) => snapshot.ghostty.configPath);
+  const configPath = useSnapshot((snapshot) => snapshot.configPath);
   const canRestore = useSnapshot(
     (snapshot) => snapshot.state.canRestoreOriginal,
   );

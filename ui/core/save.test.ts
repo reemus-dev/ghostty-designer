@@ -187,19 +187,7 @@ it("saves a theme and comments out the colour lines that would hide it", () => {
       )
       .replace('theme = "GitHub Dark"', 'theme = "Dracula"'),
   );
-  expect(plan.conflicts.map(({key, line}) => [key, line])).toEqual([
-    ["foreground", 13],
-    ["cursor-color", 14],
-    ["selection-background", 15],
-    ["palette", 16],
-    ["palette", 17],
-  ]);
-  expect(plan.conflicts[0]).toEqual({
-    key: "foreground",
-    path: CONFIG,
-    line: 13,
-    text: "foreground = #FAF9F6",
-  });
+  expect(plan.conflicts).toBe(5);
 });
 
 it("keeps colour lines for keys a partial theme leaves unset", () => {
@@ -308,7 +296,7 @@ it("writes only the chosen file over Ghostty's config, and names what Ghostty's 
   expect(disk.get(app)).toBe(
     'font-size = 18\n\n# ghostty-designer: saved settings\ntheme = Dracula\ncursor-style = block\nkeybind = ""\nkeybind = ctrl+b=new_tab\n',
   );
-  expect(plan.conflicts).toEqual([]);
+  expect(plan.conflicts).toBe(0);
   expect(plan.overrides).toEqual([
     {by: "Ghostty", paths: [CONFIG, INCLUDE], keys: ["theme", "cursor-style"]},
   ]);

@@ -27,7 +27,7 @@ export function ColorOptions(props: {
 }) {
   const {colors, provenance} = props;
   const options = useSnapshot((snapshot) => snapshot.options);
-  const platform = useSnapshot((snapshot) => snapshot.ghostty.platform);
+  const platform = useSnapshot((snapshot) => snapshot.platform);
   const effective = useSnapshot((snapshot) => snapshot.state.effective);
   const {contrast, extended} = colorCards(options, platform);
   const value = (key: string) =>

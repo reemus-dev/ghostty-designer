@@ -44,7 +44,7 @@ pub struct Env {
     /// running ones. `Some(empty)` means no targets.
     pub target_pids: Option<Vec<u32>>,
     /// `GHOSTTY_DESIGNER_GHOSTTY`: the Ghostty CLI to run instead of the
-    /// installed one, so sandboxes can run a fake.
+    /// installed one, so tests can run a fake and the scenarios a chosen CLI.
     pub ghostty_bin: Option<PathBuf>,
     /// The environment Ghostty and osascript children run with.
     pub child_env: Vec<(OsString, OsString)>,

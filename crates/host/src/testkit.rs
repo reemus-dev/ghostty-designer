@@ -32,7 +32,8 @@ const BASELINE: &str = include_str!("../tests/fixtures/ghostty-1.3.1/baseline.co
 /// `ghostty/`. Dropping it deletes the root.
 pub struct TestEnv {
     pub env: Env,
-    /// Canonical, so it matches the paths file watchers report.
+    /// Canonical, because the include walk and saves canonicalize the paths
+    /// that tests compare against it.
     pub root: PathBuf,
     pub ghostty: FakeGhostty,
     _dir: TempDir,

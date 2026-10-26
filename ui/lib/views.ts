@@ -29,11 +29,8 @@ export function appName(edited: EditedConfig, start = false) {
   return edited.app ?? (start ? "The app" : "the app");
 }
 
-export const useAppName = (start = false) =>
-  appName(
-    useSnapshot((snapshot) => snapshot.ghostty.edited),
-    start,
-  );
+export const useAppName = () =>
+  appName(useSnapshot((snapshot) => snapshot.edited));
 
 /** Why the draft does not show, in the views' words. */
 export const NOT_SHOWING_TEXT: Record<NotShowing, string> = {

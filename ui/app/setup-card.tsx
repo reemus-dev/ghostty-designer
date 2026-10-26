@@ -15,11 +15,11 @@ import {appName} from "@/lib/views";
  * on later. "Not now" turns live preview off, so Ghostty updates only on save.
  */
 export function SetupCard() {
-  const configPath = useSnapshot((snapshot) => snapshot.ghostty.configPath);
+  const configPath = useSnapshot((snapshot) => snapshot.configPath);
   const match = useSnapshot((snapshot) => snapshot.state.colorMatch);
   const effective = useSnapshot((snapshot) => snapshot.state.effective);
   const colorDefaults = useSnapshot((snapshot) => snapshot.colorDefaults);
-  const edited = useSnapshot((snapshot) => snapshot.ghostty.edited);
+  const edited = useSnapshot((snapshot) => snapshot.edited);
   const colors = useMemo(
     () => themeColors(effective, colorDefaults),
     [effective, colorDefaults],

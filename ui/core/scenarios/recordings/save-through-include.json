@@ -659,7 +659,7 @@
               ]
             }
           ],
-          "conflicts": [],
+          "conflicts": 0,
           "themeSettings": [],
           "replacesColors": true,
           "overrides": []
@@ -673,7 +673,6 @@
       "reply": {
         "result": {
           "backupDir": "<root>/state/ghostty-designer/previous",
-          "files": ["<root>/xdg/ghostty/extra.conf","<root>/xdg/ghostty/config"],
           "backupTheme": null
         }
       },

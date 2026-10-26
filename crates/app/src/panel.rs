@@ -40,7 +40,8 @@ fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
 /// The host for the config the panel edits.
 pub struct ActiveHost {
     host: Mutex<Host>,
-    /// Switches run one at a time.
+    /// Switches and forgetting recent files, which both write `app.json`, run
+    /// one at a time.
     switching: tokio::sync::Mutex<()>,
     /// The config file a later launch asked for, until the panel takes it.
     requested: Mutex<Option<PathBuf>>,

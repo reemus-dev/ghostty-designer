@@ -2054,134 +2054,7 @@
               ]
             }
           ],
-          "conflicts": [
-            {
-              "key": "foreground",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 6,
-              "text": "foreground = #faf9f6"
-            },
-            {
-              "key": "cursor-color",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 7,
-              "text": "cursor-color = #fc7d54"
-            },
-            {
-              "key": "cursor-text",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 8,
-              "text": "cursor-text = #121212"
-            },
-            {
-              "key": "selection-background",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 9,
-              "text": "selection-background = #4c3128"
-            },
-            {
-              "key": "selection-foreground",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 10,
-              "text": "selection-foreground = #faf9f6"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 11,
-              "text": "palette = 0=#3d3d3d"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 12,
-              "text": "palette = 1=#ff7178"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 13,
-              "text": "palette = 2=#70cd82"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 14,
-              "text": "palette = 3=#f6c260"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 15,
-              "text": "palette = 4=#65b3f6"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 16,
-              "text": "palette = 5=#e090e4"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 17,
-              "text": "palette = 6=#23d8dc"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 18,
-              "text": "palette = 7=#e7e3e0"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 19,
-              "text": "palette = 8=#a09c96"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 20,
-              "text": "palette = 9=#ff989a"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 21,
-              "text": "palette = 10=#97e79b"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 22,
-              "text": "palette = 11=#ffdf90"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 23,
-              "text": "palette = 12=#8dcaff"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 24,
-              "text": "palette = 13=#f8b7ff"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 25,
-              "text": "palette = 14=#6ceef1"
-            },
-            {
-              "key": "palette",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 26,
-              "text": "palette = 15=#fffdf8"
-            }
-          ],
+          "conflicts": 21,
           "themeSettings": [],
           "replacesColors": true,
           "overrides": []
@@ -2195,7 +2068,6 @@
       "reply": {
         "result": {
           "backupDir": "<root>/state/ghostty-designer/previous",
-          "files": ["<root>/xdg/ghostty/config"],
           "backupTheme": null
         }
       },
@@ -3920,14 +3792,7 @@
               ]
             }
           ],
-          "conflicts": [
-            {
-              "key": "background",
-              "path": "<root>/xdg/ghostty/config",
-              "line": 5,
-              "text": "background = #202020"
-            }
-          ],
+          "conflicts": 1,
           "themeSettings": [],
           "replacesColors": true,
           "overrides": []
@@ -3941,7 +3806,6 @@
       "reply": {
         "result": {
           "backupDir": "<root>/state/ghostty-designer/previous",
-          "files": ["<root>/xdg/ghostty/config"],
           "backupTheme": null
         }
       },

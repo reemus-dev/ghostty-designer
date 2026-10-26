@@ -589,7 +589,7 @@ mod tests {
         fs::create_dir(&bin).unwrap();
         let log = t.root.join("osascript.log");
         let script = format!(
-            "#!/bin/sh\nfor arg; do last=$arg; done\necho \"$last\" >>'{}'\necho true\n",
+            "#!/bin/sh\nfor arg; do last=$arg; done\necho \"$last\" >>'{}'\n",
             log.display()
         );
         fs::write(bin.join("osascript"), script).unwrap();

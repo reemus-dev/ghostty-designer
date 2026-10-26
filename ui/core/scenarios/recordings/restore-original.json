@@ -478,7 +478,7 @@
               ]
             }
           ],
-          "conflicts": [],
+          "conflicts": 0,
           "themeSettings": [],
           "replacesColors": false,
           "overrides": []
@@ -492,7 +492,6 @@
       "reply": {
         "result": {
           "backupDir": "<root>/state/ghostty-designer/previous",
-          "files": ["<root>/xdg/ghostty/config"],
           "backupTheme": null
         }
       },
@@ -653,7 +652,7 @@
               ]
             }
           ],
-          "conflicts": [],
+          "conflicts": 0,
           "themeSettings": [],
           "replacesColors": false,
           "overrides": []
@@ -667,7 +666,6 @@
       "reply": {
         "result": {
           "backupDir": "<root>/state/ghostty-designer/previous",
-          "files": ["<root>/xdg/ghostty/config"],
           "backupTheme": null
         }
       },

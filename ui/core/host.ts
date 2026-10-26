@@ -10,7 +10,6 @@ import type {
   LoadedConfig,
   OrderedCommand,
   SavedFiles,
-  SavedTheme,
   SaveEdit,
   ThemeFile,
 } from "@/core/bindings";
@@ -28,20 +27,20 @@ export type Host = {
   validateConfig(text: string): Promise<string>;
   systemAppearance(): Promise<Appearance>;
   loadThemes(): Promise<ThemeFile[]>;
-  /** Creates a user theme, or resolves null when the name is taken. */
-  writeTheme(name: string, text: string): Promise<SavedTheme | null>;
-  /** Renames a user theme, or resolves null when the new name is taken. */
-  renameTheme(name: string, to: string): Promise<SavedTheme | null>;
+  /** Creates a user theme, or resolves false when the name is taken. */
+  writeTheme(name: string, text: string): Promise<boolean>;
+  /** Renames a user theme, or resolves false when the new name is taken. */
+  renameTheme(name: string, to: string): Promise<boolean>;
   deleteTheme(name: string): Promise<void>;
   /** Shows the text in every instance. Its statuses carry `id`. */
   previewApply(id: string, text: string): Promise<void>;
   /** Clears the preview file. Its statuses carry `id`. */
   previewRevert(id: string): Promise<void>;
-  resetFontSize(): Promise<boolean>;
+  resetFontSize(): Promise<void>;
   /** Writes the edits, each only if its file still holds `before`. */
   applySave(edits: SaveEdit[]): Promise<SavedFiles>;
   /** Puts back the config files as they were before the first save. */
-  restoreOriginal(): Promise<SavedFiles>;
+  restoreOriginal(): Promise<void>;
   /** Replaces the text that `connect` reports as `persisted`. */
   writeState(text: string): Promise<void>;
   /**

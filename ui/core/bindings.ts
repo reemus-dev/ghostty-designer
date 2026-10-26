@@ -21,7 +21,7 @@ export type CommandError = { "kind": "input", "message": string } | { "kind": "i
 /**
  * What a `Command` returns, tagged with the command's name.
  */
-export type CommandResult = { "command": "load_config", "result": LoadedConfig } | { "command": "show_config", "result": string } | { "command": "validate_config", "result": string } | { "command": "system_appearance", "result": Appearance } | { "command": "load_themes", "result": Array<ThemeFile> } | { "command": "write_theme", "result": SavedTheme | null } | { "command": "rename_theme", "result": SavedTheme | null } | { "command": "delete_theme" } | { "command": "reset_font_size", "result": boolean } | { "command": "apply_save", "result": SavedFiles } | { "command": "restore_original", "result": SavedFiles } | { "command": "write_state" };
+export type CommandResult = { "command": "load_config", "result": LoadedConfig } | { "command": "show_config", "result": string } | { "command": "validate_config", "result": string } | { "command": "system_appearance", "result": Appearance } | { "command": "load_themes", "result": Array<ThemeFile> } | { "command": "write_theme", "result": boolean } | { "command": "rename_theme", "result": boolean } | { "command": "delete_theme" } | { "command": "reset_font_size" } | { "command": "apply_save", "result": SavedFiles } | { "command": "restore_original" } | { "command": "write_state" };
 
 /**
  * A config the designer can switch to.
@@ -65,16 +65,14 @@ features: Array<string>,
  */
 ligatures: string | null, axes: Array<FontAxis>, };
 
-export type GhosttyInfo = { version: string, platform: Platform, 
-/**
- * The main config the designer edits.
- */
-configPath: string, edited: EditedConfig, };
-
 /**
  * What `connect` returns.
  */
-export type HostInfo = { ghostty: GhosttyInfo, 
+export type HostInfo = { ghosttyVersion: string, platform: Platform, 
+/**
+ * The edited config's main file.
+ */
+configPath: string, edited: EditedConfig, 
 /**
  * `ghostty +show-config --default --docs`, run once at start.
  */
@@ -140,7 +138,7 @@ apps: Array<AppConfig>, };
  * The panel's commands that return at once. They run in the order the
  * panel sends them, so a later preview always replaces an earlier one.
  */
-export type OrderedCommand = { "command": "preview_apply", "args": { id: string, text: string, } } | { "command": "preview_revert", "args": { id: string, } } | { "command": "report_draft", "args": { changes: number, stash: string | null, } } | { "command": "rescan_fonts" };
+export type OrderedCommand = { "command": "preview_apply", "args": { id: string, text: string, } } | { "command": "preview_revert", "args": { id: string, } } | { "command": "report_draft", "args": { changes: number, stash: string, } } | { "command": "rescan_fonts" };
 
 export type Platform = "macos" | "linux";
 
@@ -169,9 +167,7 @@ export type SavedFiles = {
 /**
  * The previous versions of the files the save replaced.
  */
-backupDir: string, files: Array<string>, };
-
-export type SavedTheme = { path: string, };
+backupDir: string, };
 
 /**
  * A theme file from the bundled or the user themes folder.

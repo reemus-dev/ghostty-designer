@@ -267,8 +267,10 @@ fn open_panel(app: &AppHandle, state: &Path) -> tauri::Result<()> {
 
     let builder = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("index.html".into()))
         .title("Ghostty Designer")
-        // WebKitGTK only automates the shared context, which incognito replaces.
-        .incognito(std::env::var("TAURI_WEBVIEW_AUTOMATION").as_deref() != Ok("true"))
+        // The panel keeps its state through the host, so the webview stores
+        // nothing. WebKitGTK still sets up a data folder, which stays with the
+        // rest of the state.
+        .incognito(true)
         .data_directory(state.join("webview"))
         // Tauri's file drop handler takes every native drag, so the page would
         // see no dragover or drop events and colour swatches could not swap.

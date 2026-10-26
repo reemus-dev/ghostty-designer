@@ -3,9 +3,10 @@
 import type {
   Appearance,
   FontFamily,
-  GhosttyInfo,
+  HostInfo,
   Platform,
   PreviewStatus,
+  SavedFiles,
   ThemeSource,
 } from "@/core/bindings";
 
@@ -205,8 +206,7 @@ export type SessionState = {
 };
 
 /** What the panel renders. The session's messages keep it current. */
-export type Snapshot = {
-  ghostty: GhosttyInfo;
+export type Snapshot = Pick<HostInfo, "platform" | "configPath" | "edited"> & {
   options: OptionMeta[];
   /** Ghostty's colours where neither a theme nor the config sets one. */
   colorDefaults: Values;
@@ -233,7 +233,7 @@ export type Intent =
   | {type: "set-many"; values: Values; label: string}
   | {type: "reset"; key: string}
   /**
-   * Replaces one OpenType tag's entries in a font-feature or font-variation*
+   * Replaces one OpenType tag's entries in a font-feature or font-variation
    * list, keeping every other entry as written. null removes the tag's
    * entries.
    */
@@ -278,13 +278,6 @@ export type Intent =
   /** Scans the installed fonts again. A "fonts" message follows. */
   | {type: "rescan-fonts"};
 
-export type SaveConflict = {
-  key: string;
-  path: string;
-  line: number;
-  text: string;
-};
-
 /** Changes that a config file the save does not write decides once saved. */
 export type ConfigOverride = {
   /**
@@ -303,10 +296,10 @@ export type SavePlan = {
   id: string;
   files: {path: string; diff: string}[];
   /**
-   * Explicit colour lines and `palette = ""` resets that would hide the saved
-   * theme. Save comments them out.
+   * The number of explicit colour lines and `palette = ""` resets that would
+   * hide the saved theme. Save comments them out.
    */
-  conflicts: SaveConflict[];
+  conflicts: number;
   /**
    * Settings besides colours that the new theme file sets and the config does
    * not. Ghostty applies them on save; the preview shows only colours.
@@ -326,17 +319,16 @@ export type SavePlan = {
  */
 export type SaveThemeSource = "shown" | "own" | {theme: string};
 
-export type SaveResult = {
-  backupDir: string;
-  files: string[];
+export type SaveResult = SavedFiles & {
   /** The user theme the saved colours were backed up as, when asked. */
   backupTheme: string | null;
 };
 
 /**
  * What the session tells the panel besides what its calls return. `state`
- * follows every change, `fonts` each font scan, and `error` a background
- * failure, such as a config read after an outside edit.
+ * follows every change, `fonts` each font scan, `themes` each theme read, and
+ * `error` a background failure, such as a config read after an outside edit.
+ * `close-requested` and `switch-requested` pass on the host's messages.
  */
 export type SessionMessage =
   | {type: "state"; state: SessionState}

@@ -148,9 +148,8 @@ function OptionLabel(props: {
   );
   // The other platform's options sit in a card titled for it.
   const onlyHere = useSnapshot((snapshot) =>
-    option.platforms.length === 1 &&
-    option.platforms[0] === snapshot.ghostty.platform
-      ? snapshot.ghostty.platform
+    option.platforms.length === 1 && option.platforms[0] === snapshot.platform
+      ? snapshot.platform
       : null,
   );
   const notes = [note, RELOAD_NOTE[option.reload]].filter(Boolean);

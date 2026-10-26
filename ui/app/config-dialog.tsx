@@ -46,8 +46,8 @@ export function ConfigDialog() {
   const open = useStore((store) => store.configOpen);
   const switching = useStore((store) => store.switching);
   const switchError = useStore((store) => store.switchError);
-  const edited = useSnapshot((snapshot) => snapshot.ghostty.edited);
-  const configPath = useSnapshot((snapshot) => snapshot.ghostty.configPath);
+  const edited = useSnapshot((snapshot) => snapshot.edited);
+  const configPath = useSnapshot((snapshot) => snapshot.configPath);
   const [choices, setChoices] = useState<ConfigChoice[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const error = switchError ?? loadError;
@@ -205,8 +205,8 @@ function ChoiceRow(props: {
 
 /** Whether the file edited loads over Ghostty's config. Changing it reloads. */
 function GhosttyBase(props: {disabled: boolean}) {
-  const edited = useSnapshot((snapshot) => snapshot.ghostty.edited);
-  const configPath = useSnapshot((snapshot) => snapshot.ghostty.configPath);
+  const edited = useSnapshot((snapshot) => snapshot.edited);
+  const configPath = useSnapshot((snapshot) => snapshot.configPath);
   if (edited.type === "ghostty") return null;
   const app = edited.app ?? "this app";
   return (
@@ -270,7 +270,7 @@ function OtherFile(props: {disabled: boolean}) {
 /** Asks before a switch, or a reload of the same file, loses unsaved changes. */
 function DiscardDialog() {
   const target = useStore((store) => store.switchConfirm);
-  const configPath = useSnapshot((snapshot) => snapshot.ghostty.configPath);
+  const configPath = useSnapshot((snapshot) => snapshot.configPath);
   const changes = useSnapshot((snapshot) => snapshot.state.changes);
   const app = useAppName();
   const verb = target?.path === configPath ? "reload" : "switch";

@@ -22,15 +22,12 @@ const COMMAND_TIMEOUT: Duration = Duration::from_secs(30);
 pub struct Ghostty {
     pub bin: PathBuf,
     pub version: String,
-    pub platform: Platform,
     /// The folder of Ghostty's bundled themes, when it has one.
     pub bundled_themes_dir: Option<PathBuf>,
-    /// The main config the designer edits: the file Ghostty opens for
-    /// editing, chosen at startup.
+    /// The edited config's main file, chosen at startup.
     pub config_path: PathBuf,
     /// The preview file, next to the main config.
     pub preview_path: PathBuf,
-    pub user_themes_dir: PathBuf,
 }
 
 #[derive(Debug)]
@@ -64,13 +61,11 @@ pub async fn detect(env: &Env) -> Result<Ghostty, String> {
 
     Ok(Ghostty {
         version: version.to_owned(),
-        platform: env.platform,
         bundled_themes_dir: themes
             .ok()
             .and_then(|themes| bundled_themes_dir(&themes.stdout)),
         preview_path: config_path.with_file_name(PREVIEW_FILE_NAME),
         config_path,
-        user_themes_dir: env.user_themes_dir(),
         bin,
     })
 }
@@ -317,32 +312,28 @@ pub fn reload(pids: &[u32]) {
 
 const RESET_FONT_SIZE_JXA: &str = r#"
 function run(pids) {
-  let ok = true;
   for (const pid of pids) {
     const app = Application(Number(pid));
     for (const terminal of app.terminals()) {
-      ok = app.performAction("reset_font_size", {on: terminal}) && ok;
+      app.performAction("reset_font_size", {on: terminal});
     }
   }
-  return ok;
 }
 "#;
 
 /// Sends `reset_font_size` to every terminal, so `font-size` from config
 /// applies to surfaces zoomed by hand (src/Surface.zig:1742-1756). macOS only,
-/// through Apple Events, which need the user's consent. Returns whether every
-/// terminal accepted it. `osascript` is looked up on the Env's PATH.
-pub async fn reset_font_size(env: &Env, pids: &[u32]) -> bool {
+/// through Apple Events, which need the user's consent. `osascript` is looked
+/// up on the Env's PATH.
+pub async fn reset_font_size(env: &Env, pids: &[u32]) {
     if env.platform != Platform::Macos || pids.is_empty() {
-        return false;
+        return;
     }
     let mut args = vec!["-l".to_owned(), "JavaScript".into(), "-e".into()];
     args.push(RESET_FONT_SIZE_JXA.into());
     args.extend(pids.iter().map(u32::to_string));
-    match run(env, Path::new("osascript"), args, COMMAND_TIMEOUT).await {
-        Ok(output) => output.status.success() && output.stdout.trim() == "true",
-        Err(_) => false,
-    }
+    // A failure, such as refused consent, leaves the terminals' zoom as it was.
+    let _ = run(env, Path::new("osascript"), args, COMMAND_TIMEOUT).await;
 }
 
 /// The half of a light/dark theme pair shown first: the system's appearance.
@@ -375,7 +366,6 @@ mod tests {
         assert_eq!(ghostty.version, "1.3.1");
         assert_eq!(ghostty.config_path, dir.join("config"));
         assert_eq!(ghostty.preview_path, dir.join("ghostty-designer.conf"));
-        assert_eq!(ghostty.user_themes_dir, dir.join("themes"));
     }
 
     #[tokio::test]

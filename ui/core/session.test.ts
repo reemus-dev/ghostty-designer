@@ -54,12 +54,10 @@ function fakeHost(options: Options) {
     connect(listener) {
       onMessage = listener;
       return Promise.resolve({
-        ghostty: {
-          version: "1.3.1",
-          platform: "macos",
-          configPath: CONFIG,
-          edited: {type: "ghostty"},
-        },
+        ghosttyVersion: "1.3.1",
+        platform: "macos",
+        configPath: CONFIG,
+        edited: {type: "ghostty"},
         defaultsWithDocs: DEFAULTS,
         fonts: [],
         instances: 0,
@@ -96,13 +94,26 @@ function fakeHost(options: Options) {
     loadThemes: () => Promise.resolve([...themes]),
     writeTheme(name, text) {
       if (themes.some((theme) => theme.name === name)) {
-        return Promise.resolve(null);
+        return Promise.resolve(false);
       }
       themes.push({name, source: "user", text});
-      return Promise.resolve({path: `/themes/${name}`});
+      return Promise.resolve(true);
     },
-    renameTheme: () => Promise.resolve(null),
-    deleteTheme: () => Promise.resolve(),
+    renameTheme(name, to) {
+      if (themes.some((theme) => theme.name === to)) {
+        return Promise.resolve(false);
+      }
+      const at = themes.findIndex((theme) => theme.name === name);
+      themes[at] = {...themes[at]!, name: to};
+      return Promise.resolve(true);
+    },
+    deleteTheme(name) {
+      themes.splice(
+        themes.findIndex((theme) => theme.name === name),
+        1,
+      );
+      return Promise.resolve();
+    },
     previewApply(_id, text) {
       calls.previews.push(text);
       return Promise.resolve();
@@ -111,14 +122,14 @@ function fakeHost(options: Options) {
       calls.previews.push("");
       return Promise.resolve();
     },
-    resetFontSize: () => Promise.resolve(true),
+    resetFontSize: () => Promise.resolve(),
     applySave(edits) {
       for (const edit of edits) file = edit.after;
-      return Promise.resolve({backupDir: "/backup", files: [CONFIG]});
+      return Promise.resolve({backupDir: "/backup"});
     },
     restoreOriginal() {
       file = original;
-      return Promise.resolve({backupDir: "/backup", files: [CONFIG]});
+      return Promise.resolve();
     },
     writeState(text) {
       calls.states.push(text);
@@ -178,6 +189,12 @@ async function setup(options: Options = {}) {
   };
   return {fake, session, messages, state, errors, set, intents, save};
 }
+
+/** The names of the themes the session last read, in order. */
+const themeNames = (messages: SessionMessage[]) => {
+  const last = messages.findLast((message) => message.type === "themes");
+  return last?.type === "themes" ? last.themes.map((theme) => theme.name) : [];
+};
 
 /** Lets every settled call run on. */
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -366,6 +383,41 @@ describe("themes", () => {
 
     expect((await save(true)).backupTheme).toBe(`${base} 2`);
     setSystemTime();
+  });
+
+  it("follows a renamed user theme with the draft, its favourite and the reference", async () => {
+    const {session, messages, state, intents} = await setup({themes: THEMES});
+    await session.saveTheme("Mine", "own");
+    await intents(
+      {type: "favorite", theme: "Mine", on: true},
+      {type: "reference", theme: "Mine"},
+      {type: "theme", theme: "Mine"},
+      {type: "rename-theme", theme: "Mine", to: "Ours"},
+    );
+
+    expect(state().favorites).toEqual(["Ours"]);
+    expect(state().reference).toBe("Ours");
+    expect(state().themeSetting).toBe("Ours");
+    await intents({type: "undo"}, {type: "redo"});
+    expect(state().draft.theme).toBe("Ours");
+    expect(themeNames(messages)).toEqual(["Dark", "Light", "Ours"]);
+  });
+
+  it("drops a deleted user theme from the draft, the favourites and the reference", async () => {
+    const {session, messages, state, intents} = await setup({themes: THEMES});
+    await session.saveTheme("Mine", "own");
+    await intents(
+      {type: "favorite", theme: "Mine", on: true},
+      {type: "reference", theme: "Mine"},
+      {type: "theme", theme: "Mine"},
+      {type: "delete-theme", theme: "Mine"},
+    );
+
+    expect(state().favorites).toEqual([]);
+    expect(state().reference).toBeNull();
+    expect(state().draft.theme).toBeNull();
+    expect(state().themeSetting).toBeNull();
+    expect(themeNames(messages)).toEqual(["Dark", "Light"]);
   });
 
   it("refuses a theme name Ghostty cannot load or one that exists", async () => {

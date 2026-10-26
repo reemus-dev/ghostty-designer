@@ -150,7 +150,6 @@ export async function startSession(
   let receive = (message: HostMessage) => void early.push(message);
   const start = await host.connect((message) => receive(message));
   const catalog = buildCatalog(start.defaultsWithDocs);
-  const {configPath} = start.ghostty;
   let {fonts, instances} = start;
 
   /** A failure no request answers: a background read or write. */
@@ -159,7 +158,7 @@ export async function startSession(
 
   // The config and the design need each other. These callbacks run only for
   // reads, which start once `design` and `publish` exist.
-  const config = savedConfig(host, catalog, configPath, {
+  const config = savedConfig(host, catalog, start.configPath, {
     config: (read) => {
       design.configRead(read);
       if (read.answered.length === 0) publish();
@@ -172,7 +171,7 @@ export async function startSession(
     fail,
   });
   const design = new Design(host, config, start.persisted, () => publish());
-  const reviews = saveReviews(host, config, configPath);
+  const reviews = saveReviews(host, config, start.configPath);
   const colors = colorStates();
 
   const state = () => sessionState(config, design, instances, colors);
@@ -264,7 +263,9 @@ export async function startSession(
   for (const error of failures) if (error) fail(error);
 
   const snapshot: Snapshot = {
-    ghostty: start.ghostty,
+    platform: start.platform,
+    configPath: start.configPath,
+    edited: start.edited,
     options: catalog.options,
     colorDefaults: catalog.colorDefaults,
     themes: config.sources.library.themes,

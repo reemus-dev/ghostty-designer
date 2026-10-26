@@ -37,8 +37,7 @@ use notify::RecursiveMode;
 
 use crate::api::{
     AppConfig, Command, CommandResult, ConfigChoice, ConfigFile, EditedConfig, Error, FontFamily,
-    GhosttyInfo, HostInfo, HostMessage, LoadedConfig, OrderedCommand, SaveEdit, SavedFiles,
-    SavedTheme, ThemeFile,
+    HostInfo, HostMessage, LoadedConfig, OrderedCommand, SaveEdit, SavedFiles, ThemeFile,
 };
 use crate::app_state;
 use crate::config_file::load_config_set;
@@ -185,7 +184,7 @@ impl Host {
             Arc::clone(&log),
             move || to_panel.send(HostMessage::ThemesChanged),
         );
-        let themes = vec![ghostty.user_themes_dir.clone()];
+        let themes = vec![env.user_themes_dir()];
         themes_watch.watch(themes.clone(), themes);
         let to_panel = Arc::clone(&panel);
         let config_watch = FolderWatch::start(
@@ -222,16 +221,14 @@ impl Host {
         // Before the reads below, so no report falls between them.
         *lock(&host.panel.sink) = Some(sink);
         HostInfo {
-            ghostty: GhosttyInfo {
-                version: host.ghostty.version.clone(),
-                platform: host.ghostty.platform,
-                config_path: host.ghostty.config_path.display().to_string(),
-                edited: match &host.env.config {
-                    Config::Ghostty => EditedConfig::Ghostty,
-                    Config::File { path, ghostty_base } => EditedConfig::File {
-                        app: host.env.app_of(path).map(str::to_owned),
-                        ghostty_base: *ghostty_base,
-                    },
+            ghostty_version: host.ghostty.version.clone(),
+            platform: host.env.platform,
+            config_path: host.ghostty.config_path.display().to_string(),
+            edited: match &host.env.config {
+                Config::Ghostty => EditedConfig::Ghostty,
+                Config::File { path, ghostty_base } => EditedConfig::File {
+                    app: host.env.app_of(path).map(str::to_owned),
+                    ghostty_base: *ghostty_base,
                 },
             },
             defaults_with_docs: host.defaults_with_docs.clone(),
@@ -295,10 +292,14 @@ impl Host {
                 self.delete_theme(name).await?;
                 CommandResult::DeleteTheme
             }
-            Command::ResetFontSize => CommandResult::ResetFontSize(self.reset_font_size().await),
+            Command::ResetFontSize => {
+                self.reset_font_size().await;
+                CommandResult::ResetFontSize
+            }
             Command::ApplySave { edits } => CommandResult::ApplySave(self.apply_save(edits).await?),
             Command::RestoreOriginal => {
-                CommandResult::RestoreOriginal(self.restore_original().await?)
+                self.restore_original().await?;
+                CommandResult::RestoreOriginal
             }
             Command::WriteState { text } => {
                 self.write_state(text).await?;
@@ -402,47 +403,36 @@ impl Host {
 
     /// Reads the theme files.
     async fn load_themes(&self) -> Result<Vec<ThemeFile>, Error> {
-        let ghostty = self.0.ghostty.clone();
-        blocking(move || {
-            let bundled = ghostty.bundled_themes_dir.unwrap_or_default();
-            themes::load_themes(&ghostty.user_themes_dir, &bundled)
-        })
-        .await
+        let host = &self.0;
+        let user = host.env.user_themes_dir();
+        let bundled = host.ghostty.bundled_themes_dir.clone().unwrap_or_default();
+        blocking(move || themes::load_themes(&user, &bundled)).await
     }
 
-    /// Writes a new user theme, or gives None when the name is taken.
-    async fn write_theme(&self, name: String, text: String) -> Result<Option<SavedTheme>, Error> {
-        let dir = self.0.ghostty.user_themes_dir.clone();
-        let path = self
-            .write(move || save::write_theme(&dir, &name, &text))
-            .await?;
-        Ok(path.map(|path| SavedTheme {
-            path: path.display().to_string(),
-        }))
+    /// Writes a new user theme, or gives false when the name is taken.
+    async fn write_theme(&self, name: String, text: String) -> Result<bool, Error> {
+        let dir = self.0.env.user_themes_dir();
+        self.write(move || save::write_theme(&dir, &name, &text))
+            .await
     }
 
     async fn delete_theme(&self, name: String) -> Result<(), Error> {
-        let dir = self.0.ghostty.user_themes_dir.clone();
+        let dir = self.0.env.user_themes_dir();
         self.write(move || save::delete_theme(&dir, &name)).await
     }
 
-    /// Renames a user theme, or gives None when the new name is taken.
-    async fn rename_theme(&self, name: String, to: String) -> Result<Option<SavedTheme>, Error> {
-        let dir = self.0.ghostty.user_themes_dir.clone();
-        let path = self
-            .write(move || save::rename_theme(&dir, &name, &to))
-            .await?;
-        Ok(path.map(|path| SavedTheme {
-            path: path.display().to_string(),
-        }))
+    /// Renames a user theme, or gives false when the new name is taken.
+    async fn rename_theme(&self, name: String, to: String) -> Result<bool, Error> {
+        let dir = self.0.env.user_themes_dir();
+        self.write(move || save::rename_theme(&dir, &name, &to))
+            .await
     }
 
-    /// Resets zoom in every instance, and tells whether every terminal
-    /// accepted it.
-    async fn reset_font_size(&self) -> bool {
+    /// Resets zoom in every instance.
+    async fn reset_font_size(&self) {
         let env = &self.0.env;
         let pids = ghostty::list_instances(env).await;
-        ghostty::reset_font_size(env, &pids).await
+        ghostty::reset_font_size(env, &pids).await;
     }
 
     /// Writes the edits after checking each file still holds its `before`.
@@ -474,7 +464,7 @@ impl Host {
     }
 
     /// Puts back the config files as they were before the first save.
-    async fn restore_original(&self) -> Result<SavedFiles, Error> {
+    async fn restore_original(&self) -> Result<(), Error> {
         let host = Arc::clone(&self.0);
         self.write(move || {
             let scope = host.config_files()?;
@@ -498,11 +488,10 @@ impl Host {
         .await?
     }
 
-    /// The panel's unsaved changes and its stash. A report without a stash
-    /// clears it.
-    fn report_draft(&self, changes: usize, stash: Option<String>) {
+    /// The panel's unsaved changes and its stash.
+    fn report_draft(&self, changes: usize, stash: String) {
         self.0.changes.store(changes, Ordering::SeqCst);
-        *lock(&self.0.stash) = stash;
+        *lock(&self.0.stash) = Some(stash);
     }
 
     /// The number of unsaved changes, for the close guard.

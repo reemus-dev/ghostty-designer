@@ -61,12 +61,12 @@ function liveStatus(
         short: "Error",
         dot: DOT.warn,
         warn: true,
-        detail: `${error}\nGhostty keeps showing the last changes it accepted.`,
+        detail: `${error}\n${appName(edited, true)} keeps showing the last changes it accepted.`,
       };
     }
     const label = options.find((option) => option.key === key)?.label ?? key;
     return {
-      label: `Ghostty didn't accept ${label}`,
+      label: `${appName(edited, true)} didn't accept ${label}`,
       short: "Error",
       dot: DOT.warn,
       warn: true,
@@ -113,7 +113,7 @@ function liveStatus(
 function useLiveStatus() {
   const state = useSnapshot((snapshot) => snapshot.state);
   const options = useSnapshot((snapshot) => snapshot.options);
-  const edited = useSnapshot((snapshot) => snapshot.ghostty.edited);
+  const edited = useSnapshot((snapshot) => snapshot.edited);
   return liveStatus(state, options, edited);
 }
 

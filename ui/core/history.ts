@@ -4,8 +4,9 @@ import type {Draft, HistoryEntry, SessionState} from "./types";
 
 const HISTORY_LIMIT = 200;
 /**
- * Consecutive sets of one key within this window are one undo step, so a
- * dragged slider undoes at once.
+ * Consecutive sets of one key with one label are one undo step within this
+ * window, so quick repeated clicks undo at once. Sets of an edit, such as a
+ * drag, fold by the edit instead.
  */
 const COALESCE_MS = 1000;
 /** The key of `theme` intents' steps. */
@@ -69,9 +70,10 @@ export class History {
   /**
    * Records the change from `draft` to `next`. A change with the key of the
    * last step continues it when both are picks, both belong to one edit, or
-   * they are a drag (same label, within COALESCE_MS). A continued step back
-   * where it began is dropped. Returns the theme of a theme step that this
-   * change ended while keeping its theme, which becomes recent.
+   * neither does and they are quick repeated sets (same label, within
+   * COALESCE_MS). A continued step back where it began is dropped. Returns the
+   * theme of a theme step that this change ended while keeping its theme, which
+   * becomes recent.
    */
   record(draft: Draft, next: Draft, change: HistoryChange, now = Date.now()) {
     const changed = !sameDraft(next, draft);
