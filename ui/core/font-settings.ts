@@ -30,16 +30,9 @@ const BASIC_FEATURES = new Set([
   "vrt2",
 ]);
 
-/** Programming ligatures usually come from calt; fonts without it use liga. */
-const LIGATURE_TAGS = ["calt", "liga"];
-
 /** The features of `family` that a user can switch. */
 export const choosableFeatures = (family: FontFamily) =>
   family.features.filter((tag) => !BASIC_FEATURES.has(tag));
-
-/** The tag that switches the family's ligatures, or undefined without any. */
-export const ligatureTag = (family: FontFamily) =>
-  LIGATURE_TAGS.find((tag) => family.features.includes(tag));
 
 type TagSetting = {tag: string; value: number};
 

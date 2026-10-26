@@ -2,7 +2,8 @@
 //!
 //! Ghostty's `+list-fonts` names the families it can use. The platform's font
 //! catalog (CoreText or fontconfig) maps each to its faces' files, and each
-//! file is read for the family's features, variable axes and Nerd glyphs.
+//! file is read for the family's features, code ligatures, variable axes and
+//! Nerd glyphs.
 
 use std::collections::{BTreeSet, HashMap};
 use std::fs;
@@ -223,6 +224,7 @@ fn describe_family(
     let mut opened: HashMap<&Path, Option<OpenedFile>> = HashMap::new();
     let mut faces: Vec<FontFace> = Vec::new();
     let mut features = BTreeSet::new();
+    let mut ligatures = None;
     let mut axes: IndexMap<String, FontAxis> = IndexMap::new();
     let mut nerd = false;
 
@@ -251,12 +253,17 @@ fn describe_family(
                 stamp: file.stamp,
             },
         );
+        let face_features = available_features(&font);
+        // The first face speaks for the family's ligatures.
+        if faces.is_empty() {
+            ligatures = ligature_feature(&file.data, index, &face_features);
+        }
         faces.push(FontFace {
             style: face.style.clone(),
             id,
         });
 
-        features.extend(available_features(&font));
+        features.extend(face_features);
         for axis in variation_axes(&font) {
             axes.entry(axis.tag.clone()).or_insert(axis);
         }
@@ -272,19 +279,21 @@ fn describe_family(
         nerd,
         // Byte order.
         features: features.into_iter().collect(),
+        ligatures,
         axes: axes.into_values().collect(),
     })
 }
 
 struct OpenedFile {
-    data: Vec<u8>,
+    /// Shared with the shaper, which owns its font data.
+    data: Arc<Vec<u8>>,
     stamp: Stamp,
 }
 
 fn open_file(path: &Path) -> Option<OpenedFile> {
     let stamp = Stamp::of(path)?;
     Some(OpenedFile {
-        data: fs::read(path).ok()?,
+        data: Arc::new(fs::read(path).ok()?),
         stamp,
     })
 }
@@ -449,6 +458,50 @@ fn aat_feature(kind: u16, setting: u16) -> Option<String> {
             .find(|&&(k, s, _)| k == kind && s == setting)
             .map(|&(_, _, tag)| tag.to_owned()),
     }
+}
+
+/// Code that programming ligatures join, shaped as one run.
+const LIGATURE_SAMPLE: &str = "-> != == => <= >= && || :: //";
+const LIGATURE_TAGS: [skrifa::Tag; 2] = [skrifa::Tag::new(b"calt"), skrifa::Tag::new(b"liga")];
+
+/// The feature that joins code such as `->`: calt or liga, the first whose
+/// absence changes the glyphs that `HarfBuzz` shapes for it. Fonts often have liga
+/// only for text such as "fi", and calt for other contextual forms.
+fn ligature_feature(data: &Arc<Vec<u8>>, index: u32, features: &[String]) -> Option<String> {
+    let candidates: Vec<skrifa::Tag> = LIGATURE_TAGS
+        .into_iter()
+        .filter(|&tag| features.contains(&tag_text(tag)))
+        .collect();
+    if candidates.is_empty() {
+        return None;
+    }
+    let source: Arc<dyn AsRef<[u8]> + Send + Sync> = Arc::<Vec<u8>>::clone(data);
+    let font = harfrust::Font::new(source, index)?;
+    let shaper = harfrust::ShaperFont::new(&font);
+    let glyphs = |off: Option<skrifa::Tag>| {
+        let features: Vec<harfrust::Feature> = off
+            .into_iter()
+            .map(|tag| harfrust::Feature::new(tag, 0, ..))
+            .collect();
+        let mut buffer = harfrust::Buffer::new();
+        buffer.push_str(LIGATURE_SAMPLE);
+        buffer.set_direction(harfrust::Direction::LeftToRight);
+        buffer.set_script(Some(harfrust::Script::LATIN));
+        let options = harfrust::ShapeOptions::new().features(&features);
+        harfrust::shape(&shaper, &mut buffer, options).ok()?;
+        Some(
+            buffer
+                .glyph_infos()
+                .iter()
+                .map(|info| info.glyph_id)
+                .collect::<Vec<_>>(),
+        )
+    };
+    let joined = glyphs(None)?;
+    candidates
+        .into_iter()
+        .find(|&tag| glyphs(Some(tag)).is_some_and(|separate| separate != joined))
+        .map(tag_text)
 }
 
 /// fvar axes in font order, named in English.
@@ -778,6 +831,7 @@ mod tests {
             "faces": [face("Regular", "DMMono.ttc", 0), face("Italic", "DMMono.ttc", 1)],
             "nerd": false,
             "features": dm_mono_features,
+            "ligatures": null,
             "axes": [],
         });
         let cases = [
@@ -795,6 +849,7 @@ mod tests {
                     ],
                     "nerd": false,
                             "features": ["aalt", "dlig", "dnom", "frac", "numr", "ordn", "ss02", "subs", "sups", "zero"],
+                    "ligatures": null,
                     "axes": inconsolata_axes,
                 }),
             ),
@@ -806,6 +861,7 @@ mod tests {
                     "faces": [karla],
                     "nerd": false,
                     "features": karla_features,
+                    "ligatures": null,
                     "axes": [karla_weight],
                 }),
             ),
@@ -844,6 +900,7 @@ mod tests {
                     "faces": [face("Regular", "NerdStandIn.ttf", 0)],
                     "nerd": true,
                             "features": ["XALT", "ordn", "ss02", "ss04", "ss05", "sups"],
+                    "ligatures": null,
                     "axes": [],
                 }),
             ),
@@ -869,6 +926,7 @@ mod tests {
                         "lnum", "numr", "onum", "ordn", "pnum", "sinf", "ss02", "ss04", "ss05",
                         "subs", "sups", "tnum", "zero",
                     ],
+                    "ligatures": null,
                     "axes": [karla_weight, inconsolata_axes[1]],
                 }),
             ),
@@ -885,6 +943,7 @@ mod tests {
                     "faces": [karla],
                     "nerd": false,
                     "features": karla_features,
+                    "ligatures": null,
                     "axes": [karla_weight],
                 }),
             ),

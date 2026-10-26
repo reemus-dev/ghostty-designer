@@ -8,7 +8,6 @@ import {
 import {CheckIcon} from "lucide-react";
 import {Truncate} from "@/components/truncate";
 import type {FontFamily} from "@/core/bindings";
-import {ligatureTag} from "@/core/font-settings";
 import {fontFace} from "@/lib/fonts";
 
 const SAMPLE = "if (cell != 0) return a->b; // O0 1lI";
@@ -125,7 +124,7 @@ export function FamilyList(props: FamilyListProps) {
         const tags = font
           ? [
               font.nerd && "Nerd Font",
-              ligatureTag(font) !== undefined && "Ligatures",
+              font.ligatures !== null && "Ligatures",
               font.axes.length > 0 && "Variable",
             ]
               .filter(Boolean)

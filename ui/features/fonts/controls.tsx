@@ -24,7 +24,6 @@ import type {FontAxis, FontFamily} from "@/core/bindings";
 import {
   choosableFeatures,
   featureOn,
-  ligatureTag,
   parseFeatures,
   parseVariations,
   toggledFeature,
@@ -278,7 +277,7 @@ const FEATURE_GROUPS = [
 function Features(props: {family: FontFamily}) {
   const {family} = props;
   const features = parseFeatures(useEffective("font-feature") ?? EMPTY);
-  const ligatures = ligatureTag(family);
+  const {ligatures} = family;
   const toggle = (tag: string) =>
     void send({
       type: "set-tag",

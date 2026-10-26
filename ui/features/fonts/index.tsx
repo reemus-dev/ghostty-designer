@@ -7,7 +7,6 @@ import {PageFilter, PageSection} from "@/components/page";
 import {Truncate} from "@/components/truncate";
 import {Kbd} from "@/components/ui/kbd";
 import type {FontFamily} from "@/core/bindings";
-import {ligatureTag} from "@/core/font-settings";
 import {whyNotShowing} from "@/core/preview";
 import {withPrimary} from "@/core/values";
 import {fontFace} from "@/lib/fonts";
@@ -30,7 +29,7 @@ const FILTERS = {
   nerd: {label: "Nerd Font", test: (font: FontFamily) => font.nerd},
   ligatures: {
     label: "Ligatures",
-    test: (font: FontFamily) => ligatureTag(font) !== undefined,
+    test: (font: FontFamily) => font.ligatures !== null,
   },
   variable: {
     label: "Variable",
@@ -224,7 +223,7 @@ function FontHeader(props: {
   if (family) {
     facts = [
       family.nerd && "Nerd Font",
-      ligatureTag(family) !== undefined && "Ligatures",
+      family.ligatures !== null && "Ligatures",
       family.axes.length > 0 && "Variable",
       `${family.faces.length} ${family.faces.length === 1 ? "style" : "styles"}`,
     ]

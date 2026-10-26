@@ -42,6 +42,9 @@ pub struct FontFamily {
     /// as OpenType tags, or GSUB and GPOS features of the default script, or
     /// else Latin.
     pub features: Vec<String>,
+    /// The feature that joins code such as `->` into ligatures, calt or liga.
+    /// None for a family without code ligatures.
+    pub ligatures: Option<String>,
     pub axes: Vec<FontAxis>,
 }
 

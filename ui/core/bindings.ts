@@ -58,7 +58,12 @@ export type FontFamily = { family: string, faces: Array<FontFace>, nerd: boolean
  * as OpenType tags, or GSUB and GPOS features of the default script, or
  * else Latin.
  */
-features: Array<string>, axes: Array<FontAxis>, };
+features: Array<string>, 
+/**
+ * The feature that joins code such as `->` into ligatures, calt or liga.
+ * None for a family without code ligatures.
+ */
+ligatures: string | null, axes: Array<FontAxis>, };
 
 export type GhosttyInfo = { version: string, platform: Platform, 
 /**
