@@ -13,6 +13,7 @@
       "previewShadowed": false,
       "themeSetting": "GitHub Dark",
       "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
+      "themeHidden": "all",
       "canRestoreOriginal": false,
       "instances": 0,
       "colorMatch": {"theme":"GitHub Dark High Contrast","exact":false},
@@ -449,6 +450,7 @@
             "light": "GitHub Light Default",
             "dark": "GitHub Dark Default"
           },
+          "themeHidden": null,
           "colorMatch": {"theme":"GitHub Dark Default","exact":true},
           "effective": {
             "background": ["#0d1117"],
@@ -2316,6 +2318,7 @@
           "history": {"undo":[],"redo":[]},
           "appearance": "dark",
           "changes": 0,
+          "themeHidden": "some",
           "canRestoreOriginal": true,
           "colorMatch": {"theme":"GitHub Dark Default","exact":false},
           "saved": {
@@ -3589,6 +3592,7 @@
           "changes": 1,
           "themeSetting": "Nord",
           "themePair": {"light":"Nord","dark":"Nord"},
+          "themeHidden": null,
           "colorMatch": {"theme":"Nord","exact":true},
           "effective": {
             "background": ["#2e3440"],

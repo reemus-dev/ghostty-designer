@@ -160,6 +160,12 @@ export type SessionState = {
    * without one or when malformed.
    */
   themePair: {light: string; dark: string} | null;
+  /**
+   * How much of the saved theme the config's own colour lines hide while no
+   * theme is picked. The user's own colours show then, with the theme as their
+   * base, and picking the theme again shows all of it.
+   */
+  themeHidden: "all" | "some" | null;
   favorites: string[];
   /** Themes a later change or a save kept, most recent first. */
   recentThemes: string[];

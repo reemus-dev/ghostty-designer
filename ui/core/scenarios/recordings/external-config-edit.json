@@ -13,6 +13,7 @@
       "previewShadowed": false,
       "themeSetting": "GitHub Dark",
       "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
+      "themeHidden": "all",
       "canRestoreOriginal": false,
       "instances": 0,
       "colorMatch": {"theme":"GitHub Dark High Contrast","exact":false},
@@ -436,6 +437,7 @@
           "changes": 1,
           "themeSetting": "Nord",
           "themePair": {"light":"Nord","dark":"Nord"},
+          "themeHidden": null,
           "colorMatch": {"theme":"Nord","exact":true},
           "effective": {
             "background": ["#2e3440"],

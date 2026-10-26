@@ -143,11 +143,12 @@ export function start() {
   startSession(host, receive)
     .then((session) => {
       current.session = session;
-      // Themes opens on the theme Ghostty shows.
-      const {themePair, appearance} = session.snapshot.state;
+      // Themes opens on the theme Ghostty shows, or on Your colours while the
+      // config's own colours hide some of it.
+      const {themePair, themeHidden, appearance} = session.snapshot.state;
       update({
         snapshot: session.snapshot,
-        theme: themePair?.[appearance] ?? null,
+        theme: themeHidden === null ? (themePair?.[appearance] ?? null) : null,
       });
       const switchError = sessionStorage.getItem(SWITCH_ERROR);
       sessionStorage.removeItem(SWITCH_ERROR);

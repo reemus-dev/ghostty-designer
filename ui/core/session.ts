@@ -8,6 +8,7 @@ import {
   colorsAfterSave,
   colorsToSave,
   draftKeys,
+  draftTheme,
   provenance,
   savedTheme,
 } from "./resolve";
@@ -90,16 +91,26 @@ function sessionState(
     savedSetting === null ? null : resolveThemePair(savedSetting);
   const setting = draft.theme ?? savedSetting;
   const themePair = setting === null ? null : resolveThemePair(setting);
+  const from = provenance(sources, draft, resolved);
+  // Picking the saved theme again changes something only while lines hide it.
+  let themeHidden: SessionState["themeHidden"] = null;
+  if (
+    draft.theme === null &&
+    draftTheme(sources, {theme: savedSetting, values: draft.values}) !== null
+  ) {
+    themeHidden = Object.values(from).includes("theme") ? "some" : "all";
+  }
   return {
     ...design.state(),
     saved: layer(sources.saved, savedColors),
     effective: shown,
-    provenance: provenance(sources, draft, resolved),
+    provenance: from,
     changes: draftKeys(draft).length,
     previewInstalled: config.include !== "absent",
     previewShadowed: config.include === "shadowed",
     themeSetting: setting,
     themePair,
+    themeHidden,
     canRestoreOriginal: config.canRestoreOriginal,
     instances,
     ...colors.shown(

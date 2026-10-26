@@ -41,6 +41,8 @@ type GalleryProps = {
   focused: ThemeChoice;
   currentShowing: boolean;
   showingTheme: string | null;
+  /** The saved theme while the config's own colour lines hide some of it. */
+  baseTheme: string | null;
   /** The theme matching or closest to the user's own colours. */
   match: ColorMatch | null;
   favorites: string[];
@@ -162,6 +164,7 @@ export function Gallery(props: GalleryProps) {
                 tabbable={tabStop === theme.name}
                 selected={focused === theme.name}
                 showing={props.showingTheme === theme.name}
+                base={props.baseTheme === theme.name}
                 favorite={props.favorites.includes(theme.name)}
                 match={
                   props.match?.theme === theme.name &&
@@ -187,6 +190,7 @@ type CardProps = {
   tabbable: boolean;
   selected: boolean;
   showing: boolean;
+  base?: boolean;
   /** Set on the card of the theme matching or closest to the user's own colours. */
   match?: ColorMatch;
   favorite?: boolean;
@@ -257,10 +261,29 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
           />
         )}
         {showing && <ShowingBadge />}
+        {props.base && <BaseBadge />}
       </span>
     </button>
   );
 });
+
+/** "Base theme", with how much of it the config's own colour lines hide. */
+function BaseBadge() {
+  const hidden = useSnapshot((snapshot) => snapshot.state.themeHidden);
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <span className="ml-auto shrink-0 text-xs text-muted-foreground" />
+        }>
+        Base theme
+      </TooltipTrigger>
+      <TooltipContent>
+        Colours set in your config hide {hidden} of it
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 /**
  * "Showing", or a short "Not live" whose tooltip gives the reason, so the name

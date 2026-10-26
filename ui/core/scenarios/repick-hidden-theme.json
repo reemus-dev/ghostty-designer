@@ -1,0 +1,9 @@
+{
+  "description": "Picking the saved theme while the config's colours hide it shows all of it, and saving comments those lines out",
+  "steps": [
+    {"op": "intent", "intent": {"type": "theme", "theme": "GitHub Dark"}},
+    {"op": "plan-save"},
+    {"op": "save"},
+    {"op": "settle"}
+  ]
+}

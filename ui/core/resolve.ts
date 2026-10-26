@@ -2,7 +2,12 @@
 // lines, the draft over both, and where each value shows from.
 import type {Appearance} from "@/core/bindings";
 import type {Catalog} from "./catalog";
-import {type ConfigFile, definitions, lastDefinitions} from "./config-file";
+import {
+  type ConfigFile,
+  type Definition,
+  definitions,
+  lastDefinitions,
+} from "./config-file";
 import {inputError} from "./errors";
 import {renderPreview} from "./preview";
 import {resolveThemePair, THEME_COLOR_KEYS} from "./theme";
@@ -42,12 +47,12 @@ export function themePairValues(
 }
 
 /**
- * The theme colours Ghostty shows once `theme` is saved (null keeps the saved
- * one), before draft values. Ghostty loads the theme, then replays the config
- * over it (src/config/Config.zig:4462-4482), so the config's own lines win,
- * except those planSave comments out for a new theme: lines for keys either
- * half of it sets, and `palette = ""` resets. A light/dark pair shows its
- * `half`.
+ * The theme colours Ghostty shows once the draft's `theme` is saved (null keeps
+ * the saved one), before draft values. Ghostty loads the theme, then replays
+ * the config over it (src/config/Config.zig:4462-4482), so the config's own
+ * lines win, except those planSave comments out for a draft theme: lines for
+ * keys either half of it sets, and `palette = ""` resets. A light/dark pair
+ * shows its `half`.
  */
 export function colorsAfterSave(
   sources: Sources,
@@ -55,7 +60,6 @@ export function colorsAfterSave(
   half: Appearance,
 ): ResolvedColors {
   const {catalog, files, saved, library} = sources;
-  const changed = theme !== null && theme !== savedTheme(sources);
   const setting = theme ?? savedTheme(sources);
   const pair = setting === null ? null : resolveThemePair(setting);
   // A saved theme the library lacks, such as one named by its path, shows as
@@ -63,8 +67,8 @@ export function colorsAfterSave(
   const shown =
     setting === null
       ? {}
-      : ((pair && library.values(pair[half])) ?? (changed ? {} : saved));
-  const commented = changed ? themePairValues(library, theme) : {};
+      : ((pair && library.values(pair[half])) ?? (theme === null ? saved : {}));
+  const commented = themePairValues(library, theme);
   const values: Values = {};
   const from: Record<string, Provenance> = {};
 
@@ -151,10 +155,22 @@ export const shownAfterSave = (
   );
 
 /**
- * The draft without what changes nothing once saved: the saved theme, and
- * values of `keys` that Ghostty shows already. Of a light/dark pair, a value
- * must match both halves, because it saves for both. An empty value resets a
- * scalar to its default (src/cli/args.zig:326-338).
+ * The theme a draft keeps. The saved theme changes nothing on save unless the
+ * config's own lines hide some of it: picking it again then shows all of it,
+ * and saving comments those lines out.
+ */
+export function draftTheme(sources: Sources, draft: Draft) {
+  const {files, library} = sources;
+  if (draft.theme !== savedTheme(sources)) return draft.theme;
+  const values = themePairValues(library, draft.theme);
+  return themeConflicts(files, values, draft).length > 0 ? draft.theme : null;
+}
+
+/**
+ * The draft without what changes nothing once saved: the saved theme while
+ * nothing hides it, and values of `keys` that Ghostty shows already. Of a
+ * light/dark pair, a value must match both halves, because it saves for both.
+ * An empty value resets a scalar to its default (src/cli/args.zig:326-338).
  */
 export function pruned(
   sources: Sources,
@@ -162,7 +178,7 @@ export function pruned(
   keys = Object.keys(next.values),
 ): Draft {
   const {catalog, files, saved, library} = sources;
-  const theme = next.theme === savedTheme(sources) ? null : next.theme;
+  const theme = draftTheme(sources, next);
   const pair = theme === null ? null : resolveThemePair(theme);
   // A new theme's other keys apply once saved where the config does not
   // set them, but the preview shows only its colours, so a value changes
@@ -205,6 +221,40 @@ export function pruned(
     }
   }
   return {theme, values};
+}
+
+/**
+ * The lines that would hide a draft theme. Any explicit colour line beats a
+ * theme (src/config/Config.zig:4462-4465), unless the draft sets that key
+ * itself. A `palette = ""` reset would wipe the theme's palette
+ * (src/cli/args.zig:326-338), and the lines it disables would come back without
+ * it.
+ */
+export function themeConflicts(
+  files: ConfigFile[],
+  themeValues: Values,
+  draft: Draft,
+): Definition[] {
+  const conflicts = THEME_COLOR_KEYS.filter(
+    (key) =>
+      Object.hasOwn(themeValues, key) && !Object.hasOwn(draft.values, key),
+  ).flatMap((key) => definitions(files, key));
+  const themePalette = paletteByIndex(themeValues.palette ?? []);
+  const draftPalette = paletteByIndex(draft.values.palette ?? []);
+  const all = themePalette.size > 0 ? definitions(files, "palette") : [];
+  const lastReset = all.findLastIndex((def) => def.line.value === "");
+  for (const [i, def] of all.entries()) {
+    const index = paletteIndex(def.line.value);
+    if (
+      i <= lastReset ||
+      (index !== undefined &&
+        themePalette.has(index) &&
+        !draftPalette.has(index))
+    ) {
+      conflicts.push(def);
+    }
+  }
+  return conflicts;
 }
 
 /**

@@ -16,13 +16,14 @@ const COLOUR_SLOTS = [...THEME_COLOR_KEYS, ...TERMINAL_SLOTS];
 
 /**
  * "Theme: Rose Pine", "Rose Pine, with some of your own colours", or "Your own
- * colours · closest theme: …", and what hides a theme picked in the draft.
+ * colours · closest theme: …", and whether the config's own colours hide all of
+ * its theme.
  */
 export function ColorSummary(props: {state: SessionState}) {
-  const {colorMatch, draft, themePair, appearance, provenance} = props.state;
+  const {colorMatch, themePair, themeHidden, appearance, provenance} =
+    props.state;
   const named = themePair?.[appearance];
   const sources = COLOUR_SLOTS.map((id) => provenance[id]);
-  const hidden = sources.filter((source) => source === "config").length;
 
   let colours: ReactNode;
   if (colorMatch?.exact) {
@@ -59,8 +60,8 @@ export function ColorSummary(props: {state: SessionState}) {
   }
 
   const hide =
-    draft.theme !== null && named && hidden > 0
-      ? `Colours set in your config hide ${hidden === COLOUR_SLOTS.length ? named : `some of ${named}`}. Saving comments out those lines.`
+    themeHidden === "all" && named
+      ? `Colours set in your config hide all of your theme, ${named}.`
       : null;
 
   return (

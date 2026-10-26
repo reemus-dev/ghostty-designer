@@ -48,10 +48,14 @@ export function ThemesView() {
   const themePair = useSnapshot((snapshot) => snapshot.state.themePair);
   const appearance = useSnapshot((snapshot) => snapshot.state.appearance);
   const own = useSnapshot((snapshot) => snapshot.state.own);
-  // Ghostty shows the theme setting's half for the appearance, and the user's
-  // own colours only when no theme is set.
-  const currentShowing = themePair === null;
-  const showingTheme = themePair?.[appearance] ?? null;
+  const hidden = useSnapshot((snapshot) => snapshot.state.themeHidden);
+  // Ghostty shows the theme setting's half for the appearance, unless the
+  // config's own colour lines hide some of it. The user's own colours show
+  // then, with the theme as their base.
+  const named = themePair?.[appearance] ?? null;
+  const currentShowing = named === null || hidden !== null;
+  const showingTheme = currentShowing ? null : named;
+  const baseTheme = hidden === null ? null : named;
   const match = own.colorMatch;
 
   const filters = useStore((store) => store.themeFilters);
@@ -71,6 +75,7 @@ export function ThemesView() {
   );
 
   const withCurrent = query === "" && !starred;
+  const filtered = filters.mode !== "all" || filters.readable || starred;
   const mine = shown.filter((theme) => theme.source === "user");
   const sections = [
     {label: "My themes", themes: mine},
@@ -88,6 +93,7 @@ export function ThemesView() {
     <ThemeDetail
       theme={theme}
       showing={theme.name === showingTheme}
+      base={theme.name === baseTheme}
       favorite={favorites.includes(theme.name)}
     />
   ) : (
@@ -115,32 +121,35 @@ export function ThemesView() {
           onSort={setSort}
         />
       }>
-      <p className="flex items-center gap-1.5 pb-4 text-sm text-muted-foreground">
-        <Kbd>←</Kbd>
-        <Kbd>→</Kbd>
-        <Kbd>↑</Kbd>
-        <Kbd>↓</Kbd> try themes in Ghostty
-      </p>
       {sections.length > 0 ? (
-        <Gallery
-          current={withCurrent ? own.colors : null}
-          sections={sections}
-          focused={focused}
-          currentShowing={currentShowing}
-          showingTheme={showingTheme}
-          match={match}
-          favorites={favorites}
-          onFocus={setTheme}
-        />
+        <>
+          <p className="flex items-center gap-1.5 pb-4 text-sm text-muted-foreground">
+            <Kbd>←</Kbd>
+            <Kbd>→</Kbd>
+            <Kbd>↑</Kbd>
+            <Kbd>↓</Kbd> try themes in Ghostty
+          </p>
+          <Gallery
+            current={withCurrent ? own.colors : null}
+            sections={sections}
+            focused={focused}
+            currentShowing={currentShowing}
+            showingTheme={showingTheme}
+            baseTheme={baseTheme}
+            match={match}
+            favorites={favorites}
+            onFocus={setTheme}
+          />
+        </>
       ) : (
         <div className="flex flex-col items-start gap-3 rounded-2xl p-6 text-sm text-muted-foreground inset-ring inset-ring-border">
           <p>
             {query
-              ? `No themes match “${query}” with these filters.`
+              ? `No themes match “${query}”${filtered ? " with these filters" : ""}.`
               : "No themes match these filters."}
           </p>
           <Button size="sm" variant="outline" onClick={clearThemeFilters}>
-            Clear filters
+            {filtered ? "Clear filters" : "Clear search"}
           </Button>
         </div>
       )}

@@ -3,7 +3,7 @@
 import {inputError} from "./errors";
 import {withoutTag} from "./font-settings";
 import {type HistoryChange, THEME_KEY} from "./history";
-import {pruned, savedTheme, type Sources} from "./resolve";
+import {draftTheme, pruned, type Sources} from "./resolve";
 import {resolveThemePair} from "./theme";
 import type {ThemeLibrary} from "./theme-library";
 import {type Draft, type Intent, type Values} from "./types";
@@ -51,7 +51,6 @@ export function checkTheme(library: ThemeLibrary, theme: string) {
  * history. Throws a SessionError for an option the catalog lacks or a value
  * Ghostty cannot read.
  */
-// oxlint-disable-next-line complexity -- one flat switch over the draft intents, a few lines each
 export function editDraft(
   sources: Sources,
   draft: Draft,
@@ -165,8 +164,10 @@ export function editDraft(
     }
     case "theme": {
       if (intent.theme !== null) checkTheme(sources.library, intent.theme);
-      // Picking the saved theme again changes nothing on save, so it is no draft.
-      const theme = intent.theme === savedTheme(sources) ? null : intent.theme;
+      const theme = draftTheme(sources, {
+        theme: intent.theme,
+        values: draft.values,
+      });
       const label = theme === null ? "Back to saved theme" : `Theme: ${theme}`;
       return {
         change: {label, key: THEME_KEY, pick: intent.pick},

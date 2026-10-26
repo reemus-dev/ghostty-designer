@@ -13,6 +13,7 @@
       "previewShadowed": false,
       "themeSetting": "GitHub Dark",
       "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
+      "themeHidden": "all",
       "canRestoreOriginal": false,
       "instances": 0,
       "colorMatch": {"theme":"GitHub Dark High Contrast","exact":false},

@@ -30,7 +30,9 @@ export function draftChanges(
   const palette = paletteByIndex(draft.values.palette ?? []);
   return draftKeys(draft).map((key): DraftChange => {
     if (key === "theme") {
-      const before = saved.theme?.[0] ?? "None";
+      // The saved theme picked again replaces the colours that hid it.
+      const theme = saved.theme?.[0];
+      const before = theme === draft.theme ? "Your colours" : (theme ?? "None");
       return {key, label: "Theme", before, after: draft.theme!, color: false};
     }
     const index = slotIndex(key);

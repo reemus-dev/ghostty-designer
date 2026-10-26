@@ -15,7 +15,7 @@ import {
   serializeConfig,
 } from "./config-file";
 import {inputError} from "./errors";
-import {draftKeys} from "./resolve";
+import {draftKeys, themeConflicts} from "./resolve";
 import {THEME_COLOR_KEYS} from "./theme";
 import type {
   ConfigOverride,
@@ -44,8 +44,8 @@ type SaveInput = {
   /** The main config that receives keys defined nowhere yet. */
   configPath: string;
   /**
-   * What the save changes, all of which it writes: a theme other than the saved
-   * one, and values that change what Ghostty shows once it is saved.
+   * What the save changes, all of which it writes: a theme to apply, and values
+   * that change what Ghostty shows once it is saved.
    */
   draft: Draft;
   /** The keys the draft theme sets, from both halves of a light/dark pair. */
@@ -274,45 +274,13 @@ function overridesBy(
 }
 
 /**
- * The lines that would hide a new theme. Any explicit colour line beats a theme
- * (src/config/Config.zig:4462-4465), unless the draft sets that key itself. A
- * `palette = ""` reset would wipe the theme's palette
- * (src/cli/args.zig:326-338), and the lines it disables would come back without
- * it.
- */
-function themeConflicts(
-  files: ConfigFile[],
-  themeValues: Values,
-  draft: Draft,
-): Definition[] {
-  const conflicts = THEME_COLOR_KEYS.filter(
-    (key) =>
-      Object.hasOwn(themeValues, key) && !Object.hasOwn(draft.values, key),
-  ).flatMap((key) => definitions(files, key));
-  const themePalette = paletteByIndex(themeValues.palette ?? []);
-  const draftPalette = paletteByIndex(draft.values.palette ?? []);
-  const all = themePalette.size > 0 ? definitions(files, "palette") : [];
-  const lastReset = all.findLastIndex((def) => def.line.value === "");
-  for (const [i, def] of all.entries()) {
-    const index = paletteIndex(def.line.value);
-    if (
-      i <= lastReset ||
-      (index !== undefined &&
-        themePalette.has(index) &&
-        !draftPalette.has(index))
-    ) {
-      conflicts.push(def);
-    }
-  }
-  return conflicts;
-}
-
-/**
  * Settings of a new theme besides its colours. Ghostty applies every key of a
  * theme file (src/config/Config.zig:4413-4418) where the config does not set
  * it, but the preview shows only colours.
  */
 function themeSettings(themeValues: Values, draft: Draft, files: ConfigFile[]) {
+  // The saved theme picked again applies them already.
+  if (draft.theme === lastDefinition(files, "theme")?.line.value) return [];
   const colorKeys = new Set<string>(THEME_COLOR_KEYS);
   return Object.entries(themeValues)
     .filter(

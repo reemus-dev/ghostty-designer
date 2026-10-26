@@ -84,11 +84,11 @@ describe("editDraft", () => {
     });
   });
 
-  it("picks a theme, and no theme for the saved one", () => {
+  it("picks a theme, and the saved one only while config lines hide it", () => {
     expect(next({type: "theme", theme: "Light"}).theme).toBe("Light");
-    expect(
-      next({type: "theme", theme: "Dark"}, {...EMPTY, theme: "Light"}).theme,
-    ).toBe(null);
+    expect(next({type: "theme", theme: "Dark"}).theme).toBe("Dark");
+    const own = {theme: "Light", values: {background: ["#222222"]}};
+    expect(next({type: "theme", theme: "Dark"}, own).theme).toBe(null);
   });
 
   it.each<[string, DraftIntent]>([

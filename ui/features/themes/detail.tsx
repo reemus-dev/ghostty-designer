@@ -97,6 +97,15 @@ function Showing() {
   );
 }
 
+function BaseNote() {
+  const hidden = useSnapshot((snapshot) => snapshot.state.themeHidden);
+  return (
+    <p className="text-sm text-muted-foreground">
+      Your base theme. Colours set in your config hide {hidden} of it.
+    </p>
+  );
+}
+
 function Colors(props: {colors: ThemeColors; warnings: ReadabilityWarning[]}) {
   const {colors, warnings} = props;
   const slots = new Set(warnings.map((warning) => warning.slot));
@@ -174,12 +183,14 @@ function SaveThemeButton(props: {source: SaveThemeSource}) {
 type ThemeDetailProps = {
   theme: ThemeSummary;
   showing: boolean;
+  /** The saved theme while the config's own colour lines hide some of it. */
+  base: boolean;
   favorite: boolean;
 };
 
 /** The focused theme: what it is, its colours, and how to copy or pair it. */
 export function ThemeDetail(props: ThemeDetailProps) {
-  const {theme, showing, favorite} = props;
+  const {theme, showing, base, favorite} = props;
   const ModeIcon = theme.dark ? MoonIcon : SunIcon;
   const favoriteLabel = favorite
     ? "Remove from favourites"
@@ -198,6 +209,7 @@ export function ThemeDetail(props: ThemeDetailProps) {
             {theme.name}
           </h2>
           {showing && <Showing />}
+          {base && <BaseNote />}
         </div>
         <IconButton
           size="icon-sm"
