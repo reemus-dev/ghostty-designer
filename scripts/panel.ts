@@ -97,6 +97,29 @@ for (let quiet = 0; quiet < 3; quiet++) {
   }
 }`;
 
+// WebKit hides the focus ring on script focus after a mouse press, until a key
+// press without ⌘, ⌃ or ⌥. Synthetic events never count as either, so the page
+// tracks them itself. The focused element is focused again without its ring, as
+// after a real press.
+const CLICK_FOCUS_SCRIPT = `
+if (!window.clickFocus) {
+  window.clickFocus = true;
+  let afterClick = false;
+  addEventListener("pointerdown", () => { afterClick = true }, true);
+  addEventListener("keydown", (event) => {
+    if (!event.metaKey && !event.ctrlKey && !event.altKey) afterClick = false;
+  }, true);
+  const focus = HTMLElement.prototype.focus;
+  HTMLElement.prototype.focus = function (options) {
+    focus.call(this, {focusVisible: !afterClick, ...options});
+  };
+}
+const active = document.activeElement;
+if (active instanceof HTMLElement && active !== document.body) {
+  active.blur();
+  active.focus({preventScroll: true, focusVisible: false});
+}`;
+
 class DriveError extends Error {}
 
 type ElementRef = {[ELEMENT_KEY]: string};
@@ -249,11 +272,18 @@ async function movePointer(session: Session, actions: object[]) {
   await session.call("DELETE", "/actions");
 }
 
+/**
+ * Scrolls the element only as far as it takes to show it, like a person would,
+ * and returns its centre in the viewport. A pointer action that starts from an
+ * element centres it in its scroll container first, so pointer actions start
+ * from this point instead.
+ */
 async function scrollIntoView(session: Session, element: ElementRef) {
-  await session.call("POST", "/execute/sync", {
-    script: "arguments[0].scrollIntoView({block: 'nearest'})",
+  return (await session.call("POST", "/execute/sync", {
+    script:
+      "arguments[0].scrollIntoView({block: 'nearest'}); const r = arguments[0].getBoundingClientRect(); return {x: Math.floor(r.left + r.width / 2), y: Math.floor(r.top + r.height / 2)}",
     args: [element],
-  });
+  })) as {x: number; y: number};
 }
 
 /**
@@ -265,17 +295,10 @@ async function scrollIntoView(session: Session, element: ElementRef) {
  */
 async function click(session: Session, selector: string) {
   const element = await find(session, selector);
-  await scrollIntoView(session, element);
-  // A real press stops later script focus from showing the focus ring.
-  // Synthetic events do not, but focus from nothing never shows it, and focus
-  // that moves on from there inherits that.
-  await session.call("POST", "/execute/sync", {
-    script:
-      "const active = document.activeElement; if (active instanceof HTMLElement && active !== document.body) { active.blur(); active.focus({preventScroll: true}) }",
-    args: [],
-  });
+  const centre = await scrollIntoView(session, element);
+  await runScript(session, CLICK_FOCUS_SCRIPT);
   await movePointer(session, [
-    {type: "pointerMove", origin: element, x: 0, y: 0},
+    {type: "pointerMove", origin: "viewport", ...centre},
     {type: "pointerDown", button: 0},
     {type: "pointerUp", button: 0},
     {type: "pointerMove", origin: "viewport", x: 0, y: 0},
@@ -289,13 +312,16 @@ async function click(session: Session, selector: string) {
 
 /** Drags from the match's centre to another match's centre, or by `dx,dy`. */
 async function drag(session: Session, selector: string, to: string) {
-  const from = await find(session, selector);
+  const start = await scrollIntoView(session, await find(session, selector));
   const offset = /^(-?\d+),(-?\d+)$/.exec(to);
   const end = offset
     ? {origin: "pointer", x: Number(offset[1]), y: Number(offset[2])}
-    : {origin: await find(session, to), x: 0, y: 0};
+    : {
+        origin: "viewport",
+        ...(await scrollIntoView(session, await find(session, to))),
+      };
   await movePointer(session, [
-    {type: "pointerMove", origin: from, x: 0, y: 0},
+    {type: "pointerMove", origin: "viewport", ...start},
     {type: "pointerDown", button: 0},
     {type: "pointerMove", duration: 200, ...end},
     {type: "pointerUp", button: 0},

@@ -369,6 +369,11 @@ for (const size of SIZES) {
   try {
     const {width, height} = size;
     await session.call("POST", "/window/rect", {width, height});
+    // The text caret blinks, so a screenshot would catch it on or off.
+    await runScript(
+      session,
+      `document.head.insertAdjacentHTML("beforeend", "<style>* { caret-color: transparent !important }</style>")`,
+    );
     await walk(session, size);
   } finally {
     await session.end();

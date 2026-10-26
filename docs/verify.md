@@ -48,8 +48,10 @@ dialogs, and screenshots each stop into `.cache/tour/`. It walks twice: in the
 default 1200 × 800 window, and in the narrowest one the window allows. Its
 `index.html` maps how the stops connect, then shows each stop's screenshots side
 by side, for a visual audit of the whole panel. From a terminal, the tour opens
-the page in the browser. Runs on one machine give the same screenshots. When you
-add a view, popup or dialog, add a stop to `STOPS` in `tour.ts`.
+the page in the browser. Runs on one machine give the same screenshots, unless
+the real pointer rests on the window and shows a hover style. A locked screen
+stops the panel drawing, so its screenshots time out. When you add a view, popup
+or dialog, add a stop to `STOPS` in `tour.ts`.
 
 ## Real input
 
