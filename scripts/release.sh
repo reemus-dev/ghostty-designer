@@ -135,7 +135,7 @@ check() {
   contained .rpm fedora:latest "$dnf ./dist/release/$rpm xorg-x11-server-Xvfb /usr/bin/xvfb-run" ghostty-designer
   contained tarball ubuntu:22.04 "$apt libwebkit2gtk-4.1-0 libgtk-3-0 procps fontconfig xvfb xauth" "$binary"
   if [ "$arch" = x86_64 ]; then
-    contained tarball archlinux:latest "pacman -Sy --noconfirm --needed webkit2gtk-4.1 gtk3 procps-ng fontconfig xorg-server-xvfb xorg-xauth" "$binary"
+    contained tarball archlinux:latest "pacman -Syu --noconfirm --needed webkit2gtk-4.1 gtk3 procps-ng fontconfig xorg-server-xvfb xorg-xauth" "$binary"
   fi
 
   local i failed=0
