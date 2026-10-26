@@ -98,7 +98,7 @@ and Ubuntu).
 ```sh
 ghostty-designer                # open the control panel window
 ghostty-designer --config FILE  # edit FILE instead of Ghostty's config, such as another app's
-ghostty-designer specimen       # print a colour and font specimen in this terminal
+ghostty-designer demo           # print sample terminal output in this terminal's colours and font
 ```
 
 From a terminal, the designer moves to the background, and the prompt returns

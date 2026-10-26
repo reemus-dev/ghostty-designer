@@ -2,14 +2,14 @@ import type {CSSProperties} from "react";
 import {xterm256} from "@/core/color";
 import type {ThemeColors} from "@/core/types";
 import {useGhosttyFont} from "@/lib/fonts";
-import type {SpecimenLine, SpecimenSegment} from "@/lib/specimen";
+import type {SampleLine, SampleSegment} from "@/lib/sample";
 
 /**
  * Ghostty's rules: selection and cursor colours fall back to inverting the
  * cell.
  */
 function segmentStyle(
-  segment: SpecimenSegment,
+  segment: SampleSegment,
   colors: ThemeColors,
 ): CSSProperties {
   let fg =
@@ -31,11 +31,8 @@ function segmentStyle(
   return {color: fg, background: bg};
 }
 
-/** Specimen lines in a theme's colours and Ghostty's font, without chrome. */
-export function SpecimenLines(props: {
-  lines: SpecimenLine[];
-  colors: ThemeColors;
-}) {
+/** Sample lines in a theme's colours and Ghostty's font, without chrome. */
+export function SampleLines(props: {lines: SampleLine[]; colors: ThemeColors}) {
   const {lines, colors} = props;
   const ghosttyFont = useGhosttyFont();
   return (
@@ -48,7 +45,7 @@ export function SpecimenLines(props: {
         fontVariantNumeric: "normal",
       }}>
       {lines.map((line, i) => (
-        // oxlint-disable-next-line react/no-array-index-key -- specimen lines never reorder
+        // oxlint-disable-next-line react/no-array-index-key -- sample lines never reorder
         <div key={i}>
           {line.map((segment, j) => (
             // oxlint-disable-next-line react/no-array-index-key -- segments never reorder

@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use clap::{Parser, Subcommand};
 use ghostty_designer_host::env::{Config, Env};
-use ghostty_designer_host::{app_state, specimen};
+use ghostty_designer_host::{app_state, sample};
 use tauri::webview::NewWindowResponse;
 use tauri::{
     AppHandle, Manager, RunEvent, Url, WebviewUrl, WebviewWindowBuilder, Window, WindowEvent,
@@ -54,23 +54,24 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Cmd {
-    /// Print the specimen pages in terminal colours
-    Specimen,
+    /// Print sample terminal output in this terminal's colours and font
+    Demo,
+}
+
+/// Whether to style output for a stream: `FORCE_COLOR` decides, then
+/// `NO_COLOR`, then whether the stream is a terminal.
+fn use_color(terminal: bool) -> bool {
+    match std::env::var_os("FORCE_COLOR") {
+        Some(force) => force != "0" && force != "false",
+        None => terminal && std::env::var_os("NO_COLOR").is_none_or(|v| v.is_empty()),
+    }
 }
 
 fn main() {
     launch::init();
     let cli = Cli::parse();
-    if let Some(Cmd::Specimen) = cli.command {
-        let force = std::env::var_os("FORCE_COLOR");
-        let color = match force {
-            Some(force) => force != "0" && force != "false",
-            None => {
-                std::io::stdout().is_terminal()
-                    && std::env::var_os("NO_COLOR").is_none_or(|v| v.is_empty())
-            }
-        };
-        let text = specimen::render(color);
+    if let Some(Cmd::Demo) = cli.command {
+        let text = sample::render(use_color(std::io::stdout().is_terminal()));
         outln!("{}", text.strip_suffix('\n').unwrap_or(&text));
         return;
     }

@@ -8,8 +8,8 @@ mod fonts;
 mod ghostty;
 mod host;
 mod preview;
+pub mod sample;
 mod save;
-pub mod specimen;
 #[cfg(test)]
 mod testkit;
 mod themes;

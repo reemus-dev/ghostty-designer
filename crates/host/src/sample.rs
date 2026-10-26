@@ -1,6 +1,6 @@
-//! The specimen pages as a terminal prints them, in its own colours, plus rows
+//! The sample pages as a terminal prints them, in its own colours, plus rows
 //! only a real terminal can show. The content is the `pages` section of
-//! `specimen.json`. The panel renders its `card` section, in the same format.
+//! `sample.json`. The panel renders its `card` section, in the same format.
 
 use std::fmt::Write;
 
@@ -92,7 +92,7 @@ struct Page {
 #[derive(Deserialize)]
 #[expect(
     clippy::struct_excessive_bools,
-    reason = "each flag is an independent SGR attribute in specimen.json"
+    reason = "each flag is an independent SGR attribute in sample.json"
 )]
 struct Segment {
     text: String,
@@ -264,7 +264,7 @@ fn capitalize(text: &str) -> String {
 /// off the escapes, swatch rows and trailing blanks are dropped.
 pub fn render(color: bool) -> String {
     let content: Content =
-        serde_json::from_str(include_str!("specimen.json")).expect("specimen.json matches Content");
+        serde_json::from_str(include_str!("sample.json")).expect("sample.json matches Content");
     let mut sections: Vec<Vec<String>> = content
         .pages
         .iter()

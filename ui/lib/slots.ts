@@ -12,7 +12,7 @@ type BaseSlot = {
   label: string;
   /** The colour it is read with. */
   against: SlotId;
-  /** True when text sits on it, so specimens swap text and background. */
+  /** True when text sits on it, so samples swap text and background. */
   surface?: boolean;
 };
 

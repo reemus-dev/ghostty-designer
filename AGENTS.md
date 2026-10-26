@@ -12,7 +12,7 @@ session in TypeScript.
 | Area                             | Responsibility                                                             |
 | -------------------------------- | -------------------------------------------------------------------------- |
 | `crates/app/`                    | Tauri shell: CLI, window, menu, single instance, launch and exit           |
-| `crates/app/src/main.rs`         | Entry, `--config`, `specimen`, window and menu, signals, shutdown          |
+| `crates/app/src/main.rs`         | Entry, `--config`, `demo`, window and menu, signals, shutdown              |
 | `crates/app/src/panel.rs`        | Panel commands, the host a config switch replaces, the close guard         |
 | `crates/app/src/instance.rs`     | One designer per state folder, later launches send focus, `--config`       |
 | `crates/app/src/launch.rs`       | Detach from the terminal, startup report, error dialog                     |
@@ -28,7 +28,7 @@ session in TypeScript.
 | `crates/host/src/themes.rs`      | Read the bundled and user theme files                                      |
 | `crates/host/src/fonts.rs`       | Background font scan and face files                                        |
 | `crates/host/src/watch.rs`       | Folder watches that report once their events settle                        |
-| `crates/host/src/specimen.rs`    | `specimen` printout, from `specimen.json`, which also holds the panel card |
+| `crates/host/src/sample.rs`      | `demo` printout, from `sample.json`, which also holds the panel card       |
 | `crates/host/src/env.rs`         | Process environment read once, so tests and sandboxes stay isolated        |
 | `crates/host/src/app_state.rs`   | `app.json`: config to open, recent files, Ghostty base choices             |
 | `crates/host/src/testkit.rs`     | Temporary `Env` and a fake Ghostty CLI for tests                           |
@@ -40,7 +40,7 @@ session in TypeScript.
 | `ui/app/`                        | Toolbar, rail, config switcher, ⌘K palette, save sheet, live preview setup |
 | `ui/features/`                   | Customise sections (colors, fonts, window) and the Themes view             |
 | `ui/components/`                 | Shared controls, with shadcn components in `components/ui/`                |
-| `ui/lib/`                        | Store, host commands, view helpers, the theme card specimen                |
+| `ui/lib/`                        | Store, host commands, view helpers, the theme card sample                  |
 | `scripts/`                       | On the PATH: sandbox, panel driver, tour, VMs, smoke, icon, release        |
 | `docs/`                          | Architecture and distribution decisions, running and driving the app       |
 | `npm/`                           | npm package manifest, and the launcher that runs the machine's build       |

@@ -10,10 +10,10 @@ import {THEME_PICK_KEYS} from "@/core/theme";
 import type {ColorMatch, ThemeColors, ThemeSummary} from "@/core/types";
 import {neighbour} from "@/lib/keys";
 import {pickTheme, type ThemeChoice} from "@/lib/pick";
-import {SPECIMEN_CARD} from "@/lib/specimen";
+import {SAMPLE_CARD} from "@/lib/sample";
 import {getStore, send, useSnapshot} from "@/lib/store";
 import {NOT_SHOWING_TEXT} from "@/lib/views";
-import {SpecimenLines} from "./specimen-lines";
+import {SampleLines} from "./sample-lines";
 
 const MOVES: Record<string, "left" | "right" | "up" | "down" | "home" | "end"> =
   {
@@ -233,7 +233,7 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
         pickTheme(choice, 0);
       }}>
       <div className="relative">
-        <SpecimenLines lines={SPECIMEN_CARD} colors={colors} />
+        <SampleLines lines={SAMPLE_CARD} colors={colors} />
         {props.match && (
           <span className="absolute right-2.5 bottom-2.5 inline-flex h-5 items-center rounded-full bg-card/90 px-2 text-xs font-medium text-foreground inset-ring inset-ring-input">
             {props.match.exact ? "Matches your colours" : "Closest to yours"}
