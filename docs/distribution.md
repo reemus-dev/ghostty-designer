@@ -77,16 +77,13 @@ Consent stored against an ad-hoc signature is tied to that exact build, so with
 self-responsibility each upgrade would ask again. A Developer ID signature keeps
 consent across upgrades.
 
-Unverified, because it needs an Apple Event to the user's Ghostty: whether TCC
-asks at all when the responsible app and the target are both Ghostty. To check,
-in a Ghostty window:
-
-1. Run `osascript -e 'tell application id "com.mitchellh.ghostty" to get name'`.
-2. Note whether a prompt appears and which app it names, then look in System
-   Settings → Privacy & Security → Automation for a Ghostty → Ghostty entry.
-
-If no prompt appears, terminal responsibility is the better default for terminal
-launches: no prompt ever. Desktop launches still prompt as Ghostty Designer.
+Terminal launches keep the terminal responsible. Disclaiming would need the
+private API, and with ad-hoc signing every upgrade would prompt again. From a
+Ghostty window,
+`osascript -e 'tell application id "com.mitchellh.ghostty" to get name'` ran
+without a prompt. That Ghostty already had Automation consents, so the check
+does not show whether TCC exempts Ghostty sending to itself. Desktop launches
+prompt as Ghostty Designer.
 
 ### Info.plist
 
@@ -263,17 +260,12 @@ Every file name starts with `ghostty-designer_<version>`, or
 the binary (Linux), and `LICENSE`. `mise run release:build [target]` builds one
 row on this machine.
 
-## Open questions
+## Open question
 
-1. Terminal launches: keep the terminal responsible for Apple Events (no code,
-   possibly no prompt when the terminal is Ghostty), or disclaim responsibility
-   in the detached launch so the prompt always names Ghostty Designer (a private
-   API, and with ad-hoc signing a new prompt after every upgrade)? The manual
-   check above decides most of it.
-2. Developer ID signing and notarization: needed before manual downloads or a
-   cask, and for consent that survives upgrades. Waits for the Apple Developer
-   account. Tauri signs and notarizes when the `APPLE_*` signing variables are
-   set, so it needs secrets passed to the macOS build step and a new
-   `signingIdentity`, not a new pipeline. A cask would also put the app in
-   `/Applications`, where Spotlight and Launchpad find it. The formula keeps it
-   in the Homebrew prefix, which is enough for an app started from a terminal.
+Developer ID signing and notarization: needed before manual downloads or a cask,
+and for consent that survives upgrades. Waits for the Apple Developer account.
+Tauri signs and notarizes when the `APPLE_*` signing variables are set, so it
+needs secrets passed to the macOS build step and a new `signingIdentity`, not a
+new pipeline. A cask would also put the app in `/Applications`, where Spotlight
+and Launchpad find it. The formula keeps it in the Homebrew prefix, which is
+enough for an app started from a terminal.
