@@ -20,7 +20,10 @@ fi
 binary=$1
 
 sandbox=$(mktemp -d)
-trap 'kill "${pid:-}" 2>/dev/null || true; rm -rf "$sandbox"' EXIT
+# On Linux, WebKit's helper processes outlive the app briefly and can still be
+# writing their shader cache, so a failed removal retries once.
+trap 'kill "${pid:-}" 2>/dev/null || true
+rm -rf "$sandbox" 2>/dev/null || { sleep 1; rm -rf "$sandbox"; }' EXIT
 mkdir -p "$sandbox"/{home,xdg,state}
 
 fixtures=$(cd "$scripts/../crates/host/tests/fixtures/ghostty-1.3.1" && pwd)
