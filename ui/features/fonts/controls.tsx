@@ -19,6 +19,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import {Switch} from "@/components/ui/switch";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import type {FontAxis, FontFamily} from "@/core/bindings";
 import {
   choosableFeatures,
@@ -295,14 +296,19 @@ function Features(props: {family: FontFamily}) {
   const chips = (tags: string[]) => (
     <div className="flex flex-wrap gap-1.5 pb-3">
       {tags.map((tag) => (
-        <Chip
-          key={tag}
-          title={featureName(tag)}
-          pressed={featureOn(features, tag)}
-          className="h-6 rounded-md px-2 font-mono text-xs"
-          onPressedChange={() => toggle(tag)}>
-          {tag}
-        </Chip>
+        <Tooltip key={tag}>
+          <TooltipTrigger
+            render={
+              <Chip
+                pressed={featureOn(features, tag)}
+                className="h-6 rounded-md px-2 font-mono text-xs"
+                onPressedChange={() => toggle(tag)}
+              />
+            }>
+            {tag}
+          </TooltipTrigger>
+          <TooltipContent>{featureName(tag)}</TooltipContent>
+        </Tooltip>
       ))}
     </div>
   );

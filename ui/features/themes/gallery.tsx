@@ -4,6 +4,7 @@ import {MoonIcon, StarIcon, SunIcon, UserIcon} from "lucide-react";
 import {LiveDot} from "@/components/live-dot";
 import {PaletteDots} from "@/components/palette-dots";
 import {Truncate} from "@/components/truncate";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {whyNotShowing} from "@/core/preview";
 import {THEME_PICK_KEYS} from "@/core/theme";
 import type {ColorMatch, ThemeColors, ThemeSummary} from "@/core/types";
@@ -234,13 +235,7 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
           className="px-3.5 pt-3 pb-[13px] text-[12.5px] leading-[18px]"
         />
         {props.match && (
-          <span
-            className="absolute right-2.5 bottom-2.5 inline-flex h-5 items-center rounded-full bg-card/90 px-2 text-xs font-medium text-foreground inset-ring inset-ring-input"
-            title={
-              props.match.exact
-                ? "The theme with your own colours"
-                : "The theme closest to your own colours"
-            }>
+          <span className="absolute right-2.5 bottom-2.5 inline-flex h-5 items-center rounded-full bg-card/90 px-2 text-xs font-medium text-foreground inset-ring inset-ring-input">
             {props.match.exact ? "Matches your colours" : "Closest to yours"}
           </span>
         )}
@@ -268,7 +263,7 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
 });
 
 /**
- * "Showing", or a short "Not live" whose title gives the reason, so the name
+ * "Showing", or a short "Not live" whose tooltip gives the reason, so the name
  * keeps its room.
  */
 function ShowingBadge() {
@@ -277,12 +272,17 @@ function ShowingBadge() {
   );
   if (notShowing) {
     const text = NOT_SHOWING_TEXT[notShowing];
+    const shadowed = notShowing === "shadowed";
     return (
-      <span
-        title={text}
-        className="ml-auto shrink-0 text-xs text-muted-foreground">
-        {notShowing === "shadowed" ? text : "Not live"}
-      </span>
+      <Tooltip disabled={shadowed}>
+        <TooltipTrigger
+          render={
+            <span className="ml-auto shrink-0 text-xs text-muted-foreground" />
+          }>
+          {shadowed ? text : "Not live"}
+        </TooltipTrigger>
+        <TooltipContent>{text}</TooltipContent>
+      </Tooltip>
     );
   }
   return (

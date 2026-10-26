@@ -8,6 +8,7 @@ import {
   SlidersHorizontalIcon,
   TriangleAlertIcon,
 } from "lucide-react";
+import {Truncate} from "@/components/truncate";
 import {Button} from "@/components/ui/button";
 import {
   Dialog,
@@ -346,10 +347,8 @@ function Diffs(props: {plan: SavePlan}) {
     <div className="flex flex-col gap-3">
       {props.plan.files.map((file) => (
         <section key={file.path} className="flex flex-col gap-1.5">
-          <h3
-            className="truncate font-mono text-xs text-muted-foreground"
-            title={file.path}>
-            {tildePath(file.path)}
+          <h3 className="font-mono text-xs text-muted-foreground">
+            <Truncate className="block">{tildePath(file.path)}</Truncate>
           </h3>
           <DiffView diff={file.diff} />
         </section>

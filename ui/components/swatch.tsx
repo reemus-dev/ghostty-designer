@@ -9,7 +9,6 @@ type SwatchProps = {
   /** An amber badge: the colour is hard to read on the background. */
   warning?: boolean;
   selected?: boolean;
-  title?: string;
   className?: string;
 };
 
@@ -27,7 +26,6 @@ export function Swatch(props: SwatchProps) {
   const faint = hex !== null && contrastRatio(hex, CARD) < 1.6;
   return (
     <span
-      title={props.title}
       className={cn(
         "relative block h-7 w-full shrink-0 rounded-md checkerboard",
         selected &&

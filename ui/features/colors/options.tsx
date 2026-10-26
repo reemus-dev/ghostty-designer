@@ -3,6 +3,7 @@ import {cn} from "cn";
 import {Card} from "@/components/card";
 import {Disclosure} from "@/components/disclosure";
 import {OptionControl} from "@/components/option-control";
+import {Truncate} from "@/components/truncate";
 import {contrastRatio, extendedPalette} from "@/core/color";
 import type {SlotColor} from "@/core/theme";
 import {themeColors} from "@/core/theme";
@@ -111,9 +112,8 @@ function ContrastTable(props: {colors: Colors}) {
               <th
                 key={bg}
                 scope="col"
-                title={describeSlot(bg).title}
-                className="truncate pb-1 font-normal text-muted-foreground">
-                {describeSlot(bg).title}
+                className="pb-1 font-normal text-muted-foreground">
+                <Truncate className="block">{describeSlot(bg).title}</Truncate>
               </th>
             ))}
           </tr>
@@ -134,7 +134,6 @@ function ContrastTable(props: {colors: Colors}) {
                 return (
                   <td
                     key={bg}
-                    title={`${describeSlot(text).title} on ${describeSlot(bg).title.toLowerCase()}: ${ratio.toFixed(2)}:1`}
                     className="h-6 rounded-[3px] text-center tabular-nums inset-ring inset-ring-border"
                     style={{background: hex(bg), color: hex(text)}}>
                     {ratio.toFixed(1)}
@@ -181,7 +180,6 @@ function ExtendedPreview(props: {
               <span
                 // oxlint-disable-next-line react/no-array-index-key -- a cell's index is its palette slot
                 key={i}
-                title={`${16 + slice * 36 + i} ${hex}`}
                 className="aspect-square"
                 style={{background: hex}}
               />
@@ -192,7 +190,7 @@ function ExtendedPreview(props: {
       <div className="grid h-4 grid-cols-24 overflow-hidden rounded-[4px] ring-1 ring-border">
         {extended.slice(216).map((hex, i) => (
           // oxlint-disable-next-line react/no-array-index-key -- a cell's index is its palette slot
-          <span key={i} title={`${232 + i} ${hex}`} style={{background: hex}} />
+          <span key={i} style={{background: hex}} />
         ))}
       </div>
     </div>

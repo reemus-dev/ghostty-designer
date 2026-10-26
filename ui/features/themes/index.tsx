@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {pickTheme} from "@/lib/pick";
 import {
   clearThemeFilters,
@@ -212,25 +213,41 @@ function Filters(props: {
           </ToggleGroupItem>
         </ToggleGroup>
         <div className="flex gap-2">
-          <Chip
-            pressed={readable}
-            count={counts.readable}
-            title="Only themes without readability warnings"
-            onPressedChange={(next) => setThemeFilters({readable: next})}>
-            {readable && <CheckIcon aria-hidden />}
-            Readable only
-          </Chip>
-          <Chip
-            pressed={starred}
-            count={counts.starred}
-            title="Only your favourites. F adds or removes the focused theme."
-            onPressedChange={(next) => setThemeFilters({starred: next})}>
-            <StarIcon
-              aria-hidden
-              className={starred ? "fill-current" : undefined}
-            />
-            Favourites
-          </Chip>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Chip
+                  pressed={readable}
+                  count={counts.readable}
+                  onPressedChange={(next) => setThemeFilters({readable: next})}
+                />
+              }>
+              {readable && <CheckIcon aria-hidden />}
+              Readable only
+            </TooltipTrigger>
+            <TooltipContent>
+              Only themes without readability warnings
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Chip
+                  pressed={starred}
+                  count={counts.starred}
+                  onPressedChange={(next) => setThemeFilters({starred: next})}
+                />
+              }>
+              <StarIcon
+                aria-hidden
+                className={starred ? "fill-current" : undefined}
+              />
+              Favourites
+            </TooltipTrigger>
+            <TooltipContent>
+              Only your favourites. F adds or removes the focused theme.
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </>

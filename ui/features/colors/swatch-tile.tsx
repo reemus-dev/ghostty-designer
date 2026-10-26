@@ -33,7 +33,6 @@ export function SwatchTile(props: {
       <button
         type="button"
         data-color={id}
-        title={title}
         aria-pressed={selected}
         aria-label={`${title} ${hex}`}
         tabIndex={selected ? 0 : -1}

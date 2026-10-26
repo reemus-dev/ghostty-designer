@@ -1,5 +1,6 @@
 import {type ReactNode, useEffect, useId, useState} from "react";
 import {CheckIcon, CopyIcon, XIcon} from "lucide-react";
+import {IconButton} from "@/components/icon-button";
 import {Truncate} from "@/components/truncate";
 import {
   AlertDialog,
@@ -181,28 +182,22 @@ function ChoiceRow(props: {
           {tildePath(choice.path)}
         </Truncate>
       </button>
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        aria-label={`Copy ${choice.path}`}
-        title="Copy path"
+      <IconButton
+        label="Copy path"
         onClick={() =>
           void navigator.clipboard
             .writeText(choice.path)
             .then(() => notify(`Copied ${choice.path}`))
         }>
         <CopyIcon />
-      </Button>
+      </IconButton>
       {choice.type === "recent" && !current && (
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          aria-label={`Remove ${choice.path} from the recent files`}
-          title="Remove from recent files"
+        <IconButton
+          label="Remove from recent files"
           disabled={props.disabled}
           onClick={props.onForget}>
           <XIcon />
-        </Button>
+        </IconButton>
       )}
     </li>
   );

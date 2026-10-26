@@ -1,6 +1,7 @@
 import {type KeyboardEvent, useEffect, useMemo} from "react";
 import {cn} from "cn";
 import {LayoutGridIcon, PinIcon, XIcon} from "lucide-react";
+import {IconButton} from "@/components/icon-button";
 import {PageSection} from "@/components/page";
 import {Truncate} from "@/components/truncate";
 import {Button} from "@/components/ui/button";
@@ -310,14 +311,12 @@ function ReferencePicker(props: {reference: ThemeSummary | undefined}) {
         </ComboboxContent>
       </Combobox>
       {reference && (
-        <Button
+        <IconButton
           size="icon"
-          variant="ghost"
-          aria-label="Unpin reference"
-          title="Unpin"
+          label="Unpin reference"
           onClick={() => void send({type: "reference", theme: null})}>
           <XIcon />
-        </Button>
+        </IconButton>
       )}
     </div>
   );

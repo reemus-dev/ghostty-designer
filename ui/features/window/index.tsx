@@ -10,6 +10,7 @@ import {
 import {PageSection} from "@/components/page";
 import {Switch} from "@/components/ui/switch";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import type {OptionMeta} from "@/core/types";
 import {PLATFORM_LABEL, windowCards} from "@/lib/customise";
 import {send, sendLive, useEffective, useSnapshot} from "@/lib/store";
@@ -199,10 +200,10 @@ const BLINK = [
     value: "default",
     write: "",
     label: "Default",
-    title: "Blinks, unless a program asks it to stop",
+    tip: "Blinks, unless a program asks it to stop",
   },
-  {value: "true", write: "true", label: "True", title: "Always blinks"},
-  {value: "false", write: "false", label: "False", title: "Never blinks"},
+  {value: "true", write: "true", label: "True", tip: "Always blinks"},
+  {value: "false", write: "false", label: "False", tip: "Never blinks"},
 ];
 
 function BlinkOption(props: {option: OptionMeta}) {
@@ -221,12 +222,12 @@ function BlinkOption(props: {option: OptionMeta}) {
           }
         }}>
         {BLINK.map((choice) => (
-          <ToggleGroupItem
-            key={choice.value}
-            value={choice.value}
-            title={choice.title}>
-            {choice.label}
-          </ToggleGroupItem>
+          <Tooltip key={choice.value}>
+            <TooltipTrigger render={<ToggleGroupItem value={choice.value} />}>
+              {choice.label}
+            </TooltipTrigger>
+            <TooltipContent>{choice.tip}</TooltipContent>
+          </Tooltip>
         ))}
       </ToggleGroup>
     </OptionRow>
@@ -385,16 +386,24 @@ function CursorShapeToggle() {
         void send({type: "set", key: "cursor-style", values: [next[0]]})
       }>
       {CURSOR_SHAPES.map((shape) => (
-        <ToggleGroupItem
-          key={shape.value}
-          value={shape.value}
-          aria-label={shape.label}
-          title={shape.label}
-          className="w-9 px-0">
-          <svg aria-hidden viewBox="0 0 16 16" className="size-4 fill-current">
-            {shape.icon}
-          </svg>
-        </ToggleGroupItem>
+        <Tooltip key={shape.value}>
+          <TooltipTrigger
+            render={
+              <ToggleGroupItem
+                value={shape.value}
+                aria-label={shape.label}
+                className="w-9 px-0"
+              />
+            }>
+            <svg
+              aria-hidden
+              viewBox="0 0 16 16"
+              className="size-4 fill-current">
+              {shape.icon}
+            </svg>
+          </TooltipTrigger>
+          <TooltipContent>{shape.label}</TooltipContent>
+        </Tooltip>
       ))}
     </ToggleGroup>
   );

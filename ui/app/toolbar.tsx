@@ -13,6 +13,7 @@ import {
   XIcon,
 } from "lucide-react";
 import {Menu} from "@base-ui/react/menu";
+import {IconButton} from "@/components/icon-button";
 import {Truncate} from "@/components/truncate";
 import {
   AlertDialog,
@@ -322,14 +323,11 @@ function ChangeRow(props: {change: DraftChange}) {
         )}
       </span>
       <ChangeValues change={change} />
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        aria-label={`Undo change to ${change.label}`}
-        title={`Undo change to ${change.label}`}
+      <IconButton
+        label={`Undo change to ${change.label}`}
         onClick={() => void send(undoChange(change))}>
         <XIcon />
-      </Button>
+      </IconButton>
     </div>
   );
 }

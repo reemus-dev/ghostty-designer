@@ -1,35 +1,34 @@
-import type {ReactNode} from "react";
+import type {ComponentProps} from "react";
 import {Button} from "@/components/ui/button";
+import {Kbd} from "@/components/ui/kbd";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 
 /** An icon-only button: its label doubles as the tooltip. */
-export function IconButton(props: {
-  label: string;
-  disabled?: boolean;
-  tabIndex?: number;
-  className?: string;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  const {label, onClick, children, ...rest} = props;
+export function IconButton(
+  props: ComponentProps<typeof Button> & {label: string; shortcut?: string},
+) {
+  const {label, shortcut, onClick, children, ...rest} = props;
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           <Button
-            {...rest}
-            aria-label={label}
             size="icon-xs"
             variant="ghost"
+            {...rest}
+            aria-label={label}
             onClick={(event) => {
               event.stopPropagation();
-              onClick();
+              onClick?.(event);
             }}
           />
         }>
         {children}
       </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
+      <TooltipContent>
+        {label}
+        {shortcut !== undefined && <Kbd>{shortcut}</Kbd>}
+      </TooltipContent>
     </Tooltip>
   );
 }

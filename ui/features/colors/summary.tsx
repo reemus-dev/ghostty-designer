@@ -2,6 +2,7 @@ import type {ReactNode} from "react";
 import {Truncate} from "@/components/truncate";
 import {Button} from "@/components/ui/button";
 import {Kbd} from "@/components/ui/kbd";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {THEME_COLOR_KEYS} from "@/core/theme";
 import type {ReadabilityWarning, SessionState} from "@/core/types";
 import {colorValues} from "@/core/values";
@@ -40,16 +41,17 @@ export function ColorSummary(props: {state: SessionState}) {
           <>
             {" "}
             · closest theme:{" "}
-            <button
-              type="button"
-              title="Try this theme"
-              className="rounded-sm underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
-              onClick={() => {
-                revealTheme(colorMatch.theme)?.focus({preventScroll: true});
-                pickTheme(colorMatch.theme, 0);
-              }}>
-              {colorMatch.theme}
-            </button>
+            <Tooltip>
+              <TooltipTrigger
+                className="rounded-sm underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
+                onClick={() => {
+                  revealTheme(colorMatch.theme)?.focus({preventScroll: true});
+                  pickTheme(colorMatch.theme, 0);
+                }}>
+                {colorMatch.theme}
+              </TooltipTrigger>
+              <TooltipContent>Try this theme</TooltipContent>
+            </Tooltip>
           </>
         )}
       </>

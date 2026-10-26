@@ -8,6 +8,7 @@ import {
   SunIcon,
   TriangleAlertIcon,
 } from "lucide-react";
+import {IconButton} from "@/components/icon-button";
 import {LiveDot} from "@/components/live-dot";
 import {PaletteDots} from "@/components/palette-dots";
 import {HexChip, Swatch} from "@/components/swatch";
@@ -116,7 +117,6 @@ function Colors(props: {colors: ThemeColors; warnings: ReadabilityWarning[]}) {
             key={i}
             color={color}
             warning={slots.has(i)}
-            title={`${describeSlot(`palette:${i}`).title} ${color}`}
             className="h-[22px]"
           />
         ))}
@@ -199,19 +199,18 @@ export function ThemeDetail(props: ThemeDetailProps) {
           </h2>
           {showing && <Showing />}
         </div>
-        <Button
+        <IconButton
           size="icon-sm"
-          variant="ghost"
           aria-pressed={favorite}
-          aria-label={favoriteLabel}
-          title={`${favoriteLabel} (F)`}
+          label={favoriteLabel}
+          shortcut="F"
           onClick={() =>
             void send({type: "favorite", theme: theme.name, on: !favorite})
           }>
           <StarIcon
             className={cn("size-4", favorite && "fill-current text-star!")}
           />
-        </Button>
+        </IconButton>
       </header>
 
       <Colors colors={theme.colors} warnings={theme.warnings} />
