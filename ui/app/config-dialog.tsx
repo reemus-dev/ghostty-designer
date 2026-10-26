@@ -30,6 +30,7 @@ import {errorText} from "@/core/errors";
 import {configChoices, forgetConfig} from "@/lib/host";
 import {
   chooseConfig,
+  clearSwitchError,
   confirmSwitch,
   notify,
   setConfigOpen,
@@ -72,6 +73,10 @@ function ConfigPicker() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [picked, setPicked] = useState<Target | null>(null);
   const error = switchError ?? loadError;
+  const select = (next: Target) => {
+    setPicked(next);
+    clearSwitchError();
+  };
 
   useEffect(() => {
     let current = true;
@@ -134,7 +139,7 @@ function ConfigPicker() {
       current={isEdited(choice)}
       selected={target?.type !== "file" && choice.path === target?.path}
       disabled={switching}
-      onSelect={() => setPicked(choice)}
+      onSelect={() => select(choice)}
       onForget={() => forget(choice.path)}
     />
   );
@@ -156,23 +161,19 @@ function ConfigPicker() {
         </ul>
         <ChoiceSection title="Other apps">{ofType("app")}</ChoiceSection>
         <ChoiceSection title="Recent">{ofType("recent")}</ChoiceSection>
-        {target !== undefined && target.type !== "ghostty" && (
+        {(target?.type === "app" || target?.type === "recent") && (
           <GhosttyBase
+            className="border-t pt-4"
             choice={target}
             disabled={switching}
             onChange={(ghosttyBase) => setPicked({...target, ghosttyBase})}
           />
         )}
         <OtherFile
+          rows={rows}
           selected={target?.type === "file"}
           disabled={switching}
-          onSelect={(path) =>
-            setPicked({
-              type: "file",
-              path,
-              ghosttyBase: picked?.type === "file" ? picked.ghosttyBase : true,
-            })
-          }
+          onSelect={select}
           onSubmit={confirm}
         />
       </div>
@@ -292,10 +293,11 @@ function GhosttyBase(props: {
   choice: Exclude<Target, {type: "ghostty"}>;
   disabled: boolean;
   onChange: (ghosttyBase: boolean) => void;
+  className?: string;
 }) {
   const app = props.choice.type === "app" ? props.choice.app : "this app";
   return (
-    <label className="flex items-start gap-3 border-t pt-4 text-sm">
+    <label className={cn("flex items-start gap-3 text-sm", props.className)}>
       <Switch
         className="mt-0.5"
         checked={props.choice.ghosttyBase}
@@ -314,14 +316,26 @@ function GhosttyBase(props: {
   );
 }
 
-/** Any config file, by path. Typing or focusing the path selects it. */
+/**
+ * Any config file, by path. Typing or focusing the path selects it, with
+ * whether it has Ghostty's config as its base below: a listed file's choice,
+ * else on, as the host has it.
+ */
 function OtherFile(props: {
+  rows: ConfigChoice[];
   selected: boolean;
   disabled: boolean;
-  onSelect: (path: string) => void;
+  onSelect: (target: Extract<Target, {type: "file"}>) => void;
   onSubmit: () => void;
 }) {
   const [file, setFile] = useState("");
+  const [ghosttyBase, setGhosttyBase] = useState(true);
+  const path = file.trim();
+  // The host remembers a choice only for the files it lists.
+  const listedBase = (next: string) => {
+    const row = props.rows.find((choice) => choice.path === next);
+    return row && "ghosttyBase" in row ? row.ghosttyBase : true;
+  };
   return (
     <form
       className="flex flex-col gap-2.5 border-t pt-4"
@@ -342,13 +356,27 @@ function OtherFile(props: {
         value={file}
         disabled={props.disabled}
         onFocus={() => {
-          if (file.trim()) props.onSelect(file.trim());
+          if (path) props.onSelect({type: "file", path, ghosttyBase});
         }}
         onChange={(event) => {
+          const next = event.target.value.trim();
+          const base = next === path ? ghosttyBase : listedBase(next);
           setFile(event.target.value);
-          props.onSelect(event.target.value.trim());
+          setGhosttyBase(base);
+          props.onSelect({type: "file", path: next, ghosttyBase: base});
         }}
       />
+      {props.selected && path !== "" && (
+        <GhosttyBase
+          className="pt-1.5"
+          choice={{type: "file", path, ghosttyBase}}
+          disabled={props.disabled}
+          onChange={(next) => {
+            setGhosttyBase(next);
+            props.onSelect({type: "file", path, ghosttyBase: next});
+          }}
+        />
+      )}
     </form>
   );
 }

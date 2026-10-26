@@ -9,10 +9,27 @@ export const ALT = MAC ? "⌥" : "Alt+";
 export const ALT_KEY = MAC ? "⌥" : "Alt";
 export const SHIFT_MOD = MAC ? "⇧⌘" : "Ctrl+Shift+";
 
+/** Input types that take no typing, such as a slider's range input. */
+const UNTYPED_INPUTS = new Set([
+  "button",
+  "checkbox",
+  "color",
+  "file",
+  "hidden",
+  "image",
+  "radio",
+  "range",
+  "reset",
+  "submit",
+]);
+
+/** Whether the target takes typed keys, so the panel's own keys leave them. */
 export const isEditable = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.isContentEditable ||
-    ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    (target instanceof HTMLInputElement && !UNTYPED_INPUTS.has(target.type)));
 
 export type Direction = "up" | "down" | "left" | "right";
 

@@ -5,24 +5,27 @@ export const DWELL_MS = 250;
 /** A theme name, or null for the user's own colours (the saved theme setting). */
 export type ThemeChoice = string | null;
 
-const pending: {
-  timer?: ReturnType<typeof setTimeout>;
-  unsubscribe?: () => void;
-} = {};
+/** The lists that pick with a dwell. Each list's picks wait on their own. */
+type PickList = "theme" | "font";
+
+const timers = new Map<PickList, ReturnType<typeof setTimeout>>();
+let unsubscribe: (() => void) | undefined;
 
 /**
- * Runs a pick from a list once `dwell` ms pass without another pick, so fast
- * scrolling through the list does not reload on every step.
+ * Runs a pick from a list once `dwell` ms pass without another pick from that
+ * list, so fast scrolling through the list does not reload on every step.
  */
-export function schedulePick(pick: () => void, dwell: number) {
-  // Undo, redo and discard win over a pick still waiting out its dwell.
-  pending.unsubscribe ??= onHistoryMove(cancelPick);
-  clearTimeout(pending.timer);
-  pending.timer = setTimeout(pick, dwell);
+export function schedulePick(list: PickList, pick: () => void, dwell: number) {
+  // Undo, redo and discard win over picks still waiting out their dwell.
+  unsubscribe ??= onHistoryMove(() => {
+    for (const timer of timers.values()) clearTimeout(timer);
+  });
+  cancelPick(list);
+  timers.set(list, setTimeout(pick, dwell));
 }
 
-/** Drops the pick still waiting out its dwell. */
-export const cancelPick = () => clearTimeout(pending.timer);
+/** Drops the list's pick still waiting out its dwell. */
+export const cancelPick = (list: PickList) => clearTimeout(timers.get(list));
 
 /**
  * Picks a theme: Ghostty shows it as a draft change, and picks one after
@@ -30,5 +33,9 @@ export const cancelPick = () => clearTimeout(pending.timer);
  * at once.
  */
 export function pickTheme(theme: ThemeChoice, dwell = DWELL_MS) {
-  schedulePick(() => void send({type: "theme", theme, pick: true}), dwell);
+  schedulePick(
+    "theme",
+    () => void send({type: "theme", theme, pick: true}),
+    dwell,
+  );
 }

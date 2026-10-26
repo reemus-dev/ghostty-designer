@@ -89,7 +89,7 @@ export function FontSection() {
 
   const move = (name: string, dwell: boolean) => {
     if (name === (ghosttyChain()[0] ?? "")) {
-      cancelPick();
+      cancelPick("font");
       setCursor(null);
       return;
     }
@@ -103,7 +103,7 @@ export function FontSection() {
         pick: true,
       }).then(() => setCursor((at) => (at === name ? null : at)));
     };
-    schedulePick(pick, dwell ? DWELL_MS : 0);
+    schedulePick("font", pick, dwell ? DWELL_MS : 0);
   };
 
   return (

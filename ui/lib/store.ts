@@ -361,6 +361,9 @@ export const setConfigOpen = (configOpen: boolean) => {
   update(configOpen ? {configOpen, switchError: null} : {configOpen});
 };
 
+/** Drops a refused switch's error once another config is selected. */
+export const clearSwitchError = () => update({switchError: null});
+
 /** Switches to `target`, after asking when there are unsaved changes. */
 export function chooseConfig(target: ConfigTarget) {
   if (current.store.switching) return;

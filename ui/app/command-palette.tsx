@@ -1,4 +1,4 @@
-import {type ReactNode, useMemo, useRef} from "react";
+import {type ReactNode, useRef, useState} from "react";
 import {MoonIcon, SearchIcon, SunIcon} from "lucide-react";
 import {Autocomplete} from "@base-ui/react/autocomplete";
 import {Dialog} from "@base-ui/react/dialog";
@@ -38,8 +38,11 @@ import {
 type Item = {
   value: string;
   label: string;
-  /** Returns the element to focus once the palette closes. */
-  run: () => HTMLElement | null | void;
+  /**
+   * Returns the element to focus once the palette closes, or false when it
+   * opens a dialog that sets its own focus.
+   */
+  run: () => HTMLElement | false | null | void;
   icon?: ReactNode;
   hint?: ReactNode;
 };
@@ -57,13 +60,19 @@ function actionItems(state: SessionState, onTop: OnTop): Item[] {
       value: "action:save",
       label: "Save to config…",
       hint: <Kbd>{MOD}S</Kbd>,
-      run: () => setSaveOpen(true),
+      run: () => {
+        setSaveOpen(true);
+        return false;
+      },
     });
   }
   actions.push({
     value: "action:save-theme",
     label: "Save as theme…",
-    run: () => openSaveTheme("shown"),
+    run: () => {
+      openSaveTheme("shown");
+      return false;
+    },
   });
   if (state.history.undo.length > 0) {
     actions.push({
@@ -109,7 +118,10 @@ function actionItems(state: SessionState, onTop: OnTop): Item[] {
     {
       value: "action:switch-config",
       label: "Switch config…",
-      run: () => setConfigOpen(true),
+      run: () => {
+        setConfigOpen(true);
+        return false;
+      },
     },
   );
   if (onTop !== "unsupported") {
@@ -240,12 +252,11 @@ function buildGroups(): Group[] {
 /** ⌘K: views, sections, settings, themes, fonts and actions in one list. */
 export function CommandPalette() {
   const open = useStore((store) => store.paletteOpen);
-  const groups = useMemo(() => (open ? buildGroups() : []), [open]);
   /**
    * The chosen item's focus target, or null when the palette closed without a
    * choice.
    */
-  const chosen = useRef<{focus: HTMLElement | null} | null>(null);
+  const chosen = useRef<{focus: HTMLElement | false | null} | null>(null);
 
   return (
     <Dialog.Root open={open} onOpenChange={setPaletteOpen}>
@@ -260,67 +271,75 @@ export function CommandPalette() {
               chosen.current = null;
               return target ?? true;
             }}>
-            <Autocomplete.Root
-              open
-              inline
-              keepHighlight
-              items={groups}
-              limit={LIMIT}
-              autoHighlight="always">
-              <label className="flex h-12 shrink-0 items-center gap-2.5 border-b px-4">
-                <SearchIcon
-                  aria-hidden
-                  className="size-4 text-muted-foreground"
-                />
-                <Autocomplete.Input
-                  aria-label="Search settings, themes, fonts and actions"
-                  placeholder="Search settings, themes, fonts, actions…"
-                  className="h-full min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"
-                />
-                <Kbd>esc</Kbd>
-              </label>
-              <div className="min-h-0 flex-1 [scroll-padding-block:6px] overflow-y-auto overscroll-contain p-1.5">
-                <Autocomplete.Empty>
-                  <p className="px-3 py-6 text-sm text-muted-foreground">
-                    Nothing matches. Try a setting such as “padding”, a theme
-                    such as “gruvbox”, or a font.
-                  </p>
-                </Autocomplete.Empty>
-                <Autocomplete.List>
-                  {(group: Group) => (
-                    <Autocomplete.Group
-                      key={group.value}
-                      items={group.items}
-                      className="not-last:mb-1.5">
-                      <Autocomplete.GroupLabel className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-muted-foreground">
-                        {group.value}
-                      </Autocomplete.GroupLabel>
-                      <Autocomplete.Collection>
-                        {(item: Item) => (
-                          <Autocomplete.Item
-                            key={item.value}
-                            value={item}
-                            className="flex h-8 cursor-default items-center gap-2.5 rounded-lg px-2.5 text-base text-muted-foreground outline-none select-none data-highlighted:bg-accent data-highlighted:text-foreground"
-                            onClick={() => {
-                              chosen.current = {focus: item.run() ?? null};
-                              setPaletteOpen(false);
-                            }}>
-                            {item.icon}
-                            <Truncate className="min-w-0 flex-1">
-                              {item.label}
-                            </Truncate>
-                            {item.hint}
-                          </Autocomplete.Item>
-                        )}
-                      </Autocomplete.Collection>
-                    </Autocomplete.Group>
-                  )}
-                </Autocomplete.List>
-              </div>
-            </Autocomplete.Root>
+            <PaletteSearch
+              onChoose={(item) => {
+                chosen.current = {focus: item.run() ?? null};
+                setPaletteOpen(false);
+              }}
+            />
           </Dialog.Popup>
         </Dialog.Viewport>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+}
+
+/**
+ * The search and its list. It mounts with the popup, so the items it builds
+ * last through the closing animation.
+ */
+function PaletteSearch(props: {onChoose: (item: Item) => void}) {
+  const [groups] = useState(buildGroups);
+  return (
+    <Autocomplete.Root
+      open
+      inline
+      keepHighlight
+      items={groups}
+      limit={LIMIT}
+      autoHighlight="always">
+      <label className="flex h-12 shrink-0 items-center gap-2.5 border-b px-4">
+        <SearchIcon aria-hidden className="size-4 text-muted-foreground" />
+        <Autocomplete.Input
+          aria-label="Search settings, themes, fonts and actions"
+          placeholder="Search settings, themes, fonts, actions…"
+          className="h-full min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"
+        />
+        <Kbd>esc</Kbd>
+      </label>
+      <div className="min-h-0 flex-1 [scroll-padding-block:6px] overflow-y-auto overscroll-contain p-1.5">
+        <Autocomplete.Empty>
+          <p className="px-3 py-6 text-sm text-muted-foreground">
+            Nothing matches. Try a setting such as “padding”, a theme such as
+            “gruvbox”, or a font.
+          </p>
+        </Autocomplete.Empty>
+        <Autocomplete.List>
+          {(group: Group) => (
+            <Autocomplete.Group
+              key={group.value}
+              items={group.items}
+              className="not-last:mb-1.5">
+              <Autocomplete.GroupLabel className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-muted-foreground">
+                {group.value}
+              </Autocomplete.GroupLabel>
+              <Autocomplete.Collection>
+                {(item: Item) => (
+                  <Autocomplete.Item
+                    key={item.value}
+                    value={item}
+                    className="flex h-8 cursor-default items-center gap-2.5 rounded-lg px-2.5 text-base text-muted-foreground outline-none select-none data-highlighted:bg-accent data-highlighted:text-foreground"
+                    onClick={() => props.onChoose(item)}>
+                    {item.icon}
+                    <Truncate className="min-w-0 flex-1">{item.label}</Truncate>
+                    {item.hint}
+                  </Autocomplete.Item>
+                )}
+              </Autocomplete.Collection>
+            </Autocomplete.Group>
+          )}
+        </Autocomplete.List>
+      </div>
+    </Autocomplete.Root>
   );
 }
