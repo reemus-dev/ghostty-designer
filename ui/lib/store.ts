@@ -60,8 +60,8 @@ type Store = {
   /** A config switch runs, and the page reloads once it ends. */
   switching: boolean;
   switchError: string | null;
-  /** The open "Save as theme" dialog: what it saves, and the name it suggests. */
-  saveTheme: {source: SaveThemeSource; name: string} | null;
+  /** The open "Save as theme" dialog and what it saves. */
+  saveTheme: {source: SaveThemeSource} | null;
   /** The colour in Customise's editor. */
   color: SlotId;
   /** The model the option colour popovers share. */
@@ -414,13 +414,7 @@ function takeRequest() {
 
 /** Opens the "Save as theme" dialog for `source`. */
 export const openSaveTheme = (source: SaveThemeSource) =>
-  update({
-    saveTheme: {
-      source,
-      name:
-        typeof source === "object" ? `${source.theme} (my copy)` : "My colours",
-    },
-  });
+  update({saveTheme: {source}});
 
 export const closeSaveTheme = () => update({saveTheme: null});
 

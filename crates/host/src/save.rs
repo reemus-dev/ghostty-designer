@@ -1,6 +1,6 @@
 //! Saving into the user's config files: the transactional write with its
 //! "original" snapshot and `previous/` backup, restoring the original, and
-//! writing a user theme.
+//! writing, renaming and deleting user themes.
 //!
 //! Everything here is sync file work, so the host runs it on a blocking
 //! thread.
@@ -8,7 +8,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fs::{self, File, Permissions};
 use std::io::{self, Write};
-use std::os::unix::fs::PermissionsExt;
+use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::path::{Component, Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -89,11 +89,9 @@ pub fn has_original(state_dir: &Path, scope: &[PathBuf]) -> bool {
         .is_ok_and(|entries| entries.iter().any(|entry| scope.contains(&entry.path)))
 }
 
-/// Writes a new user theme, or gives None when a file has the name. It never
-/// replaces a file, and takes only a plain file name, so the file stays inside
-/// the folder. The theme appears whole: it is written to a hidden temp file,
-/// which the theme list skips, then renamed to its name.
-pub fn write_theme(themes_dir: &Path, name: &str, text: &str) -> Result<Option<PathBuf>, Error> {
+/// The file of the user theme `name`. Only a plain file name passes, so the
+/// file stays inside the folder.
+fn theme_file(themes_dir: &Path, name: &str) -> Result<PathBuf, Error> {
     let components: Vec<Component<'_>> = Path::new(name).components().collect();
     if name.contains('\0')
         || name.starts_with('.')
@@ -101,7 +99,14 @@ pub fn write_theme(themes_dir: &Path, name: &str, text: &str) -> Result<Option<P
     {
         return Err(Error::Input(format!("Invalid theme name: {name}")));
     }
-    let file = themes_dir.join(name);
+    Ok(themes_dir.join(name))
+}
+
+/// Writes a new user theme, or gives None when a file has the name. It never
+/// replaces a file. The theme appears whole: it is written to a hidden temp
+/// file, which the theme list skips, then renamed to its name.
+pub fn write_theme(themes_dir: &Path, name: &str, text: &str) -> Result<Option<PathBuf>, Error> {
+    let file = theme_file(themes_dir, name)?;
     let written = fs::create_dir_all(themes_dir).and_then(|()| {
         let mut temp = tempfile::Builder::new()
             .permissions(Permissions::from_mode(0o666))
@@ -117,6 +122,47 @@ pub fn write_theme(themes_dir: &Path, name: &str, text: &str) -> Result<Option<P
             "Could not write {}: {error}",
             file.display()
         ))),
+    }
+}
+
+/// Renames a user theme, or gives None when a file has the new name. It never
+/// replaces a file: the new name links to the file before the old one goes.
+pub fn rename_theme(themes_dir: &Path, name: &str, to: &str) -> Result<Option<PathBuf>, Error> {
+    let from = theme_file(themes_dir, name)?;
+    let file = theme_file(themes_dir, to)?;
+    let renamed = match fs::hard_link(&from, &file) {
+        Ok(()) => fs::remove_file(&from),
+        // A file system that ignores case finds the theme itself under a name
+        // that differs only in case.
+        Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {
+            if !same_file(&from, &file) {
+                return Ok(None);
+            }
+            fs::rename(&from, &file)
+        }
+        Err(error) => Err(error),
+    };
+    renamed
+        .map(|()| Some(file))
+        .map_err(|error| Error::Internal(format!("Could not rename {}: {error}", from.display())))
+}
+
+fn same_file(a: &Path, b: &Path) -> bool {
+    match (fs::metadata(a), fs::metadata(b)) {
+        (Ok(a), Ok(b)) => a.dev() == b.dev() && a.ino() == b.ino(),
+        _ => false,
+    }
+}
+
+/// Deletes a user theme. A theme already gone counts as deleted.
+pub fn delete_theme(themes_dir: &Path, name: &str) -> Result<(), Error> {
+    let file = theme_file(themes_dir, name)?;
+    match fs::remove_file(&file) {
+        Err(error) if error.kind() != io::ErrorKind::NotFound => Err(Error::Internal(format!(
+            "Could not delete {}: {error}",
+            file.display()
+        ))),
+        _ => Ok(()),
     }
 }
 
@@ -830,5 +876,38 @@ mod tests {
         assert_eq!(read(&other.join("colors")), "b = 1\n");
         restore_original(&c.state_dir, std::slice::from_ref(&colors)).unwrap();
         assert_eq!(read(&colors), "a = 1\n");
+    }
+
+    #[test]
+    fn renames_a_theme_without_replacing_another() {
+        let c = setup(&[
+            ("Mine", "background = #000000\n"),
+            ("Nord", "background = #2e3440\n"),
+        ]);
+        let names = || {
+            let mut names: Vec<String> = fs::read_dir(&c.dir)
+                .unwrap()
+                .map(|entry| entry.unwrap().file_name().into_string().unwrap())
+                .filter(|name| name != "config")
+                .collect();
+            names.sort();
+            names
+        };
+
+        assert_eq!(rename_theme(&c.dir, "Mine", "Nord").unwrap(), None);
+        assert_eq!(read(&c.dir.join("Nord")), "background = #2e3440\n");
+        assert!(matches!(
+            rename_theme(&c.dir, "Mine", "../Mine"),
+            Err(Error::Input(_))
+        ));
+
+        rename_theme(&c.dir, "Mine", "Ours").unwrap();
+        assert_eq!(names(), ["Nord", "Ours"]);
+        assert_eq!(read(&c.dir.join("Ours")), "background = #000000\n");
+
+        // Takes the hard link path on a case-sensitive file system, the rename
+        // path on one that ignores case, as macOS does by default.
+        rename_theme(&c.dir, "Ours", "ours").unwrap();
+        assert_eq!(names(), ["Nord", "ours"]);
     }
 }

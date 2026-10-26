@@ -130,6 +130,20 @@ export const formatThemePair = (pair: {light: string; dark: string}) =>
   `light:${pair.light},dark:${pair.dark}`;
 
 /**
+ * `setting` with the theme `from` renamed to `to`, or null when `to` is null
+ * and the setting names `from`.
+ */
+export function replaceTheme(setting: string, from: string, to: string | null) {
+  const pair = resolveThemePair(setting);
+  if (!pair || (pair.light !== from && pair.dark !== from)) return setting;
+  if (to === null) return null;
+  const swap = (name: string) => (name === from ? to : name);
+  return /[,:=]/.test(setting)
+    ? formatThemePair({light: swap(pair.light), dark: swap(pair.dark)})
+    : to;
+}
+
+/**
  * Splits a `theme` setting into its light and dark names. Like Ghostty, any
  * comma, colon or equals sign makes it a pair, which must read `light:A,dark:B`
  * in either order (src/config/Config.zig:9785-9797); otherwise one name serves

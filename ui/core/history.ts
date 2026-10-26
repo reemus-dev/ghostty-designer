@@ -121,6 +121,21 @@ export class History {
     return step.after;
   }
 
+  /** Maps the drafts of every step, and drops steps left changing nothing. */
+  mapDrafts(map: (draft: Draft) => Draft) {
+    const mapped = (steps: Step[]) =>
+      steps
+        .map((step) => ({
+          ...step,
+          before: map(step.before),
+          after: map(step.after),
+        }))
+        .filter((step) => !sameDraft(step.before, step.after));
+    this.undoSteps = mapped(this.undoSteps);
+    this.redoSteps = mapped(this.redoSteps);
+    this.version++;
+  }
+
   /** Forgets every step. */
   clear() {
     this.undoSteps = [];

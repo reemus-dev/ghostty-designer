@@ -2,6 +2,7 @@
 // half of a light/dark pair it shows, and its live preview in Ghostty.
 import type {Appearance} from "@/core/bindings";
 import {checkTheme, editDraft, isDraftIntent} from "./edits";
+import {inputError} from "./errors";
 import {
   EMPTY_DRAFT,
   History,
@@ -15,10 +16,13 @@ import {
   readPersisted,
   withFavorite,
   withRecentTheme,
+  withThemeMoved,
 } from "./persisted";
 import {PreviewCalls} from "./preview";
-import {draftKeys, previewText, pruned} from "./resolve";
+import {draftKeys, previewText, pruned, savedThemeNames} from "./resolve";
 import type {ConfigRead, SavedConfig} from "./saved";
+import {replaceTheme} from "./theme";
+import {checkThemeName} from "./theme-library";
 import type {ApplyStatus, Draft, Intent} from "./types";
 
 /** What a window reload keeps of the design. */
@@ -60,7 +64,10 @@ export class Design {
 
   constructor(
     private readonly host: Host,
-    private readonly config: Pick<SavedConfig, "sources" | "include">,
+    private readonly config: Pick<
+      SavedConfig,
+      "sources" | "include" | "readThemes"
+    >,
     persisted: string | null,
     onStatus: () => void,
   ) {
@@ -181,6 +188,24 @@ export class Design {
         await this.persist({...this.persisted, reference: intent.theme});
         break;
       }
+      case "rename-theme": {
+        const {theme, to} = intent;
+        this.checkOwnTheme(theme);
+        // The theme does not block its own name, so a rename may change case.
+        const themes = library.themes.filter((item) => item.name !== theme);
+        checkThemeName({...library, themes}, to);
+        if (!(await this.host.renameTheme(theme, to))) {
+          throw inputError(`A theme named ${to} already exists`);
+        }
+        await this.followTheme(theme, to);
+        break;
+      }
+      case "delete-theme": {
+        this.checkOwnTheme(intent.theme);
+        await this.host.deleteTheme(intent.theme);
+        await this.followTheme(intent.theme, null);
+        break;
+      }
     }
   }
 
@@ -268,6 +293,36 @@ export class Design {
     this.host
       .reportDraft(draftKeys(draft).length, JSON.stringify(stash))
       .catch(console.error);
+  }
+
+  /** Refuses a theme that is not the user's, or one the saved config names. */
+  private checkOwnTheme(theme: string) {
+    const {sources} = this.config;
+    const found = sources.library.themes.find((item) => item.name === theme);
+    if (found?.source !== "user") {
+      throw inputError(`${theme} is not one of your themes`);
+    }
+    if (savedThemeNames(sources).includes(theme)) {
+      throw inputError(`Your saved config uses ${theme}`);
+    }
+  }
+
+  /**
+   * Follows a user theme renamed to `to`, or deleted when `to` is null: the
+   * draft and its history, and the theme's favourite, recent use and pin. The
+   * draft follows before the themes read again, so no preview names a theme
+   * that is gone.
+   */
+  private async followTheme(theme: string, to: string | null) {
+    const follow = (draft: Draft) => {
+      const setting =
+        draft.theme === null ? null : replaceTheme(draft.theme, theme, to);
+      return setting === draft.theme ? draft : {...draft, theme: setting};
+    };
+    this.#draft = follow(this.draft);
+    this.history.mapDrafts(follow);
+    await this.persist(withThemeMoved(this.persisted, theme, to));
+    await this.config.readThemes();
   }
 
   private installed() {

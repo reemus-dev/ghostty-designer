@@ -40,6 +40,25 @@ export function withFavorite(persisted: Persisted, theme: string, on: boolean) {
   return {...persisted, favorites: on ? [...others, theme] : others};
 }
 
+/**
+ * Moves the favourite, recent use and pin of `theme` to `to`, or drops them
+ * when `to` is null.
+ */
+export function withThemeMoved(
+  persisted: Persisted,
+  theme: string,
+  to: string | null,
+) {
+  const move = (names: string[]) =>
+    names.flatMap((name) => (name === theme ? (to ?? []) : [name]));
+  return {
+    ...persisted,
+    favorites: move(persisted.favorites),
+    recentThemes: move(persisted.recentThemes),
+    reference: persisted.reference === theme ? to : persisted.reference,
+  };
+}
+
 /** `theme` first among the recent themes. */
 export const withRecentTheme = (persisted: Persisted, theme: string) => ({
   ...persisted,

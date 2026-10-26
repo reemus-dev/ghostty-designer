@@ -244,6 +244,8 @@ pub enum Command {
     SystemAppearance,
     LoadThemes,
     WriteTheme { name: String, text: String },
+    RenameTheme { name: String, to: String },
+    DeleteTheme { name: String },
     ResetFontSize,
     ApplySave { edits: Vec<SaveEdit> },
     RestoreOriginal,
@@ -262,6 +264,9 @@ pub enum CommandResult {
     LoadThemes(Vec<ThemeFile>),
     /// None when a file has the name.
     WriteTheme(Option<SavedTheme>),
+    /// None when a file has the new name.
+    RenameTheme(Option<SavedTheme>),
+    DeleteTheme,
     /// Whether every terminal accepted the reset.
     ResetFontSize(bool),
     ApplySave(SavedFiles),

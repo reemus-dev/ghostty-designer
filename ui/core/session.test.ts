@@ -101,6 +101,8 @@ function fakeHost(options: Options) {
       themes.push({name, source: "user", text});
       return Promise.resolve({path: `/themes/${name}`});
     },
+    renameTheme: () => Promise.resolve(null),
+    deleteTheme: () => Promise.resolve(),
     previewApply(_id, text) {
       calls.previews.push(text);
       return Promise.resolve();

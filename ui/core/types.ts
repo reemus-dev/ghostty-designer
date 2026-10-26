@@ -166,6 +166,11 @@ export type SessionState = {
    * base, and picking the theme again shows all of it.
    */
   themeHidden: "all" | "some" | null;
+  /**
+   * The themes the saved config names. Renaming or deleting one would leave
+   * Ghostty a theme it cannot find.
+   */
+  savedThemes: string[];
   favorites: string[];
   /** Themes a later change or a save kept, most recent first. */
   recentThemes: string[];
@@ -257,6 +262,16 @@ export type Intent =
   | {type: "live-preview"; on: boolean}
   | {type: "install-preview"}
   | {type: "favorite"; theme: string; on: boolean}
+  /**
+   * Renames a user theme the saved config does not name. The draft, its
+   * history, and the theme's favourite, recent use and pin follow it.
+   */
+  | {type: "rename-theme"; theme: string; to: string}
+  /**
+   * Deletes a user theme the saved config does not name. The draft and its
+   * history drop it, with its favourite, recent use and pin.
+   */
+  | {type: "delete-theme"; theme: string}
   /** Pins a theme to line up under the user's own colours, or unpins with null. */
   | {type: "reference"; theme: string | null}
   /** Scans the installed fonts again. A "fonts" message follows. */

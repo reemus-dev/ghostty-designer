@@ -30,6 +30,9 @@ export type Host = {
   loadThemes(): Promise<ThemeFile[]>;
   /** Creates a user theme, or resolves null when the name is taken. */
   writeTheme(name: string, text: string): Promise<SavedTheme | null>;
+  /** Renames a user theme, or resolves null when the new name is taken. */
+  renameTheme(name: string, to: string): Promise<SavedTheme | null>;
+  deleteTheme(name: string): Promise<void>;
   /** Shows the text in every instance. Its statuses carry `id`. */
   previewApply(id: string, text: string): Promise<void>;
   /** Clears the preview file. Its statuses carry `id`. */
@@ -90,6 +93,8 @@ export function createHost({connect, call, callOrdered}: HostTransport): Host {
     loadThemes: () => run({command: "load_themes"}),
     writeTheme: (name, text) =>
       run({command: "write_theme", args: {name, text}}),
+    renameTheme: (name, to) => run({command: "rename_theme", args: {name, to}}),
+    deleteTheme: (name) => run({command: "delete_theme", args: {name}}),
     previewApply: (id, text) =>
       callOrdered({command: "preview_apply", args: {id, text}}),
     previewRevert: (id) => callOrdered({command: "preview_revert", args: {id}}),

@@ -183,17 +183,17 @@ const STOPS: Stop[] = [
     popup: true,
   },
   {
-    id: "save-theme",
-    title: "Save as theme",
+    id: "duplicate-theme",
+    title: "Duplicate theme",
     from: "theme-chosen",
-    via: "Save as theme…",
+    via: "Duplicate",
     steps: [
-      ["click", '//button[.="Save as theme…"]'],
+      ["click", '//button[.="Duplicate"]'],
       ["wait", '[aria-label="Theme name"]'],
     ],
     narrowSteps: [
       DETAILS,
-      ["click", '//button[.="Save as theme…"]'],
+      ["click", '//button[.="Duplicate"]'],
       ["wait", '[aria-label="Theme name"]'],
     ],
     popup: true,

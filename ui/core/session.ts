@@ -11,6 +11,7 @@ import {
   draftTheme,
   provenance,
   savedTheme,
+  savedThemeNames,
 } from "./resolve";
 import {type SavedConfig, savedConfig, saveReviews} from "./saved";
 import {resolveThemePair, themeColors} from "./theme";
@@ -111,6 +112,7 @@ function sessionState(
     themeSetting: setting,
     themePair,
     themeHidden,
+    savedThemes: savedThemeNames(sources),
     canRestoreOriginal: config.canRestoreOriginal,
     instances,
     ...colors.shown(

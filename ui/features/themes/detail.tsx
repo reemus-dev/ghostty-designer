@@ -1,4 +1,4 @@
-import {type ReactNode, useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 import {cn} from "cn";
 import {
   MoonIcon,
@@ -29,13 +29,13 @@ import {siblingOf} from "@/core/theme-library";
 import type {
   ColorMatch,
   ReadabilityWarning,
-  SaveThemeSource,
   ThemeColors,
   ThemeSummary,
 } from "@/core/types";
 import {describeSlot} from "@/lib/slots";
 import {notify, openSaveTheme, send, useSnapshot} from "@/lib/store";
 import {NOT_SHOWING_TEXT} from "@/lib/views";
+import {ThemeActions} from "./theme-actions";
 
 const listWords = (words: string[]) =>
   words.length < 2
@@ -159,25 +159,6 @@ function PinButton(props: {theme: string}) {
   );
 }
 
-function Action(props: {note?: string; children: ReactNode}) {
-  return (
-    <div className="flex flex-col gap-2 [&>button]:w-full">
-      {props.children}
-      {props.note && (
-        <p className="text-sm text-muted-foreground">{props.note}</p>
-      )}
-    </div>
-  );
-}
-
-function SaveThemeButton(props: {source: SaveThemeSource}) {
-  return (
-    <Button variant="outline" onClick={() => openSaveTheme(props.source)}>
-      Save as theme…
-    </Button>
-  );
-}
-
 // ─── Panels ───
 
 type ThemeDetailProps = {
@@ -229,14 +210,7 @@ export function ThemeDetail(props: ThemeDetailProps) {
       <PinButton theme={theme.name} />
       <ReadabilityWarnings warnings={theme.warnings} />
 
-      <Action
-        note={
-          theme.source === "bundled"
-            ? "Makes an editable copy. Built\u2011in themes never change."
-            : undefined
-        }>
-        <SaveThemeButton source={{theme: theme.name}} />
-      </Action>
+      <ThemeActions theme={theme} />
 
       <hr className="border-border" />
       <PairBuilder key={theme.name} theme={theme} />
@@ -279,9 +253,14 @@ export function CurrentDetail(props: {
       <Colors colors={colors} warnings={warnings} />
       <ReadabilityWarnings warnings={warnings} />
 
-      <Action note="Saves these colours to My themes.">
-        <SaveThemeButton source="own" />
-      </Action>
+      <div className="flex flex-col gap-2">
+        <Button variant="outline" onClick={() => openSaveTheme("own")}>
+          Save as theme…
+        </Button>
+        <p className="text-sm text-muted-foreground">
+          Saves these colours to My themes.
+        </p>
+      </div>
     </>
   );
 }

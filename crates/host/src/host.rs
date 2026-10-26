@@ -288,6 +288,13 @@ impl Host {
             Command::WriteTheme { name, text } => {
                 CommandResult::WriteTheme(self.write_theme(name, text).await?)
             }
+            Command::RenameTheme { name, to } => {
+                CommandResult::RenameTheme(self.rename_theme(name, to).await?)
+            }
+            Command::DeleteTheme { name } => {
+                self.delete_theme(name).await?;
+                CommandResult::DeleteTheme
+            }
             Command::ResetFontSize => CommandResult::ResetFontSize(self.reset_font_size().await),
             Command::ApplySave { edits } => CommandResult::ApplySave(self.apply_save(edits).await?),
             Command::RestoreOriginal => {
@@ -408,6 +415,22 @@ impl Host {
         let dir = self.0.ghostty.user_themes_dir.clone();
         let path = self
             .write(move || save::write_theme(&dir, &name, &text))
+            .await?;
+        Ok(path.map(|path| SavedTheme {
+            path: path.display().to_string(),
+        }))
+    }
+
+    async fn delete_theme(&self, name: String) -> Result<(), Error> {
+        let dir = self.0.ghostty.user_themes_dir.clone();
+        self.write(move || save::delete_theme(&dir, &name)).await
+    }
+
+    /// Renames a user theme, or gives None when the new name is taken.
+    async fn rename_theme(&self, name: String, to: String) -> Result<Option<SavedTheme>, Error> {
+        let dir = self.0.ghostty.user_themes_dir.clone();
+        let path = self
+            .write(move || save::rename_theme(&dir, &name, &to))
             .await?;
         Ok(path.map(|path| SavedTheme {
             path: path.display().to_string(),

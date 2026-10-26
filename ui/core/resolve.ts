@@ -35,6 +35,13 @@ export type ResolvedColors = {values: Values; from: Record<string, Provenance>};
 
 export const savedTheme = ({saved}: Sources) => saved.theme?.[0] ?? null;
 
+/** The themes the saved config names, light and dark. */
+export function savedThemeNames(sources: Sources) {
+  const setting = savedTheme(sources);
+  const pair = setting === null ? null : resolveThemePair(setting);
+  return pair ? [...new Set([pair.light, pair.dark])] : [];
+}
+
 /** Both halves of a light/dark pair, whose keys a saved theme may set. */
 export function themePairValues(
   library: ThemeLibrary,

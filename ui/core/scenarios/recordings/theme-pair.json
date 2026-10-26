@@ -14,6 +14,7 @@
       "themeSetting": "GitHub Dark",
       "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "themeHidden": "all",
+      "savedThemes": ["GitHub Dark"],
       "canRestoreOriginal": false,
       "instances": 0,
       "colorMatch": {"theme":"GitHub Dark High Contrast","exact":false},
@@ -2319,6 +2320,7 @@
           "appearance": "dark",
           "changes": 0,
           "themeHidden": "some",
+          "savedThemes": ["GitHub Light Default","GitHub Dark Default"],
           "canRestoreOriginal": true,
           "colorMatch": {"theme":"GitHub Dark Default","exact":false},
           "saved": {
@@ -4027,6 +4029,7 @@
             "light:GitHub Light Default,dark:GitHub Dark Default"
           ],
           "changes": 0,
+          "savedThemes": ["Nord"],
           "saved": {
             "theme": ["Nord"],
             "background": ["#2e3440"],

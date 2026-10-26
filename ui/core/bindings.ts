@@ -9,7 +9,7 @@ export type Appearance = "light" | "dark";
 /**
  * The panel's commands that run concurrently, with their arguments.
  */
-export type Command = { "command": "load_config" } | { "command": "show_config" } | { "command": "validate_config", "args": { text: string, } } | { "command": "system_appearance" } | { "command": "load_themes" } | { "command": "write_theme", "args": { name: string, text: string, } } | { "command": "reset_font_size" } | { "command": "apply_save", "args": { edits: Array<SaveEdit>, } } | { "command": "restore_original" } | { "command": "write_state", "args": { text: string, } };
+export type Command = { "command": "load_config" } | { "command": "show_config" } | { "command": "validate_config", "args": { text: string, } } | { "command": "system_appearance" } | { "command": "load_themes" } | { "command": "write_theme", "args": { name: string, text: string, } } | { "command": "rename_theme", "args": { name: string, to: string, } } | { "command": "delete_theme", "args": { name: string, } } | { "command": "reset_font_size" } | { "command": "apply_save", "args": { edits: Array<SaveEdit>, } } | { "command": "restore_original" } | { "command": "write_state", "args": { text: string, } };
 
 /**
  * A command failure. `input` refuses a request the files or the arguments do
@@ -21,7 +21,7 @@ export type CommandError = { "kind": "input", "message": string } | { "kind": "i
 /**
  * What a `Command` returns, tagged with the command's name.
  */
-export type CommandResult = { "command": "load_config", "result": LoadedConfig } | { "command": "show_config", "result": string } | { "command": "validate_config", "result": string } | { "command": "system_appearance", "result": Appearance } | { "command": "load_themes", "result": Array<ThemeFile> } | { "command": "write_theme", "result": SavedTheme | null } | { "command": "reset_font_size", "result": boolean } | { "command": "apply_save", "result": SavedFiles } | { "command": "restore_original", "result": SavedFiles } | { "command": "write_state" };
+export type CommandResult = { "command": "load_config", "result": LoadedConfig } | { "command": "show_config", "result": string } | { "command": "validate_config", "result": string } | { "command": "system_appearance", "result": Appearance } | { "command": "load_themes", "result": Array<ThemeFile> } | { "command": "write_theme", "result": SavedTheme | null } | { "command": "rename_theme", "result": SavedTheme | null } | { "command": "delete_theme" } | { "command": "reset_font_size", "result": boolean } | { "command": "apply_save", "result": SavedFiles } | { "command": "restore_original", "result": SavedFiles } | { "command": "write_state" };
 
 /**
  * A config the designer can switch to.
