@@ -2,10 +2,10 @@ import {useMemo, useState} from "react";
 import {cn} from "cn";
 import {ArchiveRestoreIcon, FileCogIcon, ShieldCheckIcon} from "lucide-react";
 import {PaletteDots} from "@/components/palette-dots";
+import {Path} from "@/components/path";
 import {Button} from "@/components/ui/button";
 import {PREVIEW_INCLUDE_LINES} from "@/core/save";
 import {themeColors} from "@/core/theme";
-import {tildePath} from "@/lib/paths";
 import {send, setConfigOpen, useSnapshot} from "@/lib/store";
 import {appName} from "@/lib/views";
 
@@ -71,7 +71,7 @@ export function SetupCard() {
             </span>
             <span className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
               <span className="font-mono wrap-anywhere">
-                {tildePath(configPath)}
+                <Path path={configPath} />
               </span>
               <span className="flex items-center gap-2">
                 <PaletteDots

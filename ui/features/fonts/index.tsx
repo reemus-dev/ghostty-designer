@@ -5,6 +5,7 @@ import {IconButton} from "@/components/icon-button";
 import {LiveDot} from "@/components/live-dot";
 import {PageFilter, PageSection} from "@/components/page";
 import {Truncate} from "@/components/truncate";
+import {Button} from "@/components/ui/button";
 import {Kbd} from "@/components/ui/kbd";
 import type {FontFamily} from "@/core/bindings";
 import {whyNotShowing} from "@/core/preview";
@@ -50,7 +51,6 @@ const ghosttyChain = () =>
  * undo step.
  */
 export function FontSection() {
-  const app = useAppName();
   const fonts = useSnapshot((snapshot) => snapshot.fonts);
   const chain = useEffective("font-family") ?? EMPTY;
   const savedFont = useSnapshot(
@@ -168,15 +168,7 @@ export function FontSection() {
               </IconButton>
             </div>
           </div>
-          <p className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1 text-sm text-muted-foreground">
-            {visible
-              ? `${visible.length} of ${fonts?.length ?? 0} fonts`
-              : "Scanning fonts…"}
-            <span className="flex items-center gap-1.5">
-              <Kbd>↑</Kbd>
-              <Kbd>↓</Kbd> try fonts in {app}
-            </span>
-          </p>
+          <FontCount shown={visible} fonts={fonts} withDefault={withDefault} />
           {/* About ten rows, or half the height when stacked so the page can
               scroll past it. The card's edge is an inset ring, which scrolled
               rows would paint over, so the rows scroll inside its padding. */}
@@ -188,6 +180,16 @@ export function FontSection() {
                 saved={savedFont}
                 cursor={selected}
                 listRef={listRef}
+                empty={
+                  <NoFonts
+                    query={query.trim()}
+                    filtered={filters.length > 0}
+                    onClear={() => {
+                      setQuery("");
+                      setFilters([]);
+                    }}
+                  />
+                }
                 onMove={move}
               />
             </div>
@@ -207,6 +209,52 @@ export function FontSection() {
   );
 }
 
+/** How many fonts match, and the keys that try them while any is listed. */
+function FontCount(props: {
+  /** The fonts that match, null while the font scan runs. */
+  shown: FontFamily[] | null;
+  fonts: FontFamily[] | null;
+  withDefault: boolean;
+}) {
+  const {shown, fonts} = props;
+  const app = useAppName();
+  const listed = props.withDefault || shown?.length !== 0;
+  return (
+    <p className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1 text-sm text-muted-foreground">
+      {shown
+        ? `${shown.length} of ${fonts?.length ?? 0} fonts`
+        : "Scanning fonts…"}
+      {listed && (
+        <span className="flex items-center gap-1.5">
+          <Kbd>↑</Kbd>
+          <Kbd>↓</Kbd> try fonts in {app}
+        </span>
+      )}
+    </p>
+  );
+}
+
+/** The font list when nothing matches, and how to clear what hides the rest. */
+function NoFonts(props: {
+  query: string;
+  filtered: boolean;
+  onClear: () => void;
+}) {
+  const {query, filtered} = props;
+  const withFilters = filtered ? " with these filters" : "";
+  return (
+    <div className="flex flex-col items-start gap-3 px-4 py-6 text-sm text-muted-foreground">
+      <p>
+        {query
+          ? `No installed font matches “${query}”${withFilters}.`
+          : "No installed font matches these filters."}
+      </p>
+      <Button size="sm" variant="outline" onClick={props.onClear}>
+        {filtered ? "Clear filters" : "Clear search"}
+      </Button>
+    </div>
+  );
+}
 function FontHeader(props: {
   family: FontFamily | undefined;
   name: string;

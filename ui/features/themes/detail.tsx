@@ -232,7 +232,7 @@ export function ThemeDetail(props: ThemeDetailProps) {
       <Action
         note={
           theme.source === "bundled"
-            ? "Makes an editable copy. Built-in themes never change."
+            ? "Makes an editable copy. Built\u2011in themes never change."
             : undefined
         }>
         <SaveThemeButton source={{theme: theme.name}} />

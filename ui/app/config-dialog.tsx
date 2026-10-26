@@ -1,7 +1,7 @@
 import {type ReactNode, useEffect, useId, useState} from "react";
 import {CheckIcon, CopyIcon, XIcon} from "lucide-react";
 import {IconButton} from "@/components/icon-button";
-import {Truncate} from "@/components/truncate";
+import {TruncatedPath} from "@/components/path";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +27,6 @@ import {Switch} from "@/components/ui/switch";
 import type {ConfigChoice} from "@/core/bindings";
 import {errorText} from "@/core/errors";
 import {configChoices, forgetConfig} from "@/lib/host";
-import {tildePath} from "@/lib/paths";
 import {
   chooseConfig,
   confirmSwitch,
@@ -178,9 +177,10 @@ function ChoiceRow(props: {
           {choiceName(choice)}
           {current && <CheckIcon aria-label="Editing" className="size-3.5" />}
         </span>
-        <Truncate className="max-w-full font-mono text-xs text-muted-foreground">
-          {tildePath(choice.path)}
-        </Truncate>
+        <TruncatedPath
+          path={choice.path}
+          className="max-w-full font-mono text-xs text-muted-foreground"
+        />
       </button>
       <IconButton
         label="Copy path"

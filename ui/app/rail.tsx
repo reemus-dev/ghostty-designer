@@ -5,7 +5,7 @@ import {
   LayoutGridIcon,
   type LucideIcon,
   PaletteIcon,
-  PinIcon,
+  PictureInPicture2Icon,
   SlidersHorizontalIcon,
   TypeIcon,
 } from "lucide-react";
@@ -42,9 +42,9 @@ const SECTIONS = [
 
 /**
  * The views (Alt 1, Alt 2), Customise's sections with the one in view marked,
- * and the pin. Each shows its name on hover. The wheel over the rail scrolls
- * the view, a lane past nested scrolls such as the font list. Modal overlays
- * cover the rail, so it scrolls only when the view would.
+ * and Keep window on top. Each shows its name on hover. The wheel over the rail
+ * scrolls the view, a lane past nested scrolls such as the font list. Modal
+ * overlays cover the rail, so it scrolls only when the view would.
  */
 export function Rail() {
   const view = useStore((store) => store.view);
@@ -159,10 +159,7 @@ function PinToggle() {
           pin === "unsupported" &&
             "opacity-64 hover:bg-transparent hover:text-muted-foreground",
         )}>
-        <PinIcon
-          aria-hidden
-          className={cn("size-4", pin === "on" && "fill-current")}
-        />
+        <PictureInPicture2Icon aria-hidden className="size-4" />
       </TooltipTrigger>
       <TooltipContent side="right" className="max-w-none whitespace-nowrap">
         Keep window on top

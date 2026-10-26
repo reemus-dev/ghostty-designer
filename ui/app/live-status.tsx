@@ -12,6 +12,8 @@ import {appName, NOT_SHOWING_TEXT, revealOption} from "@/lib/views";
 
 type Status = {
   label: string;
+  /** The label in a narrow window, so the dot's colour never stands alone. */
+  short: string;
   dot: string;
   warn?: boolean;
   detail: string;
@@ -36,6 +38,7 @@ function liveStatus(
   if (!isLive(state)) {
     return {
       label: "Live preview off",
+      short: "Off",
       dot: DOT.off,
       detail: `${appName(edited, true)} updates only when you save.`,
     };
@@ -43,6 +46,7 @@ function liveStatus(
   if (state.apply.state === "paused") {
     return {
       label: "Preview paused",
+      short: "Paused",
       dot: DOT.off,
       detail: `${appName(edited, true)} shows your saved config while you compare.`,
     };
@@ -54,6 +58,7 @@ function liveStatus(
     if (key === undefined) {
       return {
         label: "Couldn't update the preview",
+        short: "Error",
         dot: DOT.warn,
         warn: true,
         detail: `${error}\nGhostty keeps showing the last changes it accepted.`,
@@ -62,6 +67,7 @@ function liveStatus(
     const label = options.find((option) => option.key === key)?.label ?? key;
     return {
       label: `Ghostty didn't accept ${label}`,
+      short: "Error",
       dot: DOT.warn,
       warn: true,
       detail: `${error}\nYour other changes show in ${app}.`,
@@ -71,6 +77,7 @@ function liveStatus(
   if (state.previewShadowed) {
     return {
       label: NOT_SHOWING_TEXT.shadowed,
+      short: NOT_SHOWING_TEXT.shadowed,
       dot: DOT.warn,
       warn: true,
       detail:
@@ -80,6 +87,7 @@ function liveStatus(
   if (edited.type === "file") {
     return {
       label: `Preview for ${app}`,
+      short: "Preview",
       dot: DOT.unsure,
       detail: `${appName(edited, true)} shows your changes when it reloads its config. Some apps reload on their own. Your config changes only when you save.`,
     };
@@ -87,6 +95,7 @@ function liveStatus(
   if (state.instances === 0) {
     return {
       label: "Live · no open windows",
+      short: "Live",
       dot: DOT.live,
       detail:
         "Ghostty isn't running. Your changes show when you open a window. Your config changes only when you save.",
@@ -94,6 +103,7 @@ function liveStatus(
   }
   return {
     label: "Live in Ghostty",
+    short: "Live",
     dot: DOT.live,
     detail:
       "Changes preview in your Ghostty windows. Your config changes only when you save.",
@@ -108,9 +118,10 @@ function useLiveStatus() {
 }
 
 /**
- * Whether Ghostty shows the changes now: a dot, with its words in a wide
- * window. A click opens the details, the status's action and the live preview
- * switch. Turning it on shows the setup card when the include is missing.
+ * Whether Ghostty shows the changes now: a dot with its words, shortened in a
+ * narrow window. A click opens the details, the status's action and the live
+ * preview switch. Turning it on shows the setup card when the include is
+ * missing.
  */
 export function LiveStatus() {
   const status = useLiveStatus();
@@ -127,6 +138,9 @@ export function LiveStatus() {
           status.warn && "text-warn",
         )}>
         <Dot status={status} />
+        <span aria-hidden className="lg:hidden">
+          {status.short}
+        </span>
         <Truncate className="max-w-56 max-lg:sr-only">{status.label}</Truncate>
       </PopoverTrigger>
       <PopoverContent

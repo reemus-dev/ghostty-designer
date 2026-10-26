@@ -23,7 +23,7 @@ export function Page(props: {
   return (
     <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_clamp(320px,30vw,400px)]">
       <div data-themes className="min-w-0 overflow-y-auto">
-        <div className="z-10 bg-background/95 backdrop-blur-sm md:sticky md:top-0">
+        <div className="z-10 bg-background md:sticky md:top-0">
           <div className="mx-auto flex max-w-[1100px] flex-wrap items-center gap-2 px-4 pt-6 pb-3 sm:px-8">
             {filter}
           </div>
@@ -35,7 +35,7 @@ export function Page(props: {
           <Sheet>
             <SheetTrigger
               aria-label={`${focused} details`}
-              className="sticky bottom-0 flex h-12 w-full items-center gap-3 border-t bg-card/95 px-4 backdrop-blur-sm hover:bg-accent sm:px-8">
+              className="sticky bottom-0 flex h-12 w-full items-center gap-3 border-t bg-card px-4 hover:bg-accent sm:px-8">
               <Truncate className="min-w-0 font-medium">{focused}</Truncate>
               <span className="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
                 Details

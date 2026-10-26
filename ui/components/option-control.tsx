@@ -67,8 +67,12 @@ type ControlProps = {
  * label, at full width, when the row is too narrow for both. Rows stack with
  * hairlines between them.
  */
-export function OptionControl(props: {option: OptionMeta; className?: string}) {
-  const {option, className} = props;
+export function OptionControl(props: {
+  option: OptionMeta;
+  note?: string;
+  className?: string;
+}) {
+  const {option, note, className} = props;
   const values = useEffective(option.key) ?? option.defaults;
 
   const commit = (value: string, live = false) => {
@@ -84,7 +88,7 @@ export function OptionControl(props: {option: OptionMeta; className?: string}) {
   };
 
   return (
-    <OptionRow option={option} className={className}>
+    <OptionRow option={option} note={note} className={className}>
       <OptionInput option={option} value={values[0] ?? ""} commit={commit} />
     </OptionRow>
   );

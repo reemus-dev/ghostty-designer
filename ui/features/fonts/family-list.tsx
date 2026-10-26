@@ -1,5 +1,6 @@
 import {
   type KeyboardEvent,
+  type ReactNode,
   type RefObject,
   useEffect,
   useId,
@@ -24,6 +25,8 @@ type FamilyListProps = {
   saved: string | undefined;
   cursor: string;
   listRef: RefObject<HTMLDivElement | null>;
+  /** Shows in place of the rows when nothing matches. */
+  empty: ReactNode;
   /** `dwell` is true for keyboard moves, which pick after a pause. */
   onMove: (family: string, dwell: boolean) => void;
 };
@@ -78,13 +81,7 @@ export function FamilyList(props: FamilyListProps) {
       </div>
     );
   }
-  if (rows.length === 0) {
-    return (
-      <p className="px-4 py-6 text-sm text-muted-foreground">
-        No installed font matches. Clear the search or a filter.
-      </p>
-    );
-  }
+  if (rows.length === 0) return props.empty;
 
   const move = (to: number) => {
     const next = names[Math.max(0, Math.min(names.length - 1, to))];

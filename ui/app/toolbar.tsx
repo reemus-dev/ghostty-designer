@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import {Menu} from "@base-ui/react/menu";
 import {IconButton} from "@/components/icon-button";
+import {Path} from "@/components/path";
 import {Truncate} from "@/components/truncate";
 import {
   AlertDialog,
@@ -33,7 +34,6 @@ import {errorText} from "@/core/errors";
 import {isLive} from "@/core/preview";
 import {type DraftChange, draftChanges, undoChange} from "@/lib/changes";
 import {MOD, SHIFT_MOD} from "@/lib/keys";
-import {tildePath} from "@/lib/paths";
 import {
   notify,
   revertAll,
@@ -147,7 +147,9 @@ function EditedFile() {
       </TooltipTrigger>
       <TooltipContent side="bottom">
         Editing{" "}
-        <span className="font-mono wrap-anywhere">{tildePath(configPath)}</span>
+        <span className="font-mono wrap-anywhere">
+          <Path path={configPath} />
+        </span>
         {edited.ghosttyBase ? ", on top of Ghostty's config" : ""}
       </TooltipContent>
     </Tooltip>
@@ -367,7 +369,7 @@ function OverflowMenu() {
                 label="Switch config…"
                 hint={
                   <span className="font-mono wrap-anywhere">
-                    {tildePath(configPath)}
+                    <Path path={configPath} />
                   </span>
                 }
                 onClick={() => setConfigOpen(true)}
@@ -382,7 +384,9 @@ function OverflowMenu() {
             <AlertDialogTitle>Restore your original config?</AlertDialogTitle>
             <AlertDialogDescription>
               Returns{" "}
-              <code className="text-foreground">{tildePath(configPath)}</code>{" "}
+              <code className="text-foreground">
+                <Path path={configPath} />
+              </code>{" "}
               and the files it includes to how they were before Ghostty Designer
               first changed them. You lose every save since then, and any
               unsaved changes.

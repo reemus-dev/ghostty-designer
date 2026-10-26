@@ -8,7 +8,7 @@ import {
   SlidersHorizontalIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import {Truncate} from "@/components/truncate";
+import {Path, TruncatedPath} from "@/components/path";
 import {Button} from "@/components/ui/button";
 import {
   Dialog,
@@ -21,7 +21,6 @@ import {
 import {errorText} from "@/core/errors";
 import type {ConfigOverride, SavePlan, SaveResult} from "@/core/types";
 import {draftChanges} from "@/lib/changes";
-import {tildePath} from "@/lib/paths";
 import {session, setSaveOpen, useSnapshot, useStore} from "@/lib/store";
 import {appName} from "@/lib/views";
 import {ChangeValues} from "./change-values";
@@ -64,7 +63,8 @@ export function SaveSheet() {
 
 /**
  * Mounts with the open sheet, so each opening plans afresh. `ref` gets Cancel,
- * which takes the initial focus; `savingRef` follows the save in flight.
+ * which holds the focus until the plan enables Save; `savingRef` follows the
+ * save in flight.
  */
 function SaveFlow(props: {
   ref: Ref<HTMLButtonElement>;
@@ -74,6 +74,11 @@ function SaveFlow(props: {
   const [phase, setPhase] = useState<Phase>({type: "loading"});
   const [backup, setBackup] = useState(true);
   const [showDiff, setShowDiff] = useState(false);
+  const saveButton = useRef<HTMLButtonElement>(null);
+  const ready = phase.type === "plan";
+  useEffect(() => {
+    if (ready) saveButton.current?.focus();
+  }, [ready]);
 
   /** Numbers plans, so only the latest shows; unmounting drops them all. */
   const plans = useRef(0);
@@ -167,7 +172,7 @@ function SaveFlow(props: {
           onClick={() => setSaveOpen(false)}>
           Cancel
         </Button>
-        <Button disabled={phase.type !== "plan"} onClick={save}>
+        <Button ref={saveButton} disabled={!ready} onClick={save}>
           {phase.type === "saving" ? "Saving…" : "Save"}
         </Button>
       </DialogFooter>
@@ -182,8 +187,8 @@ function PlanHeader() {
     <DialogHeader className="gap-3">
       <DialogTitle className="leading-snug">
         Save {count} {count === 1 ? "change" : "changes"} to{" "}
-        <span className="mt-1 block font-mono text-sm font-normal break-all text-muted-foreground">
-          {tildePath(configPath)}?
+        <span className="mt-1 block font-mono text-sm font-normal wrap-anywhere text-muted-foreground">
+          <Path path={configPath} />?
         </span>
       </DialogTitle>
       <DialogDescription className="leading-normal">
@@ -332,8 +337,8 @@ function OverrideNote(props: {override: ConfigOverride}) {
           {labels.length === 1 ? "that change" : "those changes"}.
         </p>
         {paths.map((path) => (
-          <span key={path} className="font-mono text-xs break-all">
-            {tildePath(path)}
+          <span key={path} className="font-mono text-xs wrap-anywhere">
+            <Path path={path} />
           </span>
         ))}
       </div>
@@ -348,7 +353,7 @@ function Diffs(props: {plan: SavePlan}) {
       {props.plan.files.map((file) => (
         <section key={file.path} className="flex flex-col gap-1.5">
           <h3 className="font-mono text-xs text-muted-foreground">
-            <Truncate className="block">{tildePath(file.path)}</Truncate>
+            <TruncatedPath path={file.path} className="block" />
           </h3>
           <DiffView diff={file.diff} />
         </section>
@@ -397,8 +402,8 @@ function Saved(props: {result: SaveResult}) {
         <DialogDescription className="flex flex-col gap-2 leading-normal">
           <span>
             Backups of the changed files stay in{" "}
-            <code className="text-sm break-all text-foreground">
-              {tildePath(backupDir)}
+            <code className="text-sm wrap-anywhere text-foreground">
+              <Path path={backupDir} />
             </code>{" "}
             until your next save.
           </span>

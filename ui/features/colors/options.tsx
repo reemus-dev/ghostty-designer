@@ -77,7 +77,12 @@ export function ColorOptions(props: {
           {extended.options.map((option) =>
             option.key === "palette-harmonious" ? (
               <div key={option.key} className={cn(!generate && "opacity-60")}>
-                <OptionControl option={option} />
+                <OptionControl
+                  option={option}
+                  note={
+                    generate ? undefined : "Needs Generate 256-colour palette"
+                  }
+                />
               </div>
             ) : (
               <OptionControl key={option.key} option={option} />

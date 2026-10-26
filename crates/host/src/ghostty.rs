@@ -98,7 +98,7 @@ async fn find_binary(env: &Env) -> Result<PathBuf, String> {
             bin.metadata()
                 .is_ok_and(|meta| meta.is_file() && meta.permissions().mode() & 0o111 != 0)
         })
-        .ok_or_else(|| "Ghostty is not installed".to_owned())
+        .ok_or_else(|| "cannot find Ghostty: install it, or add it to your PATH".to_owned())
 }
 
 /// Ghostty finds its own resources, so the designer asks it instead of
