@@ -23,9 +23,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: macos-26
+          - runner: xcode-27
             target: aarch64-apple-darwin
-          - runner: macos-26
+          - runner: xcode-27
             target: x86_64-apple-darwin
           # Ubuntu 22.04 sets the glibc floor.
           - runner: ubuntu-22.04

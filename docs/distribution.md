@@ -253,8 +253,8 @@ writes the npm package, and publishes nothing.
 
 | Runner             | Target                      | Files                                                 |
 | ------------------ | --------------------------- | ----------------------------------------------------- |
-| `macos-26`         | `aarch64-apple-darwin`      | `_darwin_arm64.tar.gz`                                |
-| `macos-26`         | `x86_64-apple-darwin`       | `_darwin_x86_64.tar.gz`                               |
+| `xcode-27`         | `aarch64-apple-darwin`      | `_darwin_arm64.tar.gz`                                |
+| `xcode-27`         | `x86_64-apple-darwin`       | `_darwin_x86_64.tar.gz`                               |
 | `ubuntu-22.04`     | `x86_64-unknown-linux-gnu`  | `_linux_x86_64.tar.gz`, `_amd64.deb`, `-1.x86_64.rpm` |
 | `ubuntu-22.04-arm` | `aarch64-unknown-linux-gnu` | `_linux_arm64.tar.gz`, `_arm64.deb`, `-1.aarch64.rpm` |
 
@@ -263,11 +263,11 @@ Every file name starts with `ghostty-designer_<version>`, or
 the binary (Linux), and `LICENSE`. `mise run release:build [target]` builds one
 row on this machine.
 
-The macOS builds run on `macos-26` for its Xcode 26. macOS 26 and later draw an
-app with their current window style only if it was built with the macOS 26 SDK
-or later. Older builds get the previous style, which moves the traffic lights
-off the toolbar's centre. The deployment target, not the runner, sets the oldest
-macOS the build runs on.
+The macOS builds run on `xcode-27` for its macOS 27 SDK. macOS 26 and later draw
+an app with their current window style only if it was built with the macOS 26
+SDK or later. Older builds get the previous style, which moves the traffic
+lights off the toolbar's centre. The deployment target, not the runner, sets the
+oldest macOS the build runs on.
 
 ## Open question
 
