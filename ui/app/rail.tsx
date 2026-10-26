@@ -27,6 +27,12 @@ const VIEW_ICON: Record<View, LucideIcon> = {
   themes: LayoutGridIcon,
 };
 
+/** Each view's main scroll: Customise's page and Themes' cards. */
+const VIEW_SCROLLER: Record<View, string> = {
+  customise: "[data-customise]",
+  themes: "[data-themes]",
+};
+
 /** Customise's sections in page order. */
 const SECTIONS = [
   {id: "colors", icon: PaletteIcon},
@@ -36,14 +42,21 @@ const SECTIONS = [
 
 /**
  * The views (Alt 1, Alt 2), Customise's sections with the one in view marked,
- * and the pin. Each shows its name on hover.
+ * and the pin. Each shows its name on hover. The wheel over the rail scrolls
+ * the view, a lane past nested scrolls such as the font list. Modal overlays
+ * cover the rail, so it scrolls only when the view would.
  */
 export function Rail() {
   const view = useStore((store) => store.view);
   return (
     <div
       data-tauri-drag-region="deep"
-      className="flex min-h-0 flex-col items-center gap-3 pb-3 select-none">
+      className="flex min-h-0 flex-col items-center gap-3 pb-3 select-none"
+      onWheel={(event) =>
+        document
+          .querySelector(VIEW_SCROLLER[view])
+          ?.scrollBy({top: event.deltaY})
+      }>
       <ViewSwitch view={view} />
       {view === "customise" && <Sections />}
       <div className="mt-auto">

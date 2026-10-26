@@ -22,7 +22,7 @@ export function Page(props: {
   const wide = useMediaQuery(MD);
   return (
     <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_clamp(320px,30vw,400px)]">
-      <div className="min-w-0 overflow-y-auto">
+      <div data-themes className="min-w-0 overflow-y-auto">
         <div className="z-10 bg-background/95 backdrop-blur-sm md:sticky md:top-0">
           <div className="mx-auto flex max-w-[1100px] flex-wrap items-center gap-2 px-4 pt-6 pb-3 sm:px-8">
             {filter}
