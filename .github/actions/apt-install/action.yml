@@ -1,0 +1,47 @@
+name: Install apt packages
+description: >-
+  Install Ubuntu packages from cached downloads. The runners' Ubuntu mirror
+  sometimes sends packages at about 40 KB/s, which stalls a job for half an
+  hour.
+inputs:
+  packages:
+    description: The packages, separated by spaces
+    required: true
+runs:
+  using: composite
+  steps:
+    # The key hashes every file the install downloads, so it changes only when
+    # a package version does.
+    - id: plan
+      shell: bash
+      env:
+        PACKAGES: ${{ inputs.packages }}
+      run: |
+        sudo apt-get update
+        sudo chown "$USER" /var/cache/apt/archives
+        prefix="apt-$ImageOS-$RUNNER_ARCH-"
+        uris=$(apt-get install --print-uris -qq --no-install-recommends $PACKAGES)
+        echo "prefix=$prefix" >>"$GITHUB_OUTPUT"
+        echo "key=$prefix$(sha256sum <<<"$uris" | cut -c1-16)" >>"$GITHUB_OUTPUT"
+
+    - id: restore
+      uses: actions/cache/restore@v6.1.0
+      with:
+        path: /var/cache/apt/archives/*.deb
+        key: ${{ steps.plan.outputs.key }}
+        restore-keys: ${{ steps.plan.outputs.prefix }}
+
+    # autoclean drops cached versions the mirror no longer lists.
+    - shell: bash
+      env:
+        PACKAGES: ${{ inputs.packages }}
+      run: |
+        sudo apt-get install -y --no-install-recommends \
+          -o APT::Keep-Downloaded-Packages=true $PACKAGES
+        sudo apt-get autoclean
+
+    - if: steps.restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v6.1.0
+      with:
+        path: /var/cache/apt/archives/*.deb
+        key: ${{ steps.plan.outputs.key }}
