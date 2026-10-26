@@ -189,8 +189,7 @@ the minimal 24.04 image stands in for it, since the point is that the package
 pulls WebKitGTK 4.1 itself. Arch has no package; its names were checked against
 archlinux.org.
 
-`vm.sh <vm> packages build|check <image>…` repeats the build and the container
-checks.
+Every release repeats the container installs with `release.sh check`.
 
 ### README install lines
 

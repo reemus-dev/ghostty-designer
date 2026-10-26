@@ -85,18 +85,18 @@ every outcome with `panel.ts js` or the sandbox's files.
 
 ## Linux: Lima VMs
 
-| VM               | Use for                                                   |
-| ---------------- | --------------------------------------------------------- |
-| `gd-ubuntu-2404` | Window checks (default), X11 and Wayland                  |
-| `gd-ubuntu-2204` | Window checks on the glibc floor, package builds (podman) |
+| VM               | Use for                                  |
+| ---------------- | ---------------------------------------- |
+| `gd-ubuntu-2404` | Window checks (default), X11 and Wayland |
+| `gd-ubuntu-2204` | Window checks on the glibc floor         |
 
 `vm.sh <vm> provision` creates, starts, and provisions a VM. It is safe to
 rerun. When a script reports a missing tool, run it, not ad hoc installs, so the
 VMs stay reproducible. Add new requirements to its `provision` action.
 
 Work in a VM only through `vm.sh`, plus `limactl shell <vm> --` for reads and
-`limactl stop <vm>`. The script keeps everything under `~/gd` and `~/gd-pkg`,
-and anything else in a VM home is disposable.
+`limactl stop <vm>`. The script keeps everything under `~/gd`, and anything else
+in a VM home is disposable.
 
 ### Window
 
@@ -113,17 +113,7 @@ vm.sh gd-ubuntu-2404 stop
   `limactl shell <vm> -- cat gd/sandbox/xdg/ghostty/ghostty-designer.conf`.
 - Drive the panel with `panel.ts --vm gd-ubuntu-2404 …`.
 - Before a build, `start` removes the VM's build folder when the disk has under
-  8 GiB free, because Cargo never removes stale build files. `packages build`
-  does the same for its own folder.
-
-### Packages
-
-```sh
-vm.sh gd-ubuntu-2204 packages build
-vm.sh gd-ubuntu-2204 packages check ubuntu:22.04 ubuntu:24.04 fedora:44
-```
-
-`check` installs into fresh containers, so every run starts clean.
+  8 GiB free, because Cargo never removes stale build files.
 
 ### Resources
 
