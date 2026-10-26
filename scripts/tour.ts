@@ -4,8 +4,9 @@
 //
 //   tour.ts
 //
-// Writes `.cache/tour/`: a PNG per stop, and `index.md` with a map of how the
-// stops connect, then every screenshot in tour order. The sandbox starts from
+// Writes `.cache/tour/`: a PNG per stop, and `index.html` with a map of how the
+// stops connect, then every screenshot in tour order. From a terminal, it opens
+// the page in the browser. The sandbox starts from
 // the baseline config, so runs on one machine match. The font list and theme
 // catalog come from the machine. Native parts, such as the window frame, menus
 // and the close dialog, are out of reach (docs/verify.md).
@@ -178,6 +179,7 @@ const STOPS: Stop[] = [
 
 const root = path.join(import.meta.dir, "..");
 const out = path.join(root, ".cache/tour");
+const page = path.join(out, "index.html");
 const sandbox = path.join(import.meta.dir, "sandbox.ts");
 
 /**
@@ -215,33 +217,42 @@ async function walk(session: Session) {
   return files;
 }
 
-const quoted = (text: string) => `"${text.replaceAll('"', "#quot;")}"`;
+const html = Bun.escapeHTML;
 
-/** The map of the stops as a Mermaid flowchart, then each screenshot. */
+/**
+ * The stops reached from `from`, as nested lists that link to their
+ * screenshots.
+ */
+function map(from?: string): string {
+  const items = STOPS.filter((stop) => stop.from === from).map((stop) => {
+    const via = stop.via === undefined ? "" : `${html(stop.via)} → `;
+    const link = `<a href="#${stop.id}">${html(stop.title)}</a>`;
+    return `<li>${via}${link}${map(stop.id)}</li>`;
+  });
+  return items.length === 0 ? "" : `<ul>${items.join("")}</ul>`;
+}
+
+/** The map of the stops, then each screenshot. */
 function indexPage(files: string[]) {
-  const nodes = STOPS.map((stop) => `  ${stop.id}[${quoted(stop.title)}]`);
-  const moves = STOPS.flatMap((stop) =>
-    stop.from === undefined
-      ? []
-      : [`  ${stop.from} -->|${quoted(stop.via ?? "")}| ${stop.id}`],
-  );
   const shots = STOPS.map(
     (stop, i) =>
-      `## ${i + 1}. ${stop.title}\n\n![${stop.title}](${files[i]})\n`,
+      `<h2 id="${stop.id}">${i + 1}. ${html(stop.title)}</h2>\n` +
+      `<img src="${files[i]}" alt="${html(stop.title)}">`,
   );
-  return [
-    "# Panel tour\n",
-    "Written by `tour.ts` from a sandbox with the baseline config.\n",
-    "```mermaid",
-    "flowchart LR",
-    "  %% Stops",
-    ...nodes,
-    "",
-    "  %% Moves",
-    ...moves,
-    "```\n",
-    ...shots,
-  ].join("\n");
+  return `<!doctype html>
+<meta charset="utf-8">
+<title>Panel tour</title>
+<style>
+  body { margin: 2rem auto; max-width: 1200px; padding: 0 1rem; font: 15px/1.6 system-ui; color: #ddd; background: #1a1a1a; }
+  a { color: #8ab4f8; }
+  img { display: block; width: 100%; border-radius: 10px; }
+  h2 { margin-top: 3rem; }
+</style>
+<h1>Panel tour</h1>
+<p>Written by <code>tour.ts</code> from a sandbox with the baseline config.</p>
+${map()}
+${shots.join("\n")}
+`;
 }
 
 rmSync(out, {recursive: true, force: true});
@@ -254,9 +265,12 @@ const {port, label} = sandboxTarget(NAME);
 const session = await startSession(port, label);
 try {
   const files = await walk(session);
-  writeFileSync(path.join(out, "index.md"), indexPage(files));
-  console.log(`${path.join(out, "index.md")}: ${files.length} stops`);
+  writeFileSync(page, indexPage(files));
+  console.log(`${page}: ${files.length} stops`);
 } finally {
   await session.end();
   await $`${sandbox} --name ${NAME} stop`.quiet();
+}
+if (process.stdout.isTTY) {
+  await $`${process.platform === "darwin" ? "open" : "xdg-open"} ${page}`;
 }
