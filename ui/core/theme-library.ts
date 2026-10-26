@@ -196,8 +196,8 @@ const sameColors = (a: ThemeColors, b: ThemeColors) =>
 
 /**
  * The theme whose colours these are, preferring `current` among equals, else
- * the nearest by summed OKLab distance over background, foreground and palette
- * 0-15.
+ * the nearest by weighted OKLab distance. The background fills the window, so
+ * it counts as much as palette 0-15 together, and the foreground half as much.
  */
 export function matchTheme(
   colors: ThemeColors,
@@ -210,13 +210,15 @@ export function matchTheme(
     return {theme: theme.name, exact: true};
   }
 
-  const target = signature(colors);
   let best: {theme: string; distance: number} | null = null;
   for (const theme of themes) {
-    const distance = signature(theme.colors).reduce(
-      (sum, hex, i) => sum + oklabDistance(hex, target[i]!),
-      0,
-    );
+    const distance = theme.colors.palette
+      .slice(0, 16)
+      .reduce(
+        (sum, hex, i) => sum + oklabDistance(hex, colors.palette[i]!),
+        16 * oklabDistance(theme.colors.background, colors.background) +
+          8 * oklabDistance(theme.colors.foreground, colors.foreground),
+      );
     if (!best || distance < best.distance) best = {theme: theme.name, distance};
   }
   return best && {theme: best.theme, exact: false};

@@ -15,7 +15,7 @@
       "themePair": {"light":"GitHub Dark","dark":"GitHub Dark"},
       "canRestoreOriginal": false,
       "instances": 0,
-      "colorMatch": {"theme":"Cobalt Next Minimal","exact":false},
+      "colorMatch": {"theme":"GitHub Dark High Contrast","exact":false},
       "saved": {
         "font-family": ["Menlo"],
         "font-synthetic-style": [""],
@@ -385,7 +385,7 @@
           "selectionBackground": "#4c3128",
           "selectionForeground": "#faf9f6"
         },
-        "colorMatch": {"theme":"Cobalt Next Minimal","exact":false},
+        "colorMatch": {"theme":"GitHub Dark High Contrast","exact":false},
         "warnings": []
       }
     },
