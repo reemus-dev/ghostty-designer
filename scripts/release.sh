@@ -66,12 +66,11 @@ class GhosttyDesigner < Formula
   version "$VERSION"
   license "MIT"
 
-  on_arm do
+  # Homebrew's style check allows no url in on_arm and on_intel blocks.
+  if Hardware::CPU.arm?
     url "$base/$(archive darwin arm64)"
     sha256 "$arm64"
-  end
-
-  on_intel do
+  else
     url "$base/$(archive darwin x86_64)"
     sha256 "$x86_64"
   end

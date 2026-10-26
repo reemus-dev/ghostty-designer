@@ -250,7 +250,8 @@ publishing if the tag does not match the version. It then writes
 `Formula/ghostty-designer.rb` to `reemus-dev/homebrew-tap`, through the
 `HOMEBREW_TAP_DEPLOY_KEY` secret: the private half of a deploy key with write
 access to the tap. A manual run of the workflow builds the same files as
-workflow artifacts and publishes nothing.
+workflow artifacts, checks the formula with `brew style` as a tag run does, and
+publishes nothing.
 
 | Runner             | Target                      | Files                                                 |
 | ------------------ | --------------------------- | ----------------------------------------------------- |
@@ -275,6 +276,6 @@ row on this machine.
    cask, and for consent that survives upgrades. Waits for the Apple Developer
    account. Tauri signs and notarizes when the `APPLE_*` signing variables are
    set, so it needs secrets passed to the macOS build step and a new
-   `signingIdentity`, not a new pipeline.
-3. Spotlight and Launchpad: the formula's bundle lives in the Homebrew prefix.
-   Offer a caveat to link it into `~/Applications`, or ship a cask as well?
+   `signingIdentity`, not a new pipeline. A cask would also put the app in
+   `/Applications`, where Spotlight and Launchpad find it. The formula keeps it
+   in the Homebrew prefix, which is enough for an app started from a terminal.

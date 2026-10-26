@@ -1,7 +1,8 @@
 name: Release
 
 # A version tag publishes the release and updates the Homebrew tap. A manual
-# run builds the release files as workflow artifacts and publishes nothing.
+# run builds the release files as workflow artifacts, checks the formula and
+# publishes nothing.
 on:
   push:
     tags:
@@ -62,7 +63,6 @@ jobs:
           if-no-files-found: error
 
   publish:
-    if: github.ref_type == 'tag'
     needs: build
     permissions:
       contents: write
@@ -78,6 +78,7 @@ jobs:
           cache: true
 
       - name: Check the tag names the crate version
+        if: github.ref_type == 'tag'
         run: |
           version=$(cargo pkgid -p ghostty-designer)
           version=${version##*@}
@@ -95,10 +96,16 @@ jobs:
         working-directory: dist/release
         run: sha256sum -- * >checksums.txt
 
-      - name: Write the Homebrew formula
-        run: mise run release:formula >"$RUNNER_TEMP/ghostty-designer.rb"
+      # The style check applies the rules for tap formulae only to files in a
+      # Formula folder.
+      - name: Write and check the Homebrew formula
+        run: |
+          mkdir "$RUNNER_TEMP/Formula"
+          mise run release:formula >"$RUNNER_TEMP/Formula/ghostty-designer.rb"
+          /home/linuxbrew/.linuxbrew/bin/brew style "$RUNNER_TEMP/Formula/ghostty-designer.rb"
 
       - name: Publish GitHub release
+        if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -106,6 +113,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
 
       - name: Update Homebrew tap
+        if: github.ref_type == 'tag'
         env:
           TAP_DEPLOY_KEY: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
         run: |
@@ -118,7 +126,7 @@ jobs:
           chmod 600 "$key"
           export GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
           git clone --depth 1 git@github.com:reemus-dev/homebrew-tap.git "$RUNNER_TEMP/tap"
-          cp "$RUNNER_TEMP/ghostty-designer.rb" "$RUNNER_TEMP/tap/Formula/ghostty-designer.rb"
+          cp "$RUNNER_TEMP/Formula/ghostty-designer.rb" "$RUNNER_TEMP/tap/Formula/ghostty-designer.rb"
           cd "$RUNNER_TEMP/tap"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
