@@ -45,9 +45,9 @@ status() {
     echo "--- app.err"; cat app.err 2>/dev/null || true'
 }
 
-case "$ACTION ${3:-}" in
-"provision "*) ;;
-"start "* | "shot "* | "close "* | "status "* | "stop "*)
+case $ACTION in
+provision) ;;
+start | shot | close | status | stop)
   [ "$(limactl list --format "{{.Status}}" "$VM")" = Running ] || limactl start "$VM"
   ;;
 *)
@@ -58,7 +58,7 @@ esac
 
 case $ACTION in
 provision)
-  # The scenario replay expects this Ghostty.
+  # The app is tested with this Ghostty, so the VMs check against it.
   GHOSTTY=1.3.1
 
   case $VM in
@@ -78,7 +78,7 @@ apt() { sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_SUSPEND=1 apt-get -y -qq
 apt update
 # Tauri 2 build prerequisites, then the display stacks and tools the window actions use.
 apt install --no-install-recommends build-essential pkg-config curl ca-certificates \
-  libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev libxdo-dev libssl-dev \
+  libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev \
   xvfb openbox sway grim imagemagick xdotool wmctrl dbus-user-session xdg-desktop-portal xdg-desktop-portal-gtk \
   fontconfig procps
 

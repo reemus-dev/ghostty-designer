@@ -9,41 +9,41 @@ session in TypeScript.
 
 ## Where to work
 
-| Area                             | Responsibility                                                         |
-| -------------------------------- | ---------------------------------------------------------------------- |
-| `crates/app/`                    | Tauri shell: CLI, window, menu, single instance, launch and exit       |
-| `crates/app/src/main.rs`         | Entry, `specimen` subcommand, window and menu, signals, shutdown       |
-| `crates/app/src/panel.rs`        | Host commands for the panel, the close guard for unsaved changes       |
-| `crates/app/src/instance.rs`     | One designer per state folder, focus requests from later launches      |
-| `crates/app/src/launch.rs`       | Detach from the terminal, startup report, error dialog                 |
-| `crates/app/src/fonts.rs`        | `font://` protocol that serves font faces to the panel                 |
-| `crates/app/icons/`              | App icons, written by `app-icon.ts` from `scripts/`                    |
-| `crates/host/`                   | The native side, in these files:                                       |
-| `crates/host/src/host.rs`        | Host: commands, watches, instance poll, write limit, shutdown fence    |
-| `crates/host/src/api.rs`         | Host contract and commands, generates `ui/core/bindings.ts` with ts-rs |
-| `crates/host/src/preview.rs`     | Preview file engine, crash recovery, include status                    |
-| `crates/host/src/save.rs`        | Transactional write, backups, restore original, new theme files        |
-| `crates/host/src/config_file.rs` | Include walk: the config files Ghostty loads, in its order             |
-| `crates/host/src/ghostty.rs`     | Detect Ghostty, run CLI actions, find instances, reload                |
-| `crates/host/src/themes.rs`      | Read the bundled and user theme files                                  |
-| `crates/host/src/fonts.rs`       | Background font scan and face files                                    |
-| `crates/host/src/watch.rs`       | Folder watches that report once their events settle                    |
-| `crates/host/src/specimen.rs`    | `specimen` printout of `specimen.json`, which the panel renders too    |
-| `crates/host/src/env.rs`         | Process environment read once, so tests and sandboxes stay isolated    |
-| `crates/host/src/app_state.rs`   | `app.json`: config to open, recent files, Ghostty base choices         |
-| `crates/host/src/testkit.rs`     | Temporary `Env` and a fake Ghostty CLI for tests                       |
-| `crates/host/tests/fixtures/`    | Ghostty 1.3.1 outputs, the baseline config, font fixtures              |
-| `ui/`                            | React panel: two views, Customise and Themes, both kept mounted        |
-| `ui/core/`                       | The session: config, catalog, draft, undo, intents, themes, save plans |
-| `ui/core/testing/`               | Scenario replay on the Rust host over stdio (`host/examples/`)         |
-| `ui/core/scenarios/`             | Session scenarios and their recordings                                 |
-| `ui/app/`                        | The app shell (toolbar and rail), ⌘K palette, save sheet, first run    |
-| `ui/features/`                   | Customise sections (colors, fonts, window) and the Themes view         |
-| `ui/components/`                 | Shared controls, with shadcn components in `components/ui/`            |
-| `ui/lib/`                        | Store, host commands, view helpers, specimen pages                     |
-| `scripts/`                       | On the PATH: sandbox, panel driver, tour, VMs, smoke, icon, release    |
-| `docs/`                          | Architecture and distribution decisions, running and driving the app   |
-| `.github/workflows/`             | CI on macOS and Linux, releases from version tags                      |
+| Area                             | Responsibility                                                             |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| `crates/app/`                    | Tauri shell: CLI, window, menu, single instance, launch and exit           |
+| `crates/app/src/main.rs`         | Entry, `--config`, `specimen`, window and menu, signals, shutdown          |
+| `crates/app/src/panel.rs`        | Panel commands, the host a config switch replaces, the close guard         |
+| `crates/app/src/instance.rs`     | One designer per state folder, later launches send focus, `--config`       |
+| `crates/app/src/launch.rs`       | Detach from the terminal, startup report, error dialog                     |
+| `crates/app/src/fonts.rs`        | `font://` protocol that serves font faces to the panel                     |
+| `crates/app/icons/`              | App icons, written by `app-icon.ts` from `scripts/`                        |
+| `crates/host/`                   | The native side, in these files:                                           |
+| `crates/host/src/host.rs`        | Host: commands, watches, instance poll, write limit, shutdown fence        |
+| `crates/host/src/api.rs`         | Host contract and commands, generates `ui/core/bindings.ts` with ts-rs     |
+| `crates/host/src/preview.rs`     | Preview file engine, crash recovery, include status                        |
+| `crates/host/src/save.rs`        | Transactional write, backups, restore, user theme files                    |
+| `crates/host/src/config_file.rs` | Include walk: the config files Ghostty loads, in its order                 |
+| `crates/host/src/ghostty.rs`     | Detect Ghostty, run CLI actions, find instances, reload                    |
+| `crates/host/src/themes.rs`      | Read the bundled and user theme files                                      |
+| `crates/host/src/fonts.rs`       | Background font scan and face files                                        |
+| `crates/host/src/watch.rs`       | Folder watches that report once their events settle                        |
+| `crates/host/src/specimen.rs`    | `specimen` printout, from `specimen.json`, which also holds the panel card |
+| `crates/host/src/env.rs`         | Process environment read once, so tests and sandboxes stay isolated        |
+| `crates/host/src/app_state.rs`   | `app.json`: config to open, recent files, Ghostty base choices             |
+| `crates/host/src/testkit.rs`     | Temporary `Env` and a fake Ghostty CLI for tests                           |
+| `crates/host/tests/fixtures/`    | Ghostty 1.3.1 outputs, the baseline config, font fixtures                  |
+| `ui/`                            | React panel: two views, Customise and Themes, both kept mounted            |
+| `ui/core/`                       | The session: config, catalog, draft, undo, intents, themes, save plans     |
+| `ui/core/testing/`               | Scenario replay over stdio (`host/examples/`), unit-test sources           |
+| `ui/core/scenarios/`             | Session scenarios and their recordings                                     |
+| `ui/app/`                        | Toolbar, rail, config switcher, ⌘K palette, save sheet, live preview setup |
+| `ui/features/`                   | Customise sections (colors, fonts, window) and the Themes view             |
+| `ui/components/`                 | Shared controls, with shadcn components in `components/ui/`                |
+| `ui/lib/`                        | Store, host commands, view helpers, the theme card specimen                |
+| `scripts/`                       | On the PATH: sandbox, panel driver, tour, VMs, smoke, icon, release        |
+| `docs/`                          | Architecture and distribution decisions, running and driving the app       |
+| `.github/workflows/`             | CI on macOS and Linux, releases from version tags                          |
 
 ## Design constraints
 

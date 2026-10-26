@@ -74,8 +74,8 @@ function reset(include: boolean) {
 }
 
 /**
- * Starts a stand-in target that ignores SIGUSR2, so instance discovery never
- * finds or signals a real Ghostty.
+ * Starts a stand-in target that ignores SIGUSR2, so the panel sees one running
+ * instance and its reload signals reach a process that survives them.
  */
 function startStandIn() {
   if (!existsSync(configPath)) reset(true);

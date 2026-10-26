@@ -32,9 +32,9 @@ panel.ts --name <name> shot .cache/nord.png '[data-theme="Nord"]'
 
 - `--name` picks a sandbox, `--vm` a Lima VM, and `--dev` the user's dev
   instance, whose edits reach the real config and Ghostty.
-- Selectors are CSS, or XPath when they start with `/`. Both views stay mounted,
-  so a command acts on the one visible match. It waits up to five seconds for
-  one, then fails when there are none or several.
+- Selectors are CSS, or XPath when they start with `/` or `(`. Both views stay
+  mounted, so a command acts on the one visible match. It waits up to five
+  seconds for one, then fails when there are none or several.
 - `click` presses the pointer like a mouse in WebKit: only a text field takes
   focus, so no focus ring or tooltip shows on the clicked button.
 - `js` runs an async function body, so it can `await` a condition.
@@ -59,7 +59,7 @@ what they never reach:
 
 | Check                                                    | Why the page's events miss it                 |
 | -------------------------------------------------------- | --------------------------------------------- |
-| Menu items and their shortcuts: Quit, Close, ⌘W, Ctrl+W  | The native menu takes the key before the page |
+| Menu items and their shortcuts: Quit, Close, ⌘Q, ⌘W      | The native menu takes the key before the page |
 | Title bar, traffic lights, window frame, moving a window | They are outside the page                     |
 | HTML drag and drop, such as swapping two colour slots    | Only the real pointer starts a drag           |
 | Hover styles                                             | `:hover` follows the real pointer             |

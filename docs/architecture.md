@@ -3,14 +3,15 @@
 The Rust host does only what a native process must do. The panel owns the design
 session in TypeScript.
 
-| Rust host (`crates/host/`)                                   | Panel (`ui/core/`)                             |
-| ------------------------------------------------------------ | ---------------------------------------------- |
-| Read, watch and write files                                  | Parse config files, the option catalog         |
-| Run the Ghostty CLI, find and reload instances               | The draft, undo, intents                       |
-| The preview file engine and crash recovery                   | Colours, readability warnings, theme matching  |
-| Atomic saves with backups, restore of the original           | Save plans and their diffs                     |
-| The include walk, which limits a save to the config's files  | What Ghostty shows for a draft, and where from |
-| Font scans and font files, the CLI, the window and lifecycle |                                                |
+| Rust (`crates/`)                                            | Panel (`ui/core/`)                             |
+| ----------------------------------------------------------- | ---------------------------------------------- |
+| Read, watch and write files                                 | Parse config files, the option catalog         |
+| Run the Ghostty CLI, find and reload instances              | The draft, undo, intents                       |
+| The preview file engine and crash recovery                  | Colours, readability warnings, theme matching  |
+| Atomic saves with backups, restore of the original          | Save plans and their diffs                     |
+| The include walk, which limits a save to the config's files | What Ghostty shows for a draft, and where from |
+| Font scans and font files                                   |                                                |
+| The CLI, the window and its lifecycle (`crates/app/`)       |                                                |
 
 The two meet in typed host commands and one message channel, defined in
 `crates/host/src/api.rs`.

@@ -1,7 +1,7 @@
 # Distribution
 
-Decided on 2026-10-20, from probes of a window-only build of the app. Release
-work builds on these facts.
+These decisions rest on probes of a window-only build of the app, made on
+2026-10-20.
 
 ## macOS: an app bundle, entered through an exec script
 
@@ -186,35 +186,16 @@ Installed with the package manager, dependencies resolved, all libraries found:
 
 None of these images had WebKitGTK or GTK 3 before. Kubuntu was not installed:
 the minimal 24.04 image stands in for it, since the point is that the package
-pulls WebKitGTK 4.1 itself. Arch has no package; its names were checked against
-archlinux.org.
+pulls WebKitGTK 4.1 itself.
 
-Every release repeats the container installs with `release.sh check`.
+Every release repeats the installs with `release.sh check`: the `.deb` and
+`.rpm` in containers of the images above, and the tarball on Ubuntu 22.04 and,
+for x86_64, Arch, after installing the runtime libraries by hand.
 
-### README install lines
+### Without the runtime libraries
 
-Ubuntu and Debian:
-
-```sh
-sudo apt install ./ghostty-designer_<version>_amd64.deb
-```
-
-Fedora:
-
-```sh
-sudo dnf install ./ghostty-designer-<version>-1.x86_64.rpm
-```
-
-Tarball, after installing the runtime libraries:
-
-```sh
-sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 procps fontconfig   # Ubuntu, Debian
-sudo dnf install webkit2gtk4.1 gtk3 procps-ng fontconfig             # Fedora
-sudo pacman -S --needed webkit2gtk-4.1 gtk3 procps-ng fontconfig     # Arch
-```
-
-Without them, the loader stops before `main`. On a system with GTK 3 but no
-WebKitGTK 4.1, such as Ubuntu 22.04 desktop or Kubuntu:
+The loader stops before `main`. On a system with GTK 3 but no WebKitGTK 4.1,
+such as Ubuntu 22.04 desktop or Kubuntu:
 
 ```
 ghostty-designer: error while loading shared libraries: libwebkit2gtk-4.1.so.0: cannot open shared object file: No such file or directory
