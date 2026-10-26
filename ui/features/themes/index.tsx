@@ -104,7 +104,7 @@ export function ThemesView() {
 
   return (
     <Page
-      focused={theme?.name ?? "Current"}
+      focused={theme?.name ?? "Your colours"}
       detail={detail}
       filter={
         <Filters
@@ -215,7 +215,7 @@ function Filters(props: {
           <Chip
             pressed={readable}
             count={counts.readable}
-            title="Only themes whose text and colours are all easy to read"
+            title="Only themes without readability warnings"
             onPressedChange={(next) => setThemeFilters({readable: next})}>
             {readable && <CheckIcon aria-hidden />}
             Readable only
@@ -223,7 +223,7 @@ function Filters(props: {
           <Chip
             pressed={starred}
             count={counts.starred}
-            title="Only your starred themes. F stars the focused card."
+            title="Only your favourites. F adds or removes the focused theme."
             onPressedChange={(next) => setThemeFilters({starred: next})}>
             <StarIcon
               aria-hidden

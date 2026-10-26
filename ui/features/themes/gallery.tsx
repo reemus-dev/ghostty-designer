@@ -148,8 +148,8 @@ export function Gallery(props: GalleryProps) {
                 <b className="font-medium text-muted-foreground">
                   Themes you save show here
                 </b>
-                Use “Save as theme…”, or back up your colours when you save to
-                config.
+                Use “Save as theme…”, or keep your previous colours when you
+                save.
               </p>
             )}
             {section.themes.map((theme) => (
@@ -181,7 +181,7 @@ export function Gallery(props: GalleryProps) {
 type CardProps = {
   choice: ThemeChoice;
   colors: ThemeColors;
-  /** Absent for the Current card. */
+  /** Absent for the Your colours card. */
   dark?: boolean;
   tabbable: boolean;
   selected: boolean;
@@ -216,7 +216,7 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
       data-theme={choice ?? undefined}
       tabIndex={props.tabbable ? 0 : -1}
       aria-current={showing || undefined}
-      aria-label={choice ?? "Current: your colours"}
+      aria-label={choice ?? "Your colours"}
       className={cn(
         "group flex scroll-mt-40 scroll-mb-4 flex-col overflow-hidden card text-left transition-[box-shadow] duration-150 [contain-intrinsic-size:auto_190px] [content-visibility:auto] hover:shadow-[0_6px_20px_rgb(0_0_0/35%)] hover:inset-ring-input",
         selected && "ring-2 ring-ring ring-offset-2 ring-offset-background",
@@ -252,13 +252,8 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
       <span className="flex h-[42px] w-full items-center gap-2 px-4">
         <ModeIcon dark={dark} />
         <Truncate className="min-w-0 font-medium text-foreground">
-          {choice ?? "Current"}
+          {choice ?? "Your colours"}{" "}
         </Truncate>
-        {choice === null && (
-          <Truncate className="text-sm text-muted-foreground">
-            Your colours
-          </Truncate>
-        )}
         {props.favorite && (
           <StarIcon
             role="img"

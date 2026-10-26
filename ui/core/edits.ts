@@ -159,7 +159,7 @@ export function editDraft(
         else delete values.palette;
       }
       return {
-        change: {label: `Reset ${labelOf(key)}`},
+        change: {label: `Revert ${labelOf(key)}`},
         next: {theme: draft.theme, values},
       };
     }

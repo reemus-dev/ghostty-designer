@@ -224,14 +224,14 @@ function ReadabilityNote(props: {
   if (meets) {
     return (
       <p className="text-sm text-muted-foreground">
-        Readable: meets {target}:1 on {againstName}.
+        Meets the {target}:1 target against {againstName}.
       </p>
     );
   }
   if (!fixed) {
     return (
       <p className="text-sm text-muted-foreground">
-        No lightness reaches {target}:1 on {againstName} with this hue.
+        Changing lightness can't reach {target}:1 against {againstName}.
       </p>
     );
   }
@@ -240,7 +240,7 @@ function ReadabilityNote(props: {
     <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
       <p>
         Below {target}:1. Make readable {to > from ? "raises" : "lowers"}{" "}
-        lightness {from.toFixed(2)} → {to.toFixed(2)} and keeps the hue.
+        lightness from {from.toFixed(2)} to {to.toFixed(2)} and keeps the hue.
       </p>
       <p className="flex flex-wrap items-center gap-1.5">
         <HexChip color={hex} />

@@ -46,7 +46,7 @@ export function ColorOptions(props: {
     <div className="col-start-1 flex flex-col gap-5">
       <Card
         label={contrast.label}
-        aside="Ghostty can lift text that is too faint to read.">
+        aside="Ghostty can raise text contrast to a minimum.">
         <div className="-mt-2 flex flex-col">
           {contrast.options.map((option) => (
             <OptionControl key={option.key} option={option} />
@@ -54,8 +54,8 @@ export function ColorOptions(props: {
         </div>
         {minimum > 1 && (
           <p className="text-sm text-muted-foreground">
-            Ghostty moves the text of {lifted} of the {ratios.length} pairs in
-            the table toward black or white to reach {minimum}:1.
+            Ghostty shifts the text colour in {lifted} of the {ratios.length}{" "}
+            pairs toward black or white to reach {minimum}:1.
           </p>
         )}
         <Disclosure
@@ -63,7 +63,7 @@ export function ColorOptions(props: {
           aside="Each text colour on each background">
           <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">
-              The contrast ratio of each pair. 4.5 and up reads well.
+              The contrast ratio of each pair. Aim for 4.5:1 or more.
             </p>
             <ContrastTable colors={colors} />
           </div>
@@ -71,7 +71,7 @@ export function ColorOptions(props: {
       </Card>
       <Card
         label={extended.label}
-        aside="Colours 16 to 255, which full-colour programs such as vim themes use.">
+        aside="Colours 16 to 255, used by 256-colour terminal apps.">
         <div className="-mt-2 flex flex-col">
           {extended.options.map((option) =>
             option.key === "palette-harmonious" ? (

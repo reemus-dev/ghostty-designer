@@ -16,13 +16,12 @@ const CELL_COLOR: Control = {
   keywords: ["cell-foreground", "cell-background"],
 };
 const OSC_COLORS_NOTE =
-  "A program that sets colors at runtime (OSC 4, 10, 11) keeps them until it resets.";
-const UNFOCUSED_CURSOR_NOTE =
-  "Windows that aren't focused draw a hollow block.";
-const CURSOR_SHAPE_NOTE = `${UNFOCUSED_CURSOR_NOTE} Shell integration sets a bar at every prompt unless Cursor at the shell prompt is on, and a program that sets the cursor shape wins until it resets.`;
+  "A program that changes colours while running (OSC 4, 10, 11) keeps them until it resets them.";
+const UNFOCUSED_CURSOR_NOTE = "Unfocused windows show a hollow block.";
+const CURSOR_SHAPE_NOTE = `${UNFOCUSED_CURSOR_NOTE} At the prompt, shell integration shows a bar unless “Use this cursor at the shell prompt” is on. Programs can change the shape until they reset it.`;
 const GHOSTTY_THEME_NOTE = "Only used with window-theme = ghostty.";
 const PADDING_NOTE =
-  "Applies to new tabs and splits, or at once with balanced padding.";
+  "Applies to new tabs and splits, or right away with Balance padding on.";
 
 export const OPTIONS: readonly OptionDef[] = [
   {
@@ -35,7 +34,7 @@ export const OPTIONS: readonly OptionDef[] = [
   {
     key: "foreground",
     group: "colors",
-    label: "Foreground",
+    label: "Text",
     control: {kind: "color"},
     reloadNote: OSC_COLORS_NOTE,
   },
@@ -50,7 +49,7 @@ export const OPTIONS: readonly OptionDef[] = [
   {
     key: "palette-generate",
     group: "palette",
-    label: "Generate 256-color palette",
+    label: "Generate 256-colour palette",
     control: {kind: "bool"},
   },
   {
@@ -62,7 +61,7 @@ export const OPTIONS: readonly OptionDef[] = [
   {
     key: "bold-color",
     group: "colors",
-    label: "Bold color",
+    label: "Bold",
     control: {kind: "color", keywords: ["bright"]},
   },
   {
@@ -80,19 +79,19 @@ export const OPTIONS: readonly OptionDef[] = [
   {
     key: "selection-foreground",
     group: "colors",
-    label: "Selection foreground",
+    label: "Selection text",
     control: CELL_COLOR,
   },
   {
     key: "selection-background",
     group: "colors",
-    label: "Selection background",
+    label: "Selection",
     control: CELL_COLOR,
   },
   {
     key: "search-foreground",
     group: "colors",
-    label: "Search foreground",
+    label: "Search text",
     control: CELL_COLOR,
   },
   {
@@ -104,27 +103,27 @@ export const OPTIONS: readonly OptionDef[] = [
   {
     key: "search-selected-foreground",
     group: "colors",
-    label: "Search selected foreground",
+    label: "Selected search text",
     control: CELL_COLOR,
   },
   {
     key: "search-selected-background",
     group: "colors",
-    label: "Search selected background",
+    label: "Selected search background",
     control: CELL_COLOR,
   },
   {
     key: "cursor-color",
     group: "cursor",
-    label: "Cursor color",
+    label: "Cursor",
     control: CELL_COLOR,
     reloadNote:
-      "A program that sets the cursor color (OSC 12) keeps it until it resets.",
+      "A program that sets the cursor colour (OSC 12) keeps it until it resets it.",
   },
   {
     key: "cursor-text",
     group: "cursor",
-    label: "Cursor text color",
+    label: "Cursor text",
     control: CELL_COLOR,
     reloadNote: UNFOCUSED_CURSOR_NOTE,
   },
@@ -408,7 +407,7 @@ export const OPTIONS: readonly OptionDef[] = [
     label: "Background blur",
     control: {kind: "text"},
     reloadNote:
-      "Glass styles need macOS 26 and apply fully only in new windows.",
+      "Glass needs macOS 26 or later. A transparent or tabs titlebar changes only in new windows.",
   },
   {
     key: "window-padding-x",
@@ -438,7 +437,7 @@ export const OPTIONS: readonly OptionDef[] = [
   {
     key: "window-padding-color",
     group: "window",
-    label: "Padding color",
+    label: "Padding colour",
     control: {kind: "enum", values: ["background", "extend", "extend-always"]},
   },
   {
@@ -456,7 +455,7 @@ export const OPTIONS: readonly OptionDef[] = [
   {
     key: "split-divider-color",
     group: "splits",
-    label: "Split divider color",
+    label: "Split divider colour",
     control: {kind: "color"},
   },
   {
@@ -471,7 +470,7 @@ export const OPTIONS: readonly OptionDef[] = [
   {
     key: "window-colorspace",
     group: "window",
-    label: "Color space",
+    label: "Colour space",
     control: {kind: "enum", values: ["srgb", "display-p3"]},
     platforms: ["macos"],
   },
@@ -506,7 +505,7 @@ export const OPTIONS: readonly OptionDef[] = [
   {
     key: "window-titlebar-foreground",
     group: "window",
-    label: "Titlebar foreground",
+    label: "Titlebar text",
     control: {kind: "color"},
     reloadNote: GHOSTTY_THEME_NOTE,
     platforms: ["linux"],
@@ -639,7 +638,7 @@ export const OPTIONS: readonly OptionDef[] = [
   {
     key: "gtk-titlebar-hide-when-maximized",
     group: "window",
-    label: "Hide titlebar when maximized",
+    label: "Hide titlebar when maximised",
     control: {kind: "bool"},
     platforms: ["linux"],
   },
@@ -666,3 +665,21 @@ export const OPTIONS: readonly OptionDef[] = [
     platforms: ["linux"],
   },
 ];
+
+/** Listed values that capitalising alone would misspell. */
+const VALUE_LABELS: Record<string, string> = {
+  srgb: "sRGB",
+  "display-p3": "Display P3",
+};
+
+/**
+ * How an enum value reads: Ghostty's own words, capitalised, with spaces for
+ * dashes and underscores. A value the option doesn't list shows as written.
+ */
+export function enumLabel(values: readonly string[], value: string) {
+  if (!values.includes(value)) return value;
+  return (
+    VALUE_LABELS[value] ??
+    value.charAt(0).toUpperCase() + value.slice(1).replaceAll(/[-_]/g, " ")
+  );
+}

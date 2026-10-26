@@ -451,7 +451,7 @@ function FallbackFonts() {
   if (primary === undefined) {
     return (
       <p className="py-2 text-sm text-muted-foreground">
-        Choose a font first. Fallbacks follow it.
+        Choose a font before adding fallbacks.
       </p>
     );
   }
@@ -479,13 +479,13 @@ function FallbackFonts() {
           {fallbacks.map((family, i) => (
             <FallbackRow key={family} family={family}>
               <IconButton
-                label="Try earlier"
+                label="Move up"
                 disabled={i === 0}
                 onClick={() => move(i, i - 1)}>
                 <ArrowUpIcon />
               </IconButton>
               <IconButton
-                label="Try later"
+                label="Move down"
                 disabled={i === fallbacks.length - 1}
                 onClick={() => move(i, i + 1)}>
                 <ArrowDownIcon />

@@ -181,7 +181,8 @@ export function ColorPicker(props: {
             size="sm"
             variant="outline"
             onClick={() => void send({type: "reset", key: id})}>
-            Reset
+            {" "}
+            Revert{" "}
           </Button>
         )}
         <ModelSelect value={model} onChange={props.onModelChange} />
@@ -310,7 +311,7 @@ function ChannelFields(props: {
       </div>
       {outOfGamut && (
         <p className="-mt-1 text-sm text-muted-foreground">
-          Past the hatched edge, Ghostty gets the nearest colour it can show.
+          Past the hatched edge, chroma is capped at what Ghostty can show.
         </p>
       )}
     </div>

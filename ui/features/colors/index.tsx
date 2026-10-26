@@ -213,7 +213,7 @@ export function ColorsSection() {
                     Terminal colours
                   </h3>
                   <span className="text-2xs text-muted-foreground">
-                    top normal · bottom bright
+                    Top: normal · Bottom: bright
                   </span>
                 </div>
                 <div className="grid grid-cols-8 gap-x-2">

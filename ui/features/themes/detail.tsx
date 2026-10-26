@@ -7,7 +7,6 @@ import {
   StarIcon,
   SunIcon,
   TriangleAlertIcon,
-  UserIcon,
 } from "lucide-react";
 import {LiveDot} from "@/components/live-dot";
 import {PaletteDots} from "@/components/palette-dots";
@@ -234,7 +233,7 @@ export function ThemeDetail(props: ThemeDetailProps) {
   );
 }
 
-/** The Current card: the user's own colours and saving them as a theme. */
+/** The Your colours card: the user's own colours and saving them as a theme. */
 export function CurrentDetail(props: {
   colors: ThemeColors;
   /** Readability of the colours, known while Ghostty shows them. */
@@ -248,12 +247,9 @@ export function CurrentDetail(props: {
   return (
     <>
       <header className="flex flex-col gap-1.5">
-        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <UserIcon aria-hidden className="size-3.5 text-muted-foreground" />
-          Your colours
-        </p>
         <h2 className="text-xl leading-tight font-semibold tracking-[-0.015em]">
-          Current
+          {" "}
+          Your colours{" "}
         </h2>
         {showing && <Showing />}
         {match && (
@@ -272,7 +268,7 @@ export function CurrentDetail(props: {
       <Colors colors={colors} warnings={warnings} />
       <ReadabilityWarnings warnings={warnings} />
 
-      <Action note="Keeps these colours under My themes, to come back to any time.">
+      <Action note="Saves these colours to My themes.">
         <SaveThemeButton source="own" />
       </Action>
     </>
@@ -335,7 +331,7 @@ function PairBuilder(props: {theme: ThemeSummary}) {
             Use a different theme when your system is in {otherMode} mode
           </span>
           <span className="text-sm text-muted-foreground">
-            Ghostty switches by itself when your system does.
+            Ghostty switches automatically with your system.
           </span>
         </span>
         <Switch
@@ -384,7 +380,7 @@ function PairBuilder(props: {theme: ThemeSummary}) {
             <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
               Show in Ghostty now
               <ToggleGroup
-                aria-label="Half of the pair Ghostty shows"
+                aria-label="Theme Ghostty shows now"
                 value={[appearance]}
                 onValueChange={(next) =>
                   next[0] &&

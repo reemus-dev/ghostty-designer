@@ -42,7 +42,7 @@ export function ColorSummary(props: {state: SessionState}) {
             · closest theme:{" "}
             <button
               type="button"
-              title="Show it in Ghostty and on Themes"
+              title="Try this theme"
               className="rounded-sm underline decoration-input underline-offset-[3px] hover:decoration-muted-foreground"
               onClick={() => {
                 revealTheme(colorMatch.theme)?.focus({preventScroll: true});
@@ -58,7 +58,7 @@ export function ColorSummary(props: {state: SessionState}) {
 
   const hide =
     draft.theme !== null && named && hidden > 0
-      ? `Colours set in your config hide ${hidden === COLOUR_SLOTS.length ? named : `some of ${named}`}. Saving comments them out.`
+      ? `Colours set in your config hide ${hidden === COLOUR_SLOTS.length ? named : `some of ${named}`}. Saving comments out those lines.`
       : null;
 
   return (

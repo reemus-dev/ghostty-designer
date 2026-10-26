@@ -58,8 +58,8 @@ export function SaveThemeDialog() {
             <DialogTitle>Save as theme</DialogTitle>
             <DialogDescription>
               {typeof source === "object"
-                ? `Saves a copy of ${source.theme}'s colours under My themes.`
-                : "Saves the colours chosen here, unsaved changes included, under My themes."}
+                ? `Saves a copy of ${source.theme}'s colours to My themes.`
+                : "Saves your current colours, including unsaved changes, to My themes."}
             </DialogDescription>
           </DialogHeader>
           <Input

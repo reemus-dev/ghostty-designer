@@ -1,3 +1,4 @@
+import {enumLabel} from "@/core/options";
 import {draftKeys} from "@/core/resolve";
 import {slotColors} from "@/core/theme";
 import type {Intent, OptionMeta, SessionState, Values} from "@/core/types";
@@ -44,11 +45,18 @@ export function draftChanges(
       };
     }
     const option = options.find((meta) => meta.key === key);
+    const control = option?.control;
+    const text = (list: string[]) =>
+      list
+        .map((value) =>
+          control?.kind === "enum" ? enumLabel(control.values, value) : value,
+        )
+        .join(", ") || "Default";
     return {
       key,
       label: option?.label ?? key,
-      before: (saved[key] ?? []).join(", ") || "Default",
-      after: draft.values[key]!.join(", ") || "Default",
+      before: text(saved[key] ?? []),
+      after: text(draft.values[key]!),
       color: option?.control.kind === "color",
     };
   });

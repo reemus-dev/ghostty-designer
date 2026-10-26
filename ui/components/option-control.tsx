@@ -22,6 +22,7 @@ import {Switch} from "@/components/ui/switch";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {FULL_HEX, normalizeHex} from "@/core/color";
+import {enumLabel} from "@/core/options";
 import type {OptionMeta, Reload} from "@/core/types";
 import {parseMetric} from "@/core/values";
 import {PLATFORM_LABEL} from "@/lib/customise";
@@ -224,7 +225,7 @@ function OptionLabel(props: {
         <span id={helpId} className="sr-only">
           {[option.key, doc.replaceAll("`", ""), ...docNotes].join(". ")}
         </span>
-        {changed && <OptionReset option={option} />}
+        {changed && <OptionRevert option={option} />}
       </span>
       {notes.length > 0 && (
         <small className="text-sm text-muted-foreground">
@@ -260,14 +261,14 @@ function TuxIcon(props: {className?: string}) {
 const PLATFORM_ICON = {macos: AppleIcon, linux: TuxIcon};
 
 /**
- * The unsaved-change marker beside a setting's name. It turns into a reset that
- * discards the draft while the row is hovered or the marker has focus.
+ * The unsaved-change marker beside a setting's name. It turns into a revert
+ * that discards the draft while the row is hovered or the marker has focus.
  */
-function OptionReset(props: {option: OptionMeta}) {
+function OptionRevert(props: {option: OptionMeta}) {
   const {option} = props;
   return (
     <IconButton
-      label={`Reset ${option.label}`}
+      label={`Revert ${option.label}`}
       className="-m-1"
       onClick={() => void send({type: "reset", key: option.key})}>
       <span className="size-1.5 rounded-full bg-changed group-hover/option:hidden group-focus-visible/button:hidden" />
@@ -312,8 +313,15 @@ function OptionInput(props: ControlProps) {
 
 function EnumInput(props: ControlProps) {
   const {option, value, commit} = props;
+  const saved = useSnapshot(
+    (snapshot) => snapshot.state.saved[option.key]?.[0],
+  );
   if (option.control.kind !== "enum") return null;
-  const {values} = option.control;
+  const listed = option.control.values;
+  // A saved value the list lacks, such as one a newer Ghostty added, stays a
+  // choice for the whole session, so picking another never drops it.
+  const values =
+    saved === undefined || listed.includes(saved) ? listed : [...listed, saved];
 
   if (values.length <= SEGMENTED_MAX) {
     return (
@@ -323,7 +331,7 @@ function EnumInput(props: ControlProps) {
         onValueChange={(next) => next[0] !== undefined && commit(next[0])}>
         {values.map((item) => (
           <ToggleGroupItem key={item} value={item}>
-            {item}
+            {enumLabel(listed, item)}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
@@ -334,12 +342,12 @@ function EnumInput(props: ControlProps) {
       value={value}
       onValueChange={(next) => next !== null && commit(next)}>
       <SelectTrigger aria-label={option.label} className="min-w-36">
-        <SelectValue />
+        <SelectValue>{(item: string) => enumLabel(listed, item)}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {values.map((item) => (
           <SelectItem key={item} value={item}>
-            {item}
+            {enumLabel(listed, item)}
           </SelectItem>
         ))}
       </SelectContent>
