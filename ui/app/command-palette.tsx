@@ -14,15 +14,15 @@ import {pickTheme} from "@/lib/pick";
 import {describeSlot} from "@/lib/slots";
 import {
   getStore,
+  type OnTop,
   openSaveTheme,
-  type Pin,
   revertAll,
   send,
   setConfigOpen,
   setPaletteOpen,
   setSaveOpen,
   stepHistory,
-  togglePin,
+  toggleOnTop,
   useStore,
 } from "@/lib/store";
 import {
@@ -48,8 +48,8 @@ type Group = {value: string; items: Item[]};
 
 const LIMIT = 80;
 
-/** What to do now, by the session's state and the pin. */
-function actionItems(state: SessionState, pin: Pin): Item[] {
+/** What to do now, by the session's state and whether the window stays on top. */
+function actionItems(state: SessionState, onTop: OnTop): Item[] {
   const dirty = state.changes > 0;
   const actions: Item[] = [];
   if (dirty) {
@@ -113,15 +113,15 @@ function actionItems(state: SessionState, pin: Pin): Item[] {
       run: () => setConfigOpen(true),
     },
   );
-  if (pin !== "unsupported") {
+  if (onTop !== "unsupported") {
     actions.push({
-      value: "action:pin",
+      value: "action:on-top",
       label: "Keep window on top",
       hint:
-        pin === "on" ? (
+        onTop === "on" ? (
           <span className="text-xs text-muted-foreground">On</span>
         ) : undefined,
-      run: togglePin,
+      run: toggleOnTop,
     });
   }
   return actions;
@@ -230,7 +230,7 @@ function buildGroups(): Group[] {
 
   const {sections, settings} = placeItems(snapshot);
   return [
-    {value: "Actions", items: actionItems(snapshot.state, store.pin)},
+    {value: "Actions", items: actionItems(snapshot.state, store.onTop)},
     {value: "Go to", items: [...views, ...sections]},
     {value: "Settings", items: settings},
     {value: "Themes", items: themeItems(snapshot.themes)},

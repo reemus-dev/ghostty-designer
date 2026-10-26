@@ -233,7 +233,7 @@ export class Design {
     if (this.installed()) this.revert();
     this.#draft = EMPTY_DRAFT;
     this.history.clear();
-    this.unpin();
+    this.followSystemHalf();
   }
 
   /**
@@ -366,18 +366,18 @@ export class Design {
   }
 
   /** Back to the system's half of a pair. */
-  private unpin() {
+  private followSystemHalf() {
     this.appearanceChosen = false;
     this.#appearance = this.system;
   }
 
   /** Back to the saved config, and to the system's half of a pair. */
   private async revertAll() {
-    const unpinned = this.appearanceChosen;
-    this.unpin();
+    const wasChosen = this.appearanceChosen;
+    this.followSystemHalf();
     if (!sameDraft(this.draft, EMPTY_DRAFT)) {
       await this.commit({label: "Discard all changes"}, EMPTY_DRAFT);
-    } else if (unpinned) {
+    } else if (wasChosen) {
       this.show();
     }
   }

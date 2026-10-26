@@ -1,6 +1,6 @@
 {
   "identifier": "panel",
-  "description": "Moves, zooms and pins the window from the panel's toolbar and rail.",
+  "description": "Moves and zooms the window, and keeps it on top, from the panel's toolbar and rail.",
   "windows": ["panel"],
   "permissions": [
     "core:window:allow-start-dragging",

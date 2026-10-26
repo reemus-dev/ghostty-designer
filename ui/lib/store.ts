@@ -11,10 +11,10 @@ import type {
   Snapshot,
 } from "@/core/types";
 import {
-  canPin,
+  canStayOnTop,
   closePromptShown,
   host,
-  pinWindow,
+  keepOnTop,
   switchConfig,
   takeSwitchRequest,
 } from "./host";
@@ -26,7 +26,7 @@ import type {View} from "./views";
 type Notice = {id: number; text: string; tone: "info" | "error"};
 
 /** Whether the window stays above other windows. */
-export type Pin = "off" | "on" | "unsupported";
+export type OnTop = "off" | "on" | "unsupported";
 
 export type ThemeFilters = {
   query: string;
@@ -69,7 +69,7 @@ type Store = {
   /** The theme in Themes' detail panel. */
   theme: ThemeChoice;
   themeFilters: ThemeFilters;
-  pin: Pin;
+  onTop: OnTop;
 };
 
 /** Module state lives in objects: lint forbids reassigning top-level bindings. */
@@ -91,7 +91,7 @@ const current: {store: Store; session?: Session} = {
     optionColorModel: "oklch",
     theme: null,
     themeFilters: NO_FILTERS,
-    pin: "off",
+    onTop: "off",
   },
 };
 const listeners = new Set<() => void>();
@@ -133,11 +133,14 @@ export const getStore = () => current.store;
 
 // ─── Session ───
 
-/** Starts the session and asks whether the window can pin. Call once at start. */
+/**
+ * Starts the session and asks whether the window can stay on top. Call once at
+ * start.
+ */
 export function start() {
-  canPin()
-    .then((pinnable) => {
-      if (!pinnable) update({pin: "unsupported"});
+  canStayOnTop()
+    .then((supported) => {
+      if (!supported) update({onTop: "unsupported"});
     })
     .catch(console.error);
   startSession(host, receive)
@@ -431,12 +434,12 @@ export const setThemeFilters = (filters: Partial<ThemeFilters>) =>
 export const clearThemeFilters = () => update({themeFilters: NO_FILTERS});
 
 /** Turns keeping the window above other windows on or off. */
-export function togglePin() {
-  const {pin} = current.store;
-  if (pin === "unsupported") return;
-  const next = pin === "off" ? "on" : "off";
-  pinWindow(next === "on")
-    .then(() => update({pin: next}))
+export function toggleOnTop() {
+  const {onTop} = current.store;
+  if (onTop === "unsupported") return;
+  const next = onTop === "off" ? "on" : "off";
+  keepOnTop(next === "on")
+    .then(() => update({onTop: next}))
     .catch((error: unknown) => notify(errorText(error), "error"));
 }
 

@@ -136,7 +136,7 @@ fn main() {
             panel::call_ordered,
             panel::close_prompt_shown,
             panel::close_window,
-            panel::can_pin,
+            panel::can_stay_on_top,
             panel::config_choices,
             panel::switch_config,
             panel::forget_config,

@@ -13,7 +13,7 @@ import {Kbd} from "@/components/ui/kbd";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {SECTION_TITLE, type SectionId} from "@/lib/customise";
 import {ALT} from "@/lib/keys";
-import {type Pin, togglePin, useStore} from "@/lib/store";
+import {type OnTop, toggleOnTop, useStore} from "@/lib/store";
 import {
   revealSection,
   showView,
@@ -60,7 +60,7 @@ export function Rail() {
       <ViewSwitch view={view} />
       {view === "customise" && <Sections />}
       <div className="mt-auto">
-        <PinToggle />
+        <OnTopToggle />
       </div>
     </div>
   );
@@ -131,16 +131,16 @@ function Sections() {
   );
 }
 
-const PIN_DETAIL: Record<Pin, string | null> = {
+const ON_TOP_DETAIL: Record<OnTop, string | null> = {
   off: null,
   on: "On",
   unsupported: "Not supported on Wayland",
 };
 
 /** Keeps the window above Ghostty while you switch between them. */
-function PinToggle() {
-  const pin = useStore((store) => store.pin);
-  const detail = PIN_DETAIL[pin];
+function OnTopToggle() {
+  const onTop = useStore((store) => store.onTop);
+  const detail = ON_TOP_DETAIL[onTop];
   return (
     <Tooltip>
       <TooltipTrigger
@@ -148,15 +148,15 @@ function PinToggle() {
           <button
             type="button"
             aria-label="Keep window on top"
-            aria-pressed={pin === "on"}
-            aria-disabled={pin === "unsupported"}
-            onClick={togglePin}
+            aria-pressed={onTop === "on"}
+            aria-disabled={onTop === "unsupported"}
+            onClick={toggleOnTop}
           />
         }
         className={cn(
           "flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground",
-          pin === "on" && "bg-selected text-foreground",
-          pin === "unsupported" &&
+          onTop === "on" && "bg-selected text-foreground",
+          onTop === "unsupported" &&
             "opacity-64 hover:bg-transparent hover:text-muted-foreground",
         )}>
         <PictureInPicture2Icon aria-hidden className="size-4" />

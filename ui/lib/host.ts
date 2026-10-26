@@ -32,7 +32,7 @@ export const closePromptShown = () => call<void>("close_prompt_shown");
 
 export const closeWindow = () => call<void>("close_window");
 
-export const canPin = () => call<boolean>("can_pin");
+export const canStayOnTop = () => call<boolean>("can_stay_on_top");
 
 export const configChoices = () => call<ConfigChoice[]>("config_choices");
 
@@ -55,5 +55,4 @@ export const forgetConfig = (path: string) =>
   call<void>("forget_config", {path});
 
 /** Keeps the window above other windows, or lets them cover it again. */
-export const pinWindow = (pinned: boolean) =>
-  getCurrentWindow().setAlwaysOnTop(pinned);
+export const keepOnTop = (on: boolean) => getCurrentWindow().setAlwaysOnTop(on);
