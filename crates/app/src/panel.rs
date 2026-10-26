@@ -114,8 +114,8 @@ impl ActiveHost {
 impl CloseGuard {
     /// Whether to keep the window open for a close request. With unsaved
     /// changes and a connected panel, it asks the panel instead, and closes
-    /// the window when the panel does not acknowledge in time. A second
-    /// request while one is unacknowledged closes.
+    /// the window when the panel does not acknowledge in time. A request
+    /// while one is unacknowledged waits on that one.
     pub fn holds(self: &Arc<Self>, window: &Window, changes: usize) -> bool {
         if changes == 0 || self.confirmed.load(Ordering::SeqCst) {
             return false;
@@ -125,9 +125,8 @@ impl CloseGuard {
         };
         let prompt = {
             let mut asking = lock(&self.asking);
-            if asking.take().is_some() {
-                errln!("[close] the panel did not answer the last request");
-                return false;
+            if asking.is_some() {
+                return true;
             }
             let prompt = self.prompts.fetch_add(1, Ordering::SeqCst);
             *asking = Some(prompt);
