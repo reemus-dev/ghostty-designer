@@ -351,7 +351,12 @@ mod tests {
         ] {
             let mut stream = UnixStream::connect(&socket).unwrap();
             stream.write_all(junk.as_bytes()).unwrap();
-            stream.shutdown(std::net::Shutdown::Write).unwrap();
+            // The designer may close the connection as soon as it rejects the
+            // first line, and then macOS refuses the shutdown.
+            match stream.shutdown(std::net::Shutdown::Write) {
+                Err(error) if error.kind() == io::ErrorKind::NotConnected => {}
+                result => result.unwrap(),
+            }
             let mut reply = String::new();
             stream.read_to_string(&mut reply).unwrap();
             assert_eq!(reply, "", "{junk:?}");
