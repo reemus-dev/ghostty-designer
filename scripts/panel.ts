@@ -5,8 +5,9 @@
 //
 //   panel.ts --name <sandbox> | --dev | --vm <vm> <command>
 //
-//   js <body>                  run an async function body in the panel, print its result as JSON
-//   click <selector>           click the one visible element that matches
+//   js <body>                  run an async function body in the panel, print any result as JSON
+//   click <selector>           click the one visible element that matches with the pointer
+//   wait <selector>            wait until one visible element matches
 //   fill <selector> <text>     clear the one visible field that matches, then type text
 //   key <key>...               press keys in order: Escape, Enter, ArrowDown, Meta+k …
 //   drag <selector> <to>       drag the match onto another selector, or by an offset such as -80,0
@@ -14,10 +15,11 @@
 //   shot <out.png> [selector]  screenshot the panel, cropped to the match
 //
 // The target is a sandbox (`--name`), the user's dev instance (`--dev`), or the
-// window in a Lima VM (`--vm`). Selectors are CSS,
-// or XPath when they start with "/" or "(". Both views stay mounted, so only
-// visible elements count as matches. The page gets synthetic events, so what
-// needs real input is in docs/verify.md.
+// window in a Lima VM (`--vm`). Selectors are CSS, or XPath when they start
+// with "/" or "(". Both views stay mounted, so only visible elements count as
+// matches. A command waits up to five seconds for its match. The page gets
+// synthetic events, so what needs real input is in docs/verify.md. `tour.ts`
+// drives the panel through this module too.
 import {existsSync, readFileSync, writeFileSync} from "node:fs";
 import path from "node:path";
 
@@ -25,7 +27,7 @@ import path from "node:path";
 const DEV_PORT = 4445;
 const ELEMENT_KEY = "element-6066-11e4-a52e-4f735466cecf";
 const USAGE =
-  "usage: panel.ts --name <sandbox> | --dev | --vm <vm> js <body>|click <selector>|fill <selector> <text>|key <key>...|drag <selector> <to>|text [selector]|shot <out.png> [selector]";
+  "usage: panel.ts --name <sandbox> | --dev | --vm <vm> js <body>|click <selector>|wait <selector>|fill <selector> <text>|key <key>...|drag <selector> <to>|text [selector]|shot <out.png> [selector]";
 
 // WebDriver's codes for named keys. Any other key is its own character.
 const KEYS: Record<string, string> = {
@@ -69,12 +71,30 @@ image.src = "data:image/png;base64," + png;
 `;
 
 // Base UI marks a popup with these attributes while it animates open or
-// closed, and a closing popup still takes the pointer. Every command waits for
-// them first, so it never acts on or reads a popup mid-animation.
+// closed, and a closing popup still takes the pointer. The opening transition
+// runs on after its attribute goes. Every command waits for both, and for any
+// other animation that ends, so it never acts on, reads or captures a popup
+// mid-animation.
 const SETTLE_SCRIPT = `
 const deadline = Date.now() + 2000;
-while (document.querySelector("[data-starting-style], [data-ending-style]") && Date.now() < deadline) {
+const moving = () =>
+  document.querySelector("[data-starting-style], [data-ending-style]") ||
+  document.getAnimations().some(
+    (animation) => animation.playState === "running" && animation.effect?.getComputedTiming().endTime !== Infinity,
+  );
+while (moving() && Date.now() < deadline) {
   await new Promise((resolve) => setTimeout(resolve, 20));
+}`;
+
+// Font faces load once their text renders, such as a font list row scrolled
+// into view, so a screenshot waits until three frames pass with none loading.
+const FONTS_SCRIPT = `
+for (let quiet = 0; quiet < 3; quiet++) {
+  await new Promise(requestAnimationFrame);
+  if (document.fonts.status === "loading") {
+    await document.fonts.ready;
+    quiet = -1;
+  }
 }`;
 
 class DriveError extends Error {}
@@ -104,13 +124,13 @@ function resolveTarget(args: string[]) {
     return readPort(`VM ${vm}`, path.join(root, ".cache/vms", vm));
   }
   if (name !== undefined) {
-    return readPort(
-      `sandbox ${name}`,
-      path.join(root, ".cache/sandboxes", name),
-    );
+    return sandboxTarget(name);
   }
   throw new DriveError(USAGE);
 }
+
+export const sandboxTarget = (name: string) =>
+  readPort(`sandbox ${name}`, path.join(root, ".cache/sandboxes", name));
 
 /** Reads the port that the target's runner records in its folder. */
 function readPort(label: string, folder: string) {
@@ -122,7 +142,7 @@ function readPort(label: string, folder: string) {
 }
 
 /** One WebDriver session on the target, closed by `end`. */
-async function startSession(port: number, label: string) {
+export async function startSession(port: number, label: string) {
   const base = `http://127.0.0.1:${port}`;
 
   async function request(method: string, route: string, body?: unknown) {
@@ -158,32 +178,36 @@ async function startSession(port: number, label: string) {
   };
 }
 
-type Session = Awaited<ReturnType<typeof startSession>>;
+export type Session = Awaited<ReturnType<typeof startSession>>;
 
+/** Finds the one visible match, waiting up to five seconds for it. */
 async function find(session: Session, selector: string) {
-  const matches = (await session.call("POST", "/elements", {
-    using: /^[/(]/.test(selector) ? "xpath" : "css selector",
-    value: selector,
-  })) as ElementRef[];
-  const shown = (await session.call("POST", "/execute/sync", {
-    script:
-      "return arguments[0].map((element) => element.getClientRects().length > 0)",
-    args: [matches],
-  })) as boolean[];
-  const [element, ...others] = matches.filter((_, index) => shown[index]);
-  if (element === undefined) {
-    throw new DriveError(`no visible element matches ${selector}`);
+  const deadline = Date.now() + 5000;
+  for (;;) {
+    const matches = (await session.call("POST", "/elements", {
+      using: /^[/(]/.test(selector) ? "xpath" : "css selector",
+      value: selector,
+    })) as ElementRef[];
+    const shown = (await session.call("POST", "/execute/sync", {
+      script:
+        "return arguments[0].map((element) => element.getClientRects().length > 0)",
+      args: [matches],
+    })) as boolean[];
+    const visible = matches.filter((_, index) => shown[index]);
+    if (visible.length === 1) return visible[0]!;
+    if (Date.now() > deadline) {
+      throw new DriveError(
+        visible.length === 0
+          ? `no visible element matches ${selector}`
+          : `${visible.length} visible elements match ${selector}. Narrow the selector`,
+      );
+    }
+    await Bun.sleep(100);
   }
-  if (others.length > 0) {
-    throw new DriveError(
-      `${others.length + 1} visible elements match ${selector}. Narrow the selector`,
-    );
-  }
-  return element;
 }
 
 /** Runs `body` as an async function and returns its result. */
-async function runScript(session: Session, body: string) {
+export async function runScript(session: Session, body: string) {
   const result = (await session.call("POST", "/execute/async", {
     script: `const done = arguments[0];
 (async () => {${body}\n})().then(
@@ -211,6 +235,54 @@ async function pressKeys(session: Session, chords: string[]) {
   await session.call("DELETE", "/actions");
 }
 
+async function movePointer(session: Session, actions: object[]) {
+  await session.call("POST", "/actions", {
+    actions: [
+      {
+        type: "pointer",
+        id: "mouse",
+        parameters: {pointerType: "mouse"},
+        actions,
+      },
+    ],
+  });
+  await session.call("DELETE", "/actions");
+}
+
+async function scrollIntoView(session: Session, element: ElementRef) {
+  await session.call("POST", "/execute/sync", {
+    script: "arguments[0].scrollIntoView({block: 'nearest'})",
+    args: [element],
+  });
+}
+
+/**
+ * Clicks like a mouse in WebKit: the press clears focus, and only a text field
+ * takes it. Then the pointer moves to the window's corner so no hover tooltip
+ * opens. WebDriver's element click focuses any element without pointer events,
+ * so the panel treats it as keyboard input and shows the focus ring and the
+ * tooltip.
+ */
+async function click(session: Session, selector: string) {
+  const element = await find(session, selector);
+  await scrollIntoView(session, element);
+  await session.call("POST", "/execute/sync", {
+    script: "document.activeElement?.blur()",
+    args: [],
+  });
+  await movePointer(session, [
+    {type: "pointerMove", origin: element, x: 0, y: 0},
+    {type: "pointerDown", button: 0},
+    {type: "pointerUp", button: 0},
+    {type: "pointerMove", origin: "viewport", x: 0, y: 0},
+  ]);
+  await session.call("POST", "/execute/sync", {
+    script:
+      "if (arguments[0].matches('input, textarea, [contenteditable]')) arguments[0].focus()",
+    args: [element],
+  });
+}
+
 /** Drags from the match's centre to another match's centre, or by `dx,dy`. */
 async function drag(session: Session, selector: string, to: string) {
   const from = await find(session, selector);
@@ -218,35 +290,23 @@ async function drag(session: Session, selector: string, to: string) {
   const end = offset
     ? {origin: "pointer", x: Number(offset[1]), y: Number(offset[2])}
     : {origin: await find(session, to), x: 0, y: 0};
-  await session.call("POST", "/actions", {
-    actions: [
-      {
-        type: "pointer",
-        id: "mouse",
-        parameters: {pointerType: "mouse"},
-        actions: [
-          {type: "pointerMove", origin: from, x: 0, y: 0},
-          {type: "pointerDown", button: 0},
-          {type: "pointerMove", duration: 200, ...end},
-          {type: "pointerUp", button: 0},
-        ],
-      },
-    ],
-  });
-  await session.call("DELETE", "/actions");
+  await movePointer(session, [
+    {type: "pointerMove", origin: from, x: 0, y: 0},
+    {type: "pointerDown", button: 0},
+    {type: "pointerMove", duration: 200, ...end},
+    {type: "pointerUp", button: 0},
+  ]);
 }
 
 async function screenshot(session: Session, out: string, selector?: string) {
+  await runScript(session, FONTS_SCRIPT);
   if (selector === undefined) {
     writePng(out, (await session.call("GET", "/screenshot")) as string);
     return;
   }
 
   const element = await find(session, selector);
-  await session.call("POST", "/execute/sync", {
-    script: "arguments[0].scrollIntoView({block: 'nearest'})",
-    args: [element],
-  });
+  await scrollIntoView(session, element);
   const png = await session.call("GET", "/screenshot");
   const cropped = await session.call("POST", "/execute/async", {
     script: CROP_SCRIPT,
@@ -265,18 +325,34 @@ function writePng(out: string, png: string) {
   console.log(`${out} ${bytes.readUInt32BE(16)}x${bytes.readUInt32BE(20)}`);
 }
 
+export async function settle(session: Session) {
+  await runScript(session, SETTLE_SCRIPT);
+}
+
+/** Waits for popups to settle, then runs one command. */
+export async function drive(session: Session, command: string, args: string[]) {
+  await settle(session);
+  await run(session, command, args);
+}
+
+// oxlint-disable-next-line complexity -- one switch over the commands, each checking its own arguments
 async function run(session: Session, command: string, args: string[]) {
   const [first, second] = args;
   switch (command) {
     case "js": {
       if (first === undefined) break;
-      console.log(JSON.stringify(await runScript(session, first)));
+      const result = await runScript(session, first);
+      if (result !== undefined) console.log(JSON.stringify(result));
       return;
     }
     case "click": {
       if (first === undefined) break;
-      const element = await find(session, first);
-      await session.call("POST", `/element/${element[ELEMENT_KEY]}/click`, {});
+      await click(session, first);
+      return;
+    }
+    case "wait": {
+      if (first === undefined) break;
+      await find(session, first);
       return;
     }
     case "fill": {
@@ -322,20 +398,21 @@ async function run(session: Session, command: string, args: string[]) {
   throw new DriveError(USAGE);
 }
 
-try {
-  const args = process.argv.slice(2);
-  const {port, label} = resolveTarget(args);
-  const [command, ...rest] = args;
-  if (command === undefined) throw new DriveError(USAGE);
-  const session = await startSession(port, label);
+if (import.meta.main) {
   try {
-    await runScript(session, SETTLE_SCRIPT);
-    await run(session, command, rest);
-  } finally {
-    await session.end();
+    const args = process.argv.slice(2);
+    const {port, label} = resolveTarget(args);
+    const [command, ...rest] = args;
+    if (command === undefined) throw new DriveError(USAGE);
+    const session = await startSession(port, label);
+    try {
+      await drive(session, command, rest);
+    } finally {
+      await session.end();
+    }
+  } catch (error) {
+    if (!(error instanceof DriveError)) throw error;
+    console.error(error.message);
+    process.exit(1);
   }
-} catch (error) {
-  if (!(error instanceof DriveError)) throw error;
-  console.error(error.message);
-  process.exit(1);
 }

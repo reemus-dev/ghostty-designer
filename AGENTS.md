@@ -41,7 +41,7 @@ session in TypeScript.
 | `ui/features/`                   | Customise sections (colors, fonts, window) and the Themes view         |
 | `ui/components/`                 | Shared controls, with shadcn components in `components/ui/`            |
 | `ui/lib/`                        | Store, host commands, view helpers, specimen pages                     |
-| `scripts/`                       | Commands on the PATH: sandbox, panel driver, VMs, smoke, icon, release |
+| `scripts/`                       | On the PATH: sandbox, panel driver, tour, VMs, smoke, icon, release    |
 | `docs/`                          | Architecture and distribution decisions, running and driving the app   |
 | `.github/workflows/`             | CI on macOS and Linux, releases from version tags                      |
 

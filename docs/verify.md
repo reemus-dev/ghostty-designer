@@ -21,6 +21,7 @@ into view before it clicks it.
 
 ```sh
 panel.ts --name <name> click '[aria-label="Themes"]'
+panel.ts --name <name> wait '[role="dialog"]'
 panel.ts --name <name> fill '[aria-label="Search themes"]' nord
 panel.ts --name <name> key Meta+k
 panel.ts --name <name> drag '//input[@aria-label="Cursor opacity"]/..' -60,0
@@ -32,11 +33,21 @@ panel.ts --name <name> shot .cache/nord.png '[data-theme="Nord"]'
 - `--name` picks a sandbox, `--vm` a Lima VM, and `--dev` the user's dev
   instance, whose edits reach the real config and Ghostty.
 - Selectors are CSS, or XPath when they start with `/`. Both views stay mounted,
-  so a command acts on the one visible match and fails when there are none or
-  several.
+  so a command acts on the one visible match. It waits up to five seconds for
+  one, then fails when there are none or several.
+- `click` presses the pointer like a mouse in WebKit: only a text field takes
+  focus, so no focus ring or tooltip shows on the clicked button.
 - `js` runs an async function body, so it can `await` a condition.
 - `shot` captures the web content only. The window frame, title bar and menus
   need a screenshot of the screen.
+
+## Tour the panel
+
+`tour.ts` resets a `tour` sandbox, walks the panel through its views, popups and
+dialogs, and screenshots each stop into `.cache/tour/`. Its `index.md` maps how
+the stops connect, then shows every screenshot, for a visual audit of the whole
+panel. Runs on one machine give the same screenshots. When you add a view, popup
+or dialog, add a stop to `STOPS` in `tour.ts`.
 
 ## Real input
 
