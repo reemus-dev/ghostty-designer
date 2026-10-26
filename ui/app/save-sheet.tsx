@@ -53,7 +53,6 @@ export function SaveSheet() {
       {/* Centred clear of the toolbar row, where macOS draws the traffic lights. */}
       <DialogContent
         initialFocus={cancel}
-        showCloseButton={false}
         className="flex max-h-[calc(100dvh-6rem)] flex-col gap-5 sm:max-w-[520px]">
         <SaveFlow ref={cancel} savingRef={savingRef} />
       </DialogContent>

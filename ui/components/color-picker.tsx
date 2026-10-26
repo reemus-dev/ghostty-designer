@@ -181,8 +181,7 @@ export function ColorPicker(props: {
             size="sm"
             variant="outline"
             onClick={() => void send({type: "reset", key: id})}>
-            {" "}
-            Revert{" "}
+            Revert
           </Button>
         )}
         <ModelSelect value={model} onChange={props.onModelChange} />

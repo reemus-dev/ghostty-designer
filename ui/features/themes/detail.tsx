@@ -34,7 +34,7 @@ import type {
 } from "@/core/types";
 import {describeSlot} from "@/lib/slots";
 import {notify, openSaveTheme, send, useSnapshot} from "@/lib/store";
-import {NOT_SHOWING_TEXT} from "@/lib/views";
+import {NOT_SHOWING_TEXT, useAppName} from "@/lib/views";
 import {ThemeActions} from "./theme-actions";
 
 const listWords = (words: string[]) =>
@@ -79,6 +79,7 @@ function ReadabilityWarnings(props: {warnings: ReadabilityWarning[]}) {
 // ─── Shared parts ───
 
 function Showing() {
+  const app = useAppName();
   const notShowing = useSnapshot((snapshot) =>
     whyNotShowing(snapshot.state, THEME_PICK_KEYS),
   );
@@ -92,7 +93,7 @@ function Showing() {
   return (
     <p className="flex items-center gap-2 text-sm text-muted-foreground">
       <LiveDot />
-      Showing in Ghostty
+      Showing in {app}
     </p>
   );
 }
@@ -169,7 +170,10 @@ type ThemeDetailProps = {
   favorite: boolean;
 };
 
-/** The focused theme: what it is, its colours, and how to copy or pair it. */
+/**
+ * The focused theme: what it is, its colours, and how to favourite, pin, copy,
+ * rename, delete or pair it.
+ */
 export function ThemeDetail(props: ThemeDetailProps) {
   const {theme, showing, base, favorite} = props;
   const ModeIcon = theme.dark ? MoonIcon : SunIcon;
@@ -233,8 +237,7 @@ export function CurrentDetail(props: {
     <>
       <header className="flex flex-col gap-1.5">
         <h2 className="text-xl leading-tight font-semibold tracking-[-0.015em]">
-          {" "}
-          Your colours{" "}
+          Your colours
         </h2>
         {showing && <Showing />}
         {match && (
@@ -275,6 +278,7 @@ export function CurrentDetail(props: {
  */
 function PairBuilder(props: {theme: ThemeSummary}) {
   const {theme} = props;
+  const app = useAppName();
   const themes = useSnapshot((snapshot) => snapshot.themes);
   const setting = useSnapshot((snapshot) => snapshot.state.themeSetting);
   const appearance = useSnapshot((snapshot) => snapshot.state.appearance);
@@ -368,9 +372,9 @@ function PairBuilder(props: {theme: ThemeSummary}) {
           </div>
           {inPair && (
             <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-              Show in Ghostty now
+              Show in {app} now
               <ToggleGroup
-                aria-label="Theme Ghostty shows now"
+                aria-label={`Theme ${app} shows now`}
                 value={[appearance]}
                 onValueChange={(next) =>
                   next[0] &&

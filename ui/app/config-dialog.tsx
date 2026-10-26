@@ -95,7 +95,7 @@ export function ConfigDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setConfigOpen}>
-      <DialogContent className="sm:max-w-md" showCloseButton={false}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Switch config</DialogTitle>
           <DialogDescription>

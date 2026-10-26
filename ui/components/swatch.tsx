@@ -28,8 +28,7 @@ export function Swatch(props: SwatchProps) {
     <span
       className={cn(
         "relative block h-7 w-full shrink-0 rounded-md checkerboard",
-        selected &&
-          "ring-2 ring-ring ring-offset-2 ring-offset-(--swatch-offset,var(--color-card))",
+        selected && "ring-2 ring-ring ring-offset-2 ring-offset-card",
         props.className,
       )}>
       <span

@@ -140,7 +140,7 @@ function RenameDialog(props: {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm" showCloseButton={false}>
+      <DialogContent className="sm:max-w-sm">
         <form
           className="flex flex-col gap-4"
           onSubmit={(event) => {

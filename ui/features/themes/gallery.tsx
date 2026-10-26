@@ -51,7 +51,7 @@ type GalleryProps = {
 
 /**
  * Theme cards in sections, with one roving tab stop. A click or the arrow keys
- * (and hjkl) pick the card's theme, F stars it.
+ * (and hjkl) pick the card's theme, F favourites it.
  */
 export function Gallery(props: GalleryProps) {
   const {current, sections, focused, onFocus} = props;
@@ -233,11 +233,7 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
         pickTheme(choice, 0);
       }}>
       <div className="relative">
-        <SpecimenLines
-          lines={SPECIMEN_CARD}
-          colors={colors}
-          className="px-3.5 pt-3 pb-[13px] text-[12.5px] leading-[18px]"
-        />
+        <SpecimenLines lines={SPECIMEN_CARD} colors={colors} />
         {props.match && (
           <span className="absolute right-2.5 bottom-2.5 inline-flex h-5 items-center rounded-full bg-card/90 px-2 text-xs font-medium text-foreground inset-ring inset-ring-input">
             {props.match.exact ? "Matches your colours" : "Closest to yours"}
@@ -251,7 +247,7 @@ const ThemeCard = memo(function ThemeCard(props: CardProps) {
       <span className="flex h-[42px] w-full items-center gap-2 px-4">
         <ModeIcon dark={dark} />
         <Truncate className="min-w-0 font-medium text-foreground">
-          {choice ?? "Your colours"}{" "}
+          {choice ?? "Your colours"}
         </Truncate>
         {props.favorite && (
           <StarIcon

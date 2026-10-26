@@ -10,7 +10,6 @@ export type SlotId = string;
 type BaseSlot = {
   key: string;
   label: string;
-  role: string;
   /** The colour it is read with. */
   against: SlotId;
   /** True when text sits on it, so specimens swap text and background. */
@@ -21,66 +20,59 @@ export const BASE_SLOTS: readonly BaseSlot[] = [
   {
     key: "background",
     label: "Background",
-    role: "Behind every cell without its own colour",
     against: "foreground",
     surface: true,
   },
   {
     key: "foreground",
     label: "Text",
-    role: "Text without its own colour",
     against: "background",
   },
   {
     key: "cursor-color",
     label: "Cursor",
-    role: "The block, bar or underline cursor",
     against: "background",
   },
   {
     key: "cursor-text",
     label: "Cursor text",
-    role: "The character under a block cursor",
     against: "cursor-color",
   },
   {
     key: "selection-background",
     label: "Selection",
-    role: "Cells of selected text",
     against: "selection-foreground",
     surface: true,
   },
   {
     key: "selection-foreground",
     label: "Selection text",
-    role: "Selected text",
     against: "selection-background",
   },
   {
     key: "bold-color",
     label: "Bold",
-    role: "Bold text; bright uses the bright variant of its colour",
     against: "background",
   },
 ];
 
-const ANSI: readonly [name: string, role: string][] = [
-  ["Black", "Dark panels in TUIs, black text on light themes"],
-  ["Red", "Errors, deletions, failed exit codes"],
-  ["Green", "Success, additions, staged files"],
-  ["Yellow", "Warnings, modified files, search matches"],
-  ["Blue", "Directories, links, info messages"],
-  ["Magenta", "Keywords, git branches, special files"],
-  ["Cyan", "Strings, symlinks, types"],
-  ["White", "Light text in TUIs, dark themes' secondary text"],
-  ["Bright black", "Comments, autosuggestions, dim git lines"],
-  ["Bright red", "Bold errors, emphasised deletions"],
-  ["Bright green", "Executables, bold success"],
-  ["Bright yellow", "Highlights, bold warnings"],
-  ["Bright blue", "Bold directories, active tabs"],
-  ["Bright magenta", "Bold keywords, prompts"],
-  ["Bright cyan", "Bold strings, info highlights"],
-  ["Bright white", "Emphasised text, headings"],
+const ANSI: readonly string[] = [
+  "Black",
+  "Red",
+  "Green",
+  "Yellow",
+  "Blue",
+  "Magenta",
+  "Cyan",
+  "White",
+  "Bright black",
+  "Bright red",
+  "Bright green",
+  "Bright yellow",
+  "Bright blue",
+  "Bright magenta",
+  "Bright cyan",
+  "Bright white",
 ];
 
 /** The 16 terminal colours, palette 0-15. */
@@ -97,13 +89,8 @@ export function describeSlot(id: SlotId) {
     const base = BASE_SLOTS.find((slot) => slot.key === id)!;
     return {...base, title: base.label};
   }
-  const [name, role] = ANSI[index] ?? [
-    `Colour ${index}`,
-    "One of the 256 colours terminal apps pick by number",
-  ];
   return {
-    title: name,
-    role,
+    title: ANSI[index] ?? `Colour ${index}`,
     against: "background",
     surface: false,
   };

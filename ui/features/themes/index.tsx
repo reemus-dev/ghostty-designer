@@ -28,7 +28,7 @@ import {
   useSnapshot,
   useStore,
 } from "@/lib/store";
-import {revealTheme} from "@/lib/views";
+import {revealTheme, useAppName} from "@/lib/views";
 import {CurrentDetail, ThemeDetail} from "./detail";
 import {type FilterCounts, filterThemes, type Sort} from "./filter";
 import {Gallery} from "./gallery";
@@ -42,6 +42,7 @@ const SORT_LABEL: Record<Sort, string> = {
 };
 
 export function ThemesView() {
+  const app = useAppName();
   const themes = useSnapshot((snapshot) => snapshot.themes);
   const favorites = useSnapshot((snapshot) => snapshot.state.favorites);
   const recent = useSnapshot((snapshot) => snapshot.state.recentThemes);
@@ -59,7 +60,7 @@ export function ThemesView() {
   const match = own.colorMatch;
 
   const filters = useStore((store) => store.themeFilters);
-  const {query, starred} = filters;
+  const {query} = filters;
   const [sort, setSort] = useState<Sort>("name");
   const focused = useStore((store) => store.theme);
 
@@ -74,8 +75,9 @@ export function ThemesView() {
     [byName, filters, sort, favorites, recent],
   );
 
-  const withCurrent = query === "" && !starred;
-  const filtered = filters.mode !== "all" || filters.readable || starred;
+  const withCurrent = query === "" && !filters.favorites;
+  const filtered =
+    filters.mode !== "all" || filters.readable || filters.favorites;
   const mine = shown.filter((theme) => theme.source === "user");
   const sections = [
     {label: "My themes", themes: mine},
@@ -127,7 +129,7 @@ export function ThemesView() {
             <Kbd>←</Kbd>
             <Kbd>→</Kbd>
             <Kbd>↑</Kbd>
-            <Kbd>↓</Kbd> try themes in Ghostty
+            <Kbd>↓</Kbd> try themes in {app}
           </p>
           <Gallery
             current={withCurrent ? own.colors : null}
@@ -165,7 +167,7 @@ function Filters(props: {
   onSort: (sort: Sort) => void;
 }) {
   const {total, counts, sort, onSort} = props;
-  const {query, mode, readable, starred} = useStore(
+  const {query, mode, readable, favorites} = useStore(
     (store) => store.themeFilters,
   );
   return (
@@ -242,14 +244,14 @@ function Filters(props: {
             <TooltipTrigger
               render={
                 <Chip
-                  pressed={starred}
-                  count={counts.starred}
-                  onPressedChange={(next) => setThemeFilters({starred: next})}
+                  pressed={favorites}
+                  count={counts.favorites}
+                  onPressedChange={(next) => setThemeFilters({favorites: next})}
                 />
               }>
               <StarIcon
                 aria-hidden
-                className={starred ? "fill-current" : undefined}
+                className={favorites ? "fill-current" : undefined}
               />
               Favourites
             </TooltipTrigger>

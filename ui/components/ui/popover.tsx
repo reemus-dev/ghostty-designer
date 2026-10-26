@@ -1,5 +1,3 @@
-"use client";
-
 import {cn} from "cn";
 import {Popover as PopoverPrimitive} from "@base-ui/react/popover";
 

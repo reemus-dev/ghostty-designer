@@ -47,7 +47,7 @@ export function filterThemes(
   },
 ) {
   const {filters, sort, favorites, recent} = view;
-  const {query, mode, readable, starred} = filters;
+  const {query, mode, readable} = filters;
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const tests = {
     query: (theme: ThemeSummary) =>
@@ -55,8 +55,8 @@ export function filterThemes(
     mode: (theme: ThemeSummary) =>
       mode === "all" || theme.dark === (mode === "dark"),
     readable: (theme: ThemeSummary) => !readable || isReadable(theme),
-    starred: (theme: ThemeSummary) =>
-      !starred || favorites.includes(theme.name),
+    favorites: (theme: ThemeSummary) =>
+      !filters.favorites || favorites.includes(theme.name),
   };
   type Test = keyof typeof tests;
   const passing = (skip: Test) =>
@@ -72,7 +72,7 @@ export function filterThemes(
       dark: byMode.filter((theme) => theme.dark).length,
       light: byMode.filter((theme) => !theme.dark).length,
       readable: passing("readable").filter(isReadable).length,
-      starred: passing("starred").filter((theme) =>
+      favorites: passing("favorites").filter((theme) =>
         favorites.includes(theme.name),
       ).length,
     },

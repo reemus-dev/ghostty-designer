@@ -48,7 +48,7 @@ export function SaveThemeDialog() {
     <Dialog
       open={opened !== null}
       onOpenChange={(open) => !open && closeSaveTheme()}>
-      <DialogContent className="sm:max-w-sm" showCloseButton={false}>
+      <DialogContent className="sm:max-w-sm">
         <form
           className="flex flex-col gap-4"
           onSubmit={(event) => {

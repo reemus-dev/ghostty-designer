@@ -46,7 +46,7 @@ const ghosttyChain = () =>
 /**
  * The installed fonts, each drawn in its face, in a scroll box of their own
  * beside the selected font's settings. Ghostty's default font and the font in
- * the saved config are pinned first; the selected row is the font Ghostty
+ * the saved config are listed first; the selected row is the font Ghostty
  * shows. Picking a font is a draft change, and picks one after another are one
  * undo step.
  */
@@ -77,12 +77,9 @@ export function FontSection() {
       font.family.toLowerCase().includes(needle) &&
       filters.every((filter) => FILTERS[filter].test(font)),
   );
-  const pinned = matches?.find((font) => font.family === savedFont);
+  const saved = matches?.find((font) => font.family === savedFont);
   const visible = matches
-    ? [
-        ...(pinned ? [pinned] : []),
-        ...matches.filter((font) => font !== pinned),
-      ]
+    ? [...(saved ? [saved] : []), ...matches.filter((font) => font !== saved)]
     : null;
   const withDefault =
     filters.length === 0 &&

@@ -32,14 +32,14 @@ export type ThemeFilters = {
   query: string;
   mode: "all" | "dark" | "light";
   readable: boolean;
-  starred: boolean;
+  favorites: boolean;
 };
 
 const NO_FILTERS: ThemeFilters = {
   query: "",
   mode: "all",
   readable: false,
-  starred: false,
+  favorites: false,
 };
 
 type Store = {

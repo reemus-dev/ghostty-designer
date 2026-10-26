@@ -2,8 +2,8 @@ import {cn} from "cn";
 import {Toggle} from "@base-ui/react/toggle";
 
 /**
- * Native's filter chip: a toggle that shows as selected when on, with an
- * optional count of what it shows.
+ * A filter chip: a toggle that shows as selected when on, with an optional
+ * count of what it shows.
  */
 export function Chip(props: Toggle.Props & {count?: number}) {
   const {count, className, children, ...rest} = props;

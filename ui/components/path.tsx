@@ -1,7 +1,10 @@
 import {Fragment} from "react";
 import {cn} from "cn";
 import {Truncate} from "@/components/truncate";
-import {tildePath} from "@/lib/paths";
+
+/** A path with the home folder as ~, as people say it. */
+const tildePath = (path: string) =>
+  path.replace(/^\/(?:Users|home)\/[^/]+/, "~");
 
 /**
  * A path with the home folder as ~, which wraps only after a slash so each name

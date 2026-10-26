@@ -1,27 +1,18 @@
-// Specimen content: one source of truth for the panel's approximate render and
-// the exact one a terminal prints. Colours name palette slots, never values, so
-// any theme renders the same pages. The content is crates/host/src/specimen.json,
-// which the Rust printer embeds.
+// The gallery cards' mini terminal, from the `card` section of
+// crates/host/src/specimen.json. The Rust `specimen` printout renders the same
+// file's `pages`. Colours name palette slots, never values, so any theme
+// renders the same card.
 import content from "../../crates/host/src/specimen.json";
 
-/** A palette index (0-255), or the theme's foreground or background. */
-export type SpecimenColor = number | "fg" | "bg";
-
-type SpecimenStyle = {
-  fg?: SpecimenColor;
-  bg?: SpecimenColor;
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  dim?: boolean;
-  inverse?: boolean;
+export type SpecimenSegment = {
+  text: string;
+  /** A palette index (0-255). Without one, the theme's foreground. */
+  fg?: number;
   /** Drawn with the selection colours. */
   selected?: boolean;
   /** The cell under the cursor, drawn with the cursor colours. */
   cursor?: boolean;
 };
-
-export type SpecimenSegment = SpecimenStyle & {text: string};
 
 export type SpecimenLine = SpecimenSegment[];
 

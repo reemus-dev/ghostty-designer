@@ -42,7 +42,8 @@ export function FamilyList(props: FamilyListProps) {
   const rows = families && [...(withDefault ? [null] : []), ...families];
   const names = rows?.map((font) => font?.family ?? "") ?? [];
   const index = names.indexOf(cursor);
-  const pinned = (name: string | undefined) => name === "" || name === saved;
+  const listedFirst = (name: string | undefined) =>
+    name === "" || name === saved;
 
   // Follows the cursor when it moves, not when the view shows again and
   // reruns effects. Scrolls only the list's own box: scrollIntoView would
@@ -163,9 +164,11 @@ export function FamilyList(props: FamilyListProps) {
                 </span>
               )}
             </div>
-            {pinned(name) && i < names.length - 1 && !pinned(names[i + 1]) && (
-              <div role="presentation" className="mx-4 my-2 h-px bg-border" />
-            )}
+            {listedFirst(name) &&
+              i < names.length - 1 &&
+              !listedFirst(names[i + 1]) && (
+                <div role="presentation" className="mx-4 my-2 h-px bg-border" />
+              )}
           </div>
         );
       })}
