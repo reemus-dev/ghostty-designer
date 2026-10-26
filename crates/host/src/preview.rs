@@ -68,11 +68,10 @@ pub struct Status {
 
 /// What the preview file starts with while the engine runs, draft or not.
 //
-// [UNTIL] Ghostty stops sending a config change's `color_scheme_report` into
-// the termio thread's own mailbox.
-// https://github.com/ghostty-org/ghostty/discussions/14825
+// [UNTIL] The oldest Ghostty the designer supports includes the fix, merged
+// after 1.3.1. https://github.com/ghostty-org/ghostty/issues/14833
 //
-// Without this line a preview reload can freeze Ghostty for good. Each
+// Without this line a preview reload can freeze Ghostty 1.3.1 for good. Each
 // terminal's termio thread is the only reader of a 64-message mailbox, yet
 // handling a reload makes it send into that mailbox and wait for a free slot.
 // Programs that subscribe to light/dark reports get one on every reload, and
