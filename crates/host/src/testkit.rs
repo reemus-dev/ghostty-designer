@@ -1,12 +1,13 @@
 //! A temporary `Env` and a fake Ghostty CLI for tests.
 //!
-//! The fake answers `+version` and `+list-fonts` with Ghostty 1.3.1's output
-//! (`tests/fixtures/ghostty-1.3.1/`), `+show-config --default` with one
-//! documented key, and accepts every config in `+validate-config`. Tests change how an action behaves at any
-//! time with [`FakeGhostty::set`], for all later calls or for one call.
+//! The fake, `tests/fixtures/fake-ghostty`, answers `+version` and
+//! `+list-fonts` with Ghostty 1.3.1's output (`tests/fixtures/ghostty-1.3.1/`),
+//! `+show-config --default` with one documented key, and accepts every config
+//! in `+validate-config`. Tests change how an action behaves at any time with
+//! [`FakeGhostty::set`], for all later calls or for one call.
 
 use std::fs;
-use std::os::unix::fs::PermissionsExt;
+use std::os::unix::fs::symlink;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -24,6 +25,8 @@ const FIXTURES: [(&str, &str); 2] = [
         include_str!("../tests/fixtures/ghostty-1.3.1/list-fonts.txt"),
     ),
 ];
+
+const SCRIPT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/fake-ghostty");
 
 const BASELINE: &str = include_str!("../tests/fixtures/ghostty-1.3.1/baseline.conf");
 
@@ -134,10 +137,9 @@ impl FakeGhostty {
         for (name, text) in FIXTURES {
             fs::write(dir.join(name), text).unwrap();
         }
-        let bin = dir.join("ghostty");
-        let quoted = dir.to_str().unwrap().replace('\'', r"'\''");
-        fs::write(&bin, SCRIPT.replace("<dir>", &quoted)).unwrap();
-        fs::set_permissions(&bin, fs::Permissions::from_mode(0o755)).unwrap();
+        // A link, because on Linux a file this process writes can fail to run:
+        // a child forked meanwhile holds it open for writing until it execs.
+        symlink(SCRIPT, dir.join("ghostty")).unwrap();
         FakeGhostty { dir }
     }
 
@@ -182,74 +184,6 @@ impl FakeGhostty {
             .collect()
     }
 }
-
-const SCRIPT: &str = r#"#!/bin/sh
-# Fake Ghostty CLI, written by the host crate's testkit.
-dir='<dir>'
-case $1 in
-+version | +show-config | +validate-config | +list-fonts) action=${1#+} ;;
-*)
-  echo "fake ghostty: unknown action $1" >&2
-  exit 2
-  ;;
-esac
-
-# Each call appends its PID, so its line number counts the call without a lock.
-echo $$ >>"$dir/$action.calls"
-n=$(grep -nx "$$" "$dir/$action.calls" | tail -n 1 | cut -d: -f1)
-setting() {
-  for f in "$dir/$action.$n.$1" "$dir/$action.$1"; do
-    if [ -e "$f" ]; then
-      echo "$f"
-      return 0
-    fi
-  done
-  return 1
-}
-
-if f=$(setting delay); then
-  delay=$(cat "$f")
-  # exec, so that killing this process ends the wait.
-  [ "$delay" = hang ] && exec sleep 2147483647
-  sleep "$delay"
-fi
-
-code=0
-if f=$(setting stdout); then
-  cat "$f"
-else
-  case $action in
-  show-config)
-    case " $* " in
-    *" --default "*) printf '# The font size in points.\nfont-size = 13\n' ;;
-    *)
-      echo "fake ghostty: +show-config answers only --default" >&2
-      code=2
-      ;;
-    esac
-    ;;
-  validate-config)
-    for arg; do
-      case $arg in --config-file=*) file=${arg#--config-file=} ;; esac
-    done
-    if f=$(setting reject); then
-      awk '
-        NR == FNR { reject[$0] = 1; next }
-        {
-          key = $0; sub(/^[ \t]+/, "", key); sub(/[ \t]*=.*/, "", key)
-          value = $0; sub(/^[^=]*=[ \t]*/, "", value)
-        }
-        key in reject { printf "%s:%d:%s: invalid value \"%s\"\n", FILENAME, FNR, key, value; bad = 1 }
-        END { exit bad }
-      ' "$f" "$file" || code=1
-    fi
-    ;;
-  *) cat "$dir/$action.txt" ;;
-  esac
-fi
-if f=$(setting stderr); then cat "$f" >&2; fi
-exit "$code"
-"#;
 
 #[cfg(test)]
 mod tests {

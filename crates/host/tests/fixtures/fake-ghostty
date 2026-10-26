@@ -1,0 +1,67 @@
+#!/bin/sh
+# Fake Ghostty CLI for the host crate's tests. Each test links to it from its
+# own folder, which holds the call log, settings and outputs.
+dir=$(dirname "$0")
+case $1 in
++version | +show-config | +validate-config | +list-fonts) action=${1#+} ;;
+*)
+  echo "fake ghostty: unknown action $1" >&2
+  exit 2
+  ;;
+esac
+
+# Each call appends its PID, so its line number counts the call without a lock.
+echo $$ >>"$dir/$action.calls"
+n=$(grep -nx "$$" "$dir/$action.calls" | tail -n 1 | cut -d: -f1)
+setting() {
+  for f in "$dir/$action.$n.$1" "$dir/$action.$1"; do
+    if [ -e "$f" ]; then
+      echo "$f"
+      return 0
+    fi
+  done
+  return 1
+}
+
+if f=$(setting delay); then
+  delay=$(cat "$f")
+  # exec, so that killing this process ends the wait.
+  [ "$delay" = hang ] && exec sleep 2147483647
+  sleep "$delay"
+fi
+
+code=0
+if f=$(setting stdout); then
+  cat "$f"
+else
+  case $action in
+  show-config)
+    case " $* " in
+    *" --default "*) printf '# The font size in points.\nfont-size = 13\n' ;;
+    *)
+      echo "fake ghostty: +show-config answers only --default" >&2
+      code=2
+      ;;
+    esac
+    ;;
+  validate-config)
+    for arg; do
+      case $arg in --config-file=*) file=${arg#--config-file=} ;; esac
+    done
+    if f=$(setting reject); then
+      awk '
+        NR == FNR { reject[$0] = 1; next }
+        {
+          key = $0; sub(/^[ \t]+/, "", key); sub(/[ \t]*=.*/, "", key)
+          value = $0; sub(/^[^=]*=[ \t]*/, "", value)
+        }
+        key in reject { printf "%s:%d:%s: invalid value \"%s\"\n", FILENAME, FNR, key, value; bad = 1 }
+        END { exit bad }
+      ' "$f" "$file" || code=1
+    fi
+    ;;
+  *) cat "$dir/$action.txt" ;;
+  esac
+fi
+if f=$(setting stderr); then cat "$f" >&2; fi
+exit "$code"
