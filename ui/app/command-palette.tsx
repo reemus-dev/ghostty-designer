@@ -85,7 +85,6 @@ function actionItems(state: SessionState, onTop: OnTop): Item[] {
     actions.push({
       value: "action:discard",
       label: "Discard all changes",
-      hint: <Kbd>esc esc</Kbd>,
       run: revertAll,
     });
   }

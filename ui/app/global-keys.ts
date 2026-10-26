@@ -2,7 +2,6 @@ import {useEffect} from "react";
 import {isEditable} from "@/lib/keys";
 import {
   getStore,
-  revertAll,
   setPaletteOpen,
   setPeek,
   setSaveOpen,
@@ -10,8 +9,6 @@ import {
   stepHistory,
 } from "@/lib/store";
 import {showView, VIEWS} from "@/lib/views";
-
-const DOUBLE_ESC_MS = 500;
 
 /** Dialogs, menus and select popups render in portals outside the app root. */
 const inPopup = (target: EventTarget | null) =>
@@ -24,13 +21,11 @@ const inPopup = (target: EventTarget | null) =>
  * The app-wide keys. Views handle their own keys first: a handler that calls
  * preventDefault (such as Esc clearing a search) keeps the key from here.
  *
- * - ⌘K palette, ⌘S save sheet, ⌘Z undo, ⇧⌘Z redo, Esc Esc discard
+ * - ⌘K palette, ⌘S save sheet, ⌘Z undo, ⇧⌘Z redo, Esc leaves a text field
  * - Hold \ compares with saved, / focuses the view's search, ⌥1 ⌥2 views
  */
 export function useGlobalKeys() {
   useEffect(() => {
-    let lastEsc = 0;
-
     // oxlint-disable-next-line complexity -- one handler for every global shortcut, each an early return
     const onKeyDown = (event: KeyboardEvent) => {
       // The setup takes the window until it is answered.
@@ -70,21 +65,10 @@ export function useGlobalKeys() {
       }
       if (mod || event.altKey) return;
 
-      if (event.key === "Escape") {
-        if (isEditable(event.target)) {
-          (event.target as HTMLElement).blur();
-          return;
-        }
-        const now = event.timeStamp;
-        if (now - lastEsc < DOUBLE_ESC_MS) {
-          lastEsc = 0;
-          revertAll();
-        } else {
-          lastEsc = now;
-        }
+      if (isEditable(event.target)) {
+        if (event.key === "Escape") (event.target as HTMLElement).blur();
         return;
       }
-      if (isEditable(event.target)) return;
 
       if (event.key === "\\") {
         event.preventDefault();

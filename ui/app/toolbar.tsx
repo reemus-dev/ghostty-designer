@@ -303,7 +303,6 @@ function ChangeList(props: {
             onClick={revertAll}>
             <EraserIcon />
             Discard all
-            <Kbd>esc esc</Kbd>
           </Button>
         </div>
       </PopoverContent>
