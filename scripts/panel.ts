@@ -257,17 +257,21 @@ async function scrollIntoView(session: Session, element: ElementRef) {
 }
 
 /**
- * Clicks like a mouse in WebKit: the press clears focus, and only a text field
- * takes it. Then the pointer moves to the window's corner so no hover tooltip
- * opens. WebDriver's element click focuses any element without pointer events,
- * so the panel treats it as keyboard input and shows the focus ring and the
- * tooltip.
+ * Clicks like a mouse in WebKit: focus stays where it was, and only a text
+ * field takes it. Then the pointer moves to the window's corner so no hover
+ * tooltip opens. WebDriver's element click focuses any element without pointer
+ * events, so the panel treats it as keyboard input and shows the focus ring and
+ * the tooltip.
  */
 async function click(session: Session, selector: string) {
   const element = await find(session, selector);
   await scrollIntoView(session, element);
+  // A real press stops later script focus from showing the focus ring.
+  // Synthetic events do not, but focus from nothing never shows it, and focus
+  // that moves on from there inherits that.
   await session.call("POST", "/execute/sync", {
-    script: "document.activeElement?.blur()",
+    script:
+      "const active = document.activeElement; if (active instanceof HTMLElement && active !== document.body) { active.blur(); active.focus({preventScroll: true}) }",
     args: [],
   });
   await movePointer(session, [

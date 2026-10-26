@@ -266,8 +266,8 @@ const page = path.join(out, "index.html");
 const sandbox = path.join(import.meta.dir, "sandbox.ts");
 
 /**
- * Presses Escape until no popup is open. A tooltip that opened as focus moved
- * into the popup takes the first press.
+ * Presses Escape until no popup is open. Each takes a press, such as a dialog
+ * over the narrow window's detail sheet.
  */
 async function closePopups(session: Session) {
   for (let presses = 0; ; presses++) {
