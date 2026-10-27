@@ -7,7 +7,7 @@
 
 Design Ghostty's appearance in a control panel window, with your own Ghostty
 windows as the live preview. An unofficial community tool, not affiliated with
-the Ghostty project.
+the Ghostty project. Built entirely by AI agents, which I direct and review.
 
 - Try any of Ghostty's themes, or tune your own colours with OKLCH sliders and
   readability checks
