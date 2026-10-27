@@ -174,6 +174,7 @@ export const OPTIONS: readonly OptionDef[] = [
     group: "cursor",
     label: "Cursor height",
     control: {kind: "metric"},
+    reloadNote: "Has no effect before Ghostty 1.4.",
   },
   {
     key: "font-family",
@@ -239,7 +240,8 @@ export const OPTIONS: readonly OptionDef[] = [
     label: "Font size",
     control: {kind: "number", min: 4, max: 96, step: 0.5, unit: "pt"},
     reload: "special",
-    reloadNote: "Applies to every terminal and resets per-window zoom.",
+    reloadNote:
+      "Applies to every terminal. Terminals zoomed with the font size keys keep their size, except on macOS, where the designer resets their zoom.",
   },
   {
     key: "font-feature",
