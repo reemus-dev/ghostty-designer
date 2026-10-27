@@ -53,7 +53,7 @@ const logPath = path.join(sandboxDir, "run.log");
 // Explicit colours and a theme line: the explicit colours beat the theme, so
 // a preview must write theme keys explicitly.
 const BASELINE = readFileSync(
-  path.join(root, "crates/host/tests/fixtures/ghostty-1.3.1/baseline.conf"),
+  path.join(root, "crates/host/tests/fixtures/baseline.conf"),
   "utf8",
 );
 const INCLUDE_LINE = "config-file = ?ghostty-designer.conf\n";

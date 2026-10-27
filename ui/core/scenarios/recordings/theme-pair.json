@@ -17,7 +17,6 @@
       "savedThemes": ["GitHub Dark"],
       "canRestoreOriginal": false,
       "instances": 0,
-      "colorMatch": {"theme":"GitHub Dark High Contrast","exact":false},
       "saved": {
         "font-family": ["Menlo"],
         "font-synthetic-style": [""],
@@ -120,6 +119,7 @@
         "palette:15": "config"
       },
       "warnings": [],
+      "colorMatch": {"theme":"<closest>","exact":false},
       "own": {
         "colors": {
           "background": "#121212",
@@ -387,7 +387,7 @@
           "selectionBackground": "#4c3128",
           "selectionForeground": "#faf9f6"
         },
-        "colorMatch": {"theme":"GitHub Dark High Contrast","exact":false},
+        "colorMatch": {"theme":"<closest>","exact":false},
         "warnings": []
       }
     },
@@ -452,7 +452,6 @@
             "dark": "GitHub Dark Default"
           },
           "themeHidden": null,
-          "colorMatch": {"theme":"GitHub Dark Default","exact":true},
           "effective": {
             "background": ["#0d1117"],
             "foreground": ["#e6edf3"],
@@ -500,7 +499,8 @@
             "palette:13": "theme",
             "palette:14": "theme",
             "palette:15": "theme"
-          }
+          },
+          "colorMatch": {"theme":"GitHub Dark Default","exact":true}
         }
       },
       "apply": {"state":"applied"},
@@ -778,7 +778,6 @@
       "reply": {
         "state": {
           "appearance": "light",
-          "colorMatch": {"theme":"GitHub Light Default","exact":true},
           "effective": {
             "background": ["#ffffff"],
             "foreground": ["#1f2328"],
@@ -802,7 +801,8 @@
             "palette:13": "#a475f9",
             "palette:14": "#3192aa",
             "palette:15": "#8c959f"
-          }
+          },
+          "colorMatch": {"theme":"GitHub Light Default","exact":true}
         }
       },
       "apply": {"state":"applied"},
@@ -1080,7 +1080,6 @@
       "reply": {
         "state": {
           "appearance": "dark",
-          "colorMatch": {"theme":"GitHub Dark Default","exact":true},
           "effective": {
             "background": ["#0d1117"],
             "foreground": ["#e6edf3"],
@@ -1104,7 +1103,8 @@
             "palette:13": "#d2a8ff",
             "palette:14": "#56d4dd",
             "palette:15": "#ffffff"
-          }
+          },
+          "colorMatch": {"theme":"GitHub Dark Default","exact":true}
         }
       },
       "apply": {"state":"applied"},
@@ -1382,7 +1382,6 @@
       "reply": {
         "state": {
           "appearance": "light",
-          "colorMatch": {"theme":"GitHub Light Default","exact":true},
           "effective": {
             "background": ["#ffffff"],
             "foreground": ["#1f2328"],
@@ -1406,7 +1405,8 @@
             "palette:13": "#a475f9",
             "palette:14": "#3192aa",
             "palette:15": "#8c959f"
-          }
+          },
+          "colorMatch": {"theme":"GitHub Light Default","exact":true}
         }
       },
       "apply": {"state":"applied"},
@@ -1700,7 +1700,6 @@
             "light:GitHub Light Default,dark:GitHub Dark Default"
           ],
           "changes": 2,
-          "colorMatch": {"theme":"Violet Dark","exact":false},
           "effective": {"background":["#202020"]},
           "provenance": {"background":"draft"},
           "warnings": [
@@ -1709,10 +1708,8 @@
             {"key":"palette","slot":3,"target":3},
             {"key":"palette","slot":8,"target":3}
           ],
-          "own": {
-            "colors": {"background":"#202020"},
-            "colorMatch": {"theme":"Dracula+","exact":false}
-          }
+          "colorMatch": {"theme":"<closest>","exact":false},
+          "own": {"colors":{"background":"#202020"}}
         }
       },
       "apply": {"state":"applied"},
@@ -2226,7 +2223,6 @@
           "themeHidden": "some",
           "savedThemes": ["GitHub Light Default","GitHub Dark Default"],
           "canRestoreOriginal": true,
-          "colorMatch": {"theme":"GitHub Dark Default","exact":false},
           "saved": {
             "theme": ["light:GitHub Light Default,dark:GitHub Dark Default"],
             "background": ["#202020"],
@@ -2545,8 +2541,7 @@
               "cursorText": "#6fc1ff",
               "selectionBackground": "#e6edf3",
               "selectionForeground": "#0d1117"
-            },
-            "colorMatch": {"theme":"GitHub Dark Default","exact":false}
+            }
           }
         }
       },
@@ -2558,7 +2553,6 @@
       "reply": {
         "state": {
           "appearance": "light",
-          "colorMatch": {"theme":"Violet Dark","exact":false},
           "saved": {
             "foreground": ["#1f2328"],
             "selection-foreground": ["#ffffff"],
@@ -2877,7 +2871,6 @@
               "selectionBackground": "#1f2328",
               "selectionForeground": "#ffffff"
             },
-            "colorMatch": {"theme":"Violet Dark","exact":false},
             "warnings": [
               {"key":"foreground","target":4.5},
               {"key":"palette","slot":2,"target":3},
@@ -3161,7 +3154,6 @@
       "reply": {
         "state": {
           "appearance": "dark",
-          "colorMatch": {"theme":"GitHub Dark Default","exact":false},
           "saved": {
             "foreground": ["#e6edf3"],
             "selection-foreground": ["#0d1117"],
@@ -3475,7 +3467,6 @@
               "selectionBackground": "#e6edf3",
               "selectionForeground": "#0d1117"
             },
-            "colorMatch": {"theme":"GitHub Dark Default","exact":false},
             "warnings": []
           }
         }
@@ -3499,7 +3490,6 @@
           "themeSetting": "Nord",
           "themePair": {"light":"Nord","dark":"Nord"},
           "themeHidden": null,
-          "colorMatch": {"theme":"Nord","exact":true},
           "effective": {
             "background": ["#2e3440"],
             "foreground": ["#d8dee9"],
@@ -3525,7 +3515,8 @@
             "palette:15": "#eceff4"
           },
           "provenance": {"background":"theme"},
-          "warnings": [{"key":"palette","slot":8,"target":3}]
+          "warnings": [{"key":"palette","slot":8,"target":3}],
+          "colorMatch": {"theme":"Nord","exact":true}
         }
       },
       "apply": {"state":"applied"},

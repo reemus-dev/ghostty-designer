@@ -68,8 +68,8 @@ pub struct Status {
 
 /// What the preview file starts with while the engine runs, draft or not.
 //
-// [UNTIL] The oldest Ghostty the designer supports includes the fix, merged
-// after 1.3.1. https://github.com/ghostty-org/ghostty/issues/14833
+// [UNTIL] The oldest Ghostty the designer supports includes the fix, released
+// in 1.4.0. https://github.com/ghostty-org/ghostty/issues/14833
 //
 // Without this line a preview reload can freeze Ghostty 1.3.1 for good. Each
 // terminal's termio thread is the only reader of a 64-message mailbox, yet

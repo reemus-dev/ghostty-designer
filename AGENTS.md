@@ -32,7 +32,7 @@ session in TypeScript.
 | `crates/host/src/env.rs`         | Process environment read once, so tests and sandboxes stay isolated        |
 | `crates/host/src/app_state.rs`   | `app.json`: config to open, recent files, Ghostty base choices             |
 | `crates/host/src/testkit.rs`     | Temporary `Env` and a fake Ghostty CLI for tests                           |
-| `crates/host/tests/fixtures/`    | Ghostty 1.3.1 outputs, the baseline config, font fixtures                  |
+| `crates/host/tests/fixtures/`    | Ghostty 1.4.0 outputs, the baseline config, font fixtures                  |
 | `ui/`                            | React panel: two views, Customise and Themes, both kept mounted            |
 | `ui/core/`                       | The session: config, catalog, draft, undo, intents, themes, save plans     |
 | `ui/core/testing/`               | Scenario replay over stdio (`host/examples/`), unit-test sources           |
@@ -78,15 +78,16 @@ sources.
 ```sh
 mise run check            # typecheck, lint, bun test, clippy, Rust tests and format check, read-only
 mise run fix              # apply oxlint's safe fixes, then format TS and Rust files
-mise run test:scenarios   # replay the session scenarios against Ghostty 1.3.1
+mise run test:scenarios   # replay the session scenarios against the installed Ghostty
 mise run build            # build dist/ghostty-designer
 ```
 
 `typecheck` checks two programs: the panel, which sees no Bun or Node types, and
 the scripts and tests, which do. `bun test` runs the panel's unit tests.
-`test:scenarios` drives the session with the Rust host and real Ghostty 1.3.1 in
-sandbox roots. `UPDATE_RECORDINGS=1` rewrites the recordings. Review the diff
-before you commit it. `ui/core/scenarios/README.md` describes the format.
+`test:scenarios` drives the session with the Rust host and the installed Ghostty
+in sandbox roots. CI replays them against each Ghostty version in its matrix.
+`UPDATE_RECORDINGS=1` rewrites the recordings. Review the diff before you commit
+it. `ui/core/scenarios/README.md` describes the format.
 
 When a lint rule flags intentional code, keep the rule on and disable it at that
 site with a reason: `oxlint-disable-next-line` with a comment in TypeScript,

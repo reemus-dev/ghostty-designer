@@ -106,7 +106,7 @@ fn bundled_themes_dir(output: &str) -> Option<PathBuf> {
     })
 }
 
-/// The version line of `ghostty +version`: `  - version: 1.3.1`.
+/// The version line of `ghostty +version`: `  - version: 1.4.0`.
 fn parse_version(output: &str) -> Option<&str> {
     output
         .lines()
@@ -363,7 +363,7 @@ mod tests {
         let ghostty = detect(&t.env).await.unwrap();
         let dir = t.root.join("xdg/ghostty");
         assert_eq!(ghostty.bin, t.ghostty.bin());
-        assert_eq!(ghostty.version, "1.3.1");
+        assert_eq!(ghostty.version, "1.4.0");
         assert_eq!(ghostty.config_path, dir.join("config"));
         assert_eq!(ghostty.preview_path, dir.join("ghostty-designer.conf"));
     }
@@ -462,9 +462,9 @@ mod tests {
 
     #[test]
     fn parses_the_version() {
-        let output = include_str!("../tests/fixtures/ghostty-1.3.1/version.txt");
-        assert_eq!(parse_version(output), Some("1.3.1"));
-        assert_eq!(parse_version("  - version:  1.3.1"), None);
-        assert_eq!(parse_version("Ghostty 1.3.1"), None);
+        let output = include_str!("../tests/fixtures/ghostty-1.4.0/version.txt");
+        assert_eq!(parse_version(output), Some("1.4.0"));
+        assert_eq!(parse_version("  - version:  1.4.0"), None);
+        assert_eq!(parse_version("Ghostty 1.4.0"), None);
     }
 }

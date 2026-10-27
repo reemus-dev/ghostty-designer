@@ -54,7 +54,7 @@ function fakeHost(options: Options) {
     connect(listener) {
       onMessage = listener;
       return Promise.resolve({
-        ghosttyVersion: "1.3.1",
+        ghosttyVersion: "1.4.0",
         platform: "macos",
         configPath: CONFIG,
         edited: {type: "ghostty"},

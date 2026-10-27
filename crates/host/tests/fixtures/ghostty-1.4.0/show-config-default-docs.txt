@@ -654,12 +654,12 @@ selection-clear-on-copy = false
 # The null character (U+0000) is always treated as a boundary and does not
 # need to be included in this configuration.
 # 
-# Default: `` \t'"│`|:;,()[]{}<>$ ``
+# Default: ``\t '"│`|:;,()[]{}<>$``
 # 
 # To add or remove specific characters, you can set this to a custom value.
 # For example, to treat semicolons as part of words:
 # 
-#     selection-word-chars = " \t'\"│`|:,()[]{}<>$"
+#     selection-word-chars = "\t '\"│`|:,()[]{}<>$"
 # 
 # Available since: 1.3.0
 selection-word-chars =  	'"│`|:;,()[]{}<>$
@@ -1061,10 +1061,10 @@ cursor-text =
 # Enables the ability to move the cursor at prompts by clicking on a
 # location in the prompt text.
 # 
-# This feature requires shell integration, specifically prompt marking
-# via `OSC 133`. Some shells like Fish (v4) and Nu (0.111+) natively
-# support this while others may require additional configuration or
-# Ghostty's shell integration features to be enabled.
+# This feature requires prompt marking via `OSC 133`. Some shells like Fish
+# (v4.1+) and Nu (0.111+) natively support this while others may require
+# additional configuration or Ghostty's shell integration features to be
+# enabled.
 # 
 # Depending on the shell, this works either by translating your click
 # position into a series of synthetic arrow key movements or by sending
@@ -1194,27 +1194,15 @@ background-opacity-cells = false
 # If the macOS values are set, then this implies `background-blur = true`
 # on non-macOS platforms.
 # 
-# Supported on macOS and on some Linux desktop environments, including:
+# On Linux, the exact blur intensity is ignored and any positive integer
+# or `true` value will enable background blur. On Wayland, Ghostty uses
+# the [`ext-background-effect-v1`](https://wayland.app/protocols/ext-background-effect-v1)
+# protocol to enable the blur effect, but this is not always supported
+# on all compositors. Check the documentation of your compositor or
+# desktop environment for blur support and how to configure it.
 # 
-#   * KDE Plasma (Wayland and X11)
-# 
-# Warning: the exact blur intensity is _ignored_ under KDE Plasma, and setting
-# this setting to either `true` or any positive blur intensity value would
-# achieve the same effect. The reason is that KWin, the window compositor
-# powering Plasma, only has one global blur setting and does not allow
-# applications to specify individual blur settings.
-# 
-# To configure KWin's global blur setting, open System Settings and go to
-# "Apps & Windows" > "Window Management" > "Desktop Effects" and select the
-# "Blur" plugin. If disabled, enable it by ticking the checkbox to the left.
-# Then click on the "Configure" button and there will be two sliders that
-# allow you to set background blur and noise intensities for all apps,
-# including Ghostty.
-# 
-# All other Linux desktop environments are as of now unsupported. Users may
-# need to set environment-specific settings and/or install third-party plugins
-# in order to support background blur, as there isn't a unified interface for
-# doing so.
+# On X11, blur can only be enabled when using the KWin compositor
+# as a part of KDE Plasma.
 background-blur = false
 
 # The opacity level (opposite of transparency) of an unfocused split.
@@ -1528,18 +1516,70 @@ abnormal-command-exit-runtime = 250
 # When this limit is reached, the oldest lines are removed from the
 # scrollback.
 # 
-# Scrollback currently exists completely in memory. This means that the
-# larger this value, the larger potential memory usage. Scrollback is
-# allocated lazily up to this limit, so if you set this to a very large
-# value, it will not immediately consume a lot of memory.
+# Scrollback is stored in memory and allocated lazily up to this limit, so
+# setting a very large limit does not immediately consume that amount of
+# memory. On supported systems with scrollback compression enabled, Ghostty
+# attempts to compress fully historical pages which are not currently visible
+# while the terminal is idle. This can reduce physical memory usage, depending
+# on the contents of the scrollback.
+# 
+# This limit always measures the uncompressed logical size of the terminal
+# pages. Compression does not allow Ghostty to retain more history than the
+# configured limit. Accessing compressed history restores it transparently
+# and may increase the terminal's physical memory usage again.
 # 
 # This size is per terminal surface, not for the entire application.
 # 
-# It is not currently possible to set an unlimited scrollback buffer.
-# This is a future planned feature.
+# A separate maximum can be set with `scrollback-limit-lines`; if both limits
+# are set, then the first one reached will determine when scrollback is
+# removed.
+# 
+# The default is 50 MB. Set this to `unlimited` to remove the byte limit.
 # 
 # This can be changed at runtime but will only affect new terminal surfaces.
-scrollback-limit = 10000000
+scrollback-limit-bytes = 50000000
+
+# The maximum number of lines of scrollback to retain. This excludes
+# the active screen. Soft-wrapped lines count as multiple lines.
+# 
+# This limit is an estimate. Internally, Ghostty will only trim lines
+# up to the minimum allocation unit that is used internally (called a
+# "page"). The size of a page depends on how many styles, graphemes, etc.
+# take up the screen. In practice, this can be anywhere from a handful to
+# a couple hundred lines. Importantly, memory is capped either way.
+# This means that the actual limited lines will likely be slightly
+# higher in practice.
+# 
+# The default is `unlimited`. A separate maximum can be set with
+# `scrollback-limit-bytes`; if both limits are set, then the first one reached
+# will determine when scrollback is removed.
+# 
+# This can be changed at runtime but will only affect new terminal surfaces.
+scrollback-limit-lines = unlimited
+
+# Whether to compress scrollback pages while the terminal is idle.
+# 
+# Ghostty does its best to only compress when idle and decompress
+# as needed. This means that compression doesn't lower IO throughput.
+# We recommend you keep it on.
+# 
+# The scrollback limit remains an uncompressed logical limit regardless of
+# this setting, so disabling compression can increase physical memory usage
+# but does not change how much history is retained.
+# 
+# Text-heavy terminal history generally compresses to approximately 10% to
+# 30% of its uncompressed page memory, corresponding to a 70% to 90% reduction
+# in physical memory for pages which are compressed. Compression savings are
+# content-dependent.
+# 
+# Note that the way Ghostty works is that we compress and discard the
+# physical/resident memory but we retain virtual mappings. You will not
+# see a decrease in virtual memory usage, but you will see a decrease
+# in physical/memory usage.
+# 
+# Changing this at runtime affects future compression work. Pages which are
+# already compressed remain compressed until their contents are accessed.
+scrollback-compression = true
 
 # Control when the scrollbar is shown to scroll the scrollback buffer.
 # 
@@ -1548,9 +1588,9 @@ scrollback-limit = 10000000
 # Valid values:
 # 
 #   * `system` - Respect the system settings for when to show scrollbars.
-#     For example, on macOS, this will respect the "Scrollbar behavior"
-#     system setting which by default usually only shows scrollbars while
-#     actively scrolling or hovering the gutter.
+#     On macOS, we only show scrollbars while actively scrolling or hovering
+#     the gutter. If the system setting is set to "Always", the scrollbar
+#     will be shown when the mouse is over the gutter area.
 # 
 #   * `never` - Never show a scrollbar. You can still scroll using the mouse,
 #     keybind actions, etc. but you will not have a visual UI widget showing
@@ -1577,6 +1617,14 @@ scrollbar = system
 # The URL matcher is always lowest priority of any configured links (see
 # `link`). If you want to customize URL matching, use `link` and disable this.
 link-url = true
+
+# Enable hyperlinks created with the OSC 8 escape sequence. When disabled,
+# OSC 8 hyperlinks are not highlighted, previewed, copied, or opened.
+# 
+# This does not affect URL matching controlled by `link-url`.
+# 
+# Available since: 1.4.0
+link-osc8 = true
 
 # Show link previews for a matched URL.
 # 
@@ -1904,8 +1952,6 @@ working-directory =
 # `global:unconsumed:ctrl+a=reload_config` will make the keybind global
 # and not consume the input to reload the config.
 # 
-# Note: `global:` is only supported on macOS and certain Linux platforms.
-# 
 # On macOS, this feature requires accessibility permissions to be granted
 # to Ghostty. When a `global:` keybind is specified and Ghostty is launched
 # or reloaded, Ghostty will attempt to request these permissions.
@@ -1913,24 +1959,40 @@ working-directory =
 # you can find these permissions in System Preferences -> Privacy & Security
 # -> Accessibility.
 # 
-# On Linux, you need a desktop environment that implements the
-# [Global Shortcuts](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html)
-# protocol as a part of its XDG desktop protocol implementation.
-# Desktop environments that are known to support (or not support)
-# global shortcuts include:
+# Since Ghostty 1.4.0, global shortcuts on Linux are primarily supported
+# through the [`vicinae-hotkey-v1`](https://github.com/vicinaehq/vicinae-wayland-protocols/tree/main/staging/vicinae-hotkey)
+# protocol, available out-of-the-box with the following Wayland compositors
+# and desktop environments:
 # 
-#  - Users using KDE Plasma (since [5.27](https://kde.org/announcements/plasma/5/5.27.0/#wayland))
-#    and GNOME (since [48](https://release.gnome.org/48/#and-thats-not-all)) should be able
-#    to use global shortcuts with little to no configuration.
+#   - Hyprland since version 0.56.0
 # 
-#  - Some manual configuration is required on Hyprland. Consult the steps
-#    outlined on the [Hyprland Wiki](https://wiki.hyprland.org/Configuring/Binds/#dbus-global-shortcuts)
-#    to set up global shortcuts correctly.
-#    (Important: [`xdg-desktop-portal-hyprland`](https://wiki.hyprland.org/Hypr-Ecosystem/xdg-desktop-portal-hyprland/)
-#    must also be installed!)
+# On X11 or when your Wayland compositor/desktop environment does not
+# support `vicinae-hotkey-v1`, the much more widely-used
+# [XDG Global Shortcuts](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html)
+# protocol is used instead.
 # 
-#  - Notably, global shortcuts have not been implemented on wlroots-based
-#    compositors like Sway (see [upstream issue](https://github.com/emersion/xdg-desktop-portal-wlr/issues/240)).
+# Note: XDG Global Shortcuts rely on a functional XDG Desktop Portal
+# implementation **that is designed to be used with your desktop environment
+# or compositor**. Please make sure that you have the correct one installed.
+# 
+# Desktop environments that are known to support the XDG Global Shortcuts
+# protocol include:
+# 
+#  - KDE Plasma since [5.27](https://kde.org/announcements/plasma/5/5.27.0/#wayland)
+#    with `xdg-desktop-portal-kde` installed
+# 
+#  - GNOME since [48](https://release.gnome.org/48/#and-thats-not-all) with
+#    `xdg-desktop-portal-gnome` installed
+# 
+#  - Hyprland before version 0.56.0, with `xdg-desktop-portal-hyprland`
+#    installed. **Some manual configuration is required.** Consult the steps
+#    outlined on the [Hyprland Wiki](https://wiki.hypr.land/Configuring/Basics/Binds/#dbus-global-shortcuts)
+#    to set up D-Bus-based global shortcuts correctly.
+# 
+# Desktop environments and compositors that don't implement either protocol
+# do not support global shortcuts, like wlroots-based compositors e.g. Sway
+# (see [upstream issue](https://github.com/emersion/xdg-desktop-portal-wlr/issues/240))
+# and COSMIC.
 # 
 # ## Chained Actions
 # 
@@ -2022,7 +2084,7 @@ working-directory =
 # 
 # Key tables are available since Ghostty 1.3.0.
 keybind = super+shift+,=reload_config
-keybind = super+,=open_config
+keybind = super+,=open_config:os_open
 keybind = copy=copy_to_clipboard:mixed
 keybind = paste=paste_from_clipboard
 keybind = super+c=copy_to_clipboard:mixed
@@ -2109,9 +2171,9 @@ keybind = super+shift+g=navigate_search:previous
 keybind = super+alt+i=inspector:toggle
 keybind = super+ctrl+f=toggle_fullscreen
 keybind = super+shift+v=paste_from_selection
-keybind = super+arrow_right=text:\\x05
-keybind = super+arrow_left=text:\\x01
-keybind = super+backspace=text:\\x15
+keybind = super+arrow_right=text:\x05
+keybind = super+arrow_left=text:\x01
+keybind = super+backspace=text:\x15
 keybind = alt+arrow_left=esc:b
 keybind = alt+arrow_right=esc:f
 
@@ -2211,6 +2273,15 @@ window-padding-y = 2
 # apply. The other padding is applied first and may affect how many grid cells
 # actually exist, and this is applied last in order to balance the padding
 # given a certain viewport size and grid cell size.
+# 
+# Valid values are:
+# 
+# * `false` - No balancing is applied.
+# * `true` - Balance the padding, but cap the top padding to avoid
+#   excessive space above the first row. Any excess is shifted to the
+#   bottom.
+# * `equal` - Balance the padding equally on all sides without any
+#   top-padding cap. (Available since: 1.4.0)
 window-padding-balance = false
 
 # The color of the padding area of the window. Valid values are:
@@ -2515,6 +2586,33 @@ window-titlebar-background =
 # Specified as either hex (`#RRGGBB` or `RRGGBB`) or a named X11 color.
 window-titlebar-foreground = 
 
+# Controls when drag handles are shown over splits,
+# allowing splits to be rearranged with mouse controls.
+# 
+# Valid values:
+# 
+#  - `always`
+# 
+#    Always display the drag handle, even when there's only one split.
+# 
+#  - `auto` *(default)*
+# 
+#    Automatically show and hide the drag handle.
+# 
+#    On Linux, the handle is only shown when there are two or
+#    more splits present.
+# 
+#    On macOS, the handle is only hidden when there's one split
+#    in **fullscreen** mode, otherwise it's shown when hovered.
+# 
+#  - `never`
+# 
+#    Never show the drag handle. Splits then cannot be rearranged with
+#    mouse controls.
+# 
+# Available since: 1.4.0.
+drag-handle = auto
+
 # This controls when resize overlays are shown. Resize overlays are a
 # transient popup that shows the size of the terminal while the surfaces are
 # being resized. The possible options are:
@@ -2597,6 +2695,32 @@ focus-follows-mouse = false
 clipboard-read = ask
 
 clipboard-write = allow
+# The maximum size in bytes of a single clipboard write by a program
+# running in the terminal via the Kitty clipboard protocol (OSC 5522).
+# This doesn't apply to OSC 52, which is limited by the maximum length
+# of an escape sequence hardcoded into Ghostty for now.
+# 
+# Data beyond the limit fails the entire write with an `EFBIG` status,
+# discards the transaction, and leaves the clipboard untouched. Later
+# write-related packets are ignored until a new write begins.
+# 
+# The data is buffered in memory while the write is in progress, so
+# this limit bounds how much memory a program can make Ghostty
+# allocate per write. A future improvement will attempt to spool large
+# writes to disk.
+# 
+# The default is 64 MiB, the minimum a conforming implementation must
+# accept. Set this to `unlimited` to remove the limit, allowing writes
+# bounded only by available memory. A value of `0` rejects every non-empty
+# write. To reject clipboard writes entirely, use `clipboard-write = deny`
+# instead.
+# 
+# This can be changed at runtime and applies to writes that begin
+# after the change.
+# 
+# Available since: 1.4.0
+clipboard-write-limit-bytes = 67108864
+
 # Trims trailing whitespace on data that is copied to the clipboard. This does
 # not affect data sent to the clipboard via `clipboard-write`. This only
 # applies to trailing whitespace on lines that have other characters.
@@ -2605,7 +2729,7 @@ clipboard-trim-trailing-spaces = true
 
 # Require confirmation before pasting text that appears unsafe. This helps
 # prevent a "copy/paste attack" where a user may accidentally execute unsafe
-# commands by pasting text with newlines.
+# commands by pasting text with newlines or carriage returns.
 clipboard-paste-protection = true
 
 # If true, bracketed pastes will be considered safe. By default, bracketed
@@ -2634,18 +2758,26 @@ title-report = false
 # limit per surface is double.
 image-storage-limit = 320000000
 
-# Whether to automatically copy selected text to the clipboard. `true`
-# will prefer to copy to the selection clipboard, otherwise it will copy to
-# the system clipboard.
+# Whether to automatically copy selected text to the clipboard.
 # 
-# The value `clipboard` will always copy text to the selection clipboard
-# as well as the system clipboard.
+# Valid values:
 # 
-# Middle-click paste will always use the selection clipboard. Middle-click
-# paste is always enabled even if this is `false`.
+# * `none` - Do not copy selected text automatically.
 # 
-# The default value is true on Linux and macOS.
-copy-on-select = true
+# * `primary` - On Linux, copy to the selection clipboard only. This has no
+#   effect on macOS. (Available since: 1.4.0)
+# 
+# * `clipboard` - Copy text to the system clipboard only.
+# 
+# * `both` - Copy to both clipboards on Linux, and only the system clipboard
+#   on macOS. (Available since: 1.4.0)
+# 
+# For backward compatibility and convenience, a value of `true` is the same as
+# `primary` on Linux and `clipboard` on macOS, and `false` is an alias for
+# `none`.
+# 
+# The default value is `primary` on Linux and `none` otherwise.
+copy-on-select = none
 
 # The action to take when the user right-clicks on the terminal surface.
 # 
@@ -2659,6 +2791,17 @@ copy-on-select = true
 # 
 # The default value is `context-menu`.
 right-click-action = context-menu
+
+# The action to take when the user middle-clicks on the terminal surface.
+# 
+# Valid values:
+#   * `primary-paste` - Paste from the selection clipboard on Linux.
+#      Does nothing on macOS.
+#   * `clipboard-paste` - Paste from the system clipboard.
+#   * `ignore` - Do nothing, ignore the middle click.
+# 
+# The default value is `primary-paste`.
+middle-click-action = primary-paste
 
 # The time in milliseconds between clicks to consider a click a repeat
 # (double, triple, etc.) or an entirely new single click. A value of zero will
@@ -2922,7 +3065,13 @@ gtk-quick-terminal-namespace = ghostty-quick-terminal
 # The default value is `main` because this is the recommended screen
 # by the operating system.
 # 
-# Only implemented on macOS.
+# On macOS, `macos-menu-bar` uses the screen containing the menu bar.
+# On Linux/Wayland, `macos-menu-bar` is treated as equivalent to `main`.
+# 
+# Note: On Linux, there is no universal concept of a "primary" monitor.
+# Ghostty uses the compositor-reported primary output when available and
+# falls back to the first monitor reported by GDK if no primary output can
+# be resolved.
 quick-terminal-screen = main
 
 # Duration (in seconds) of the quick terminal enter and exit animation.
@@ -3046,10 +3195,9 @@ shell-integration = detect
 #     (Available since: 1.2.0)
 # 
 #   * `ssh-terminfo` - Enable automatic terminfo installation on remote hosts.
-#     Attempts to install Ghostty's terminfo entry using `infocmp` and `tic` when
-#     connecting to hosts that lack it. Requires `infocmp` to be available locally
-#     and `tic` to be available on remote hosts. Once terminfo is installed on a
-#     remote host, it will be automatically "cached" to avoid repeat installations.
+#     Attempts to install Ghostty's embedded terminfo entry using `tic` on local
+#     cache misses. Requires `tic` to be available on remote hosts. Successful
+#     installations are cached locally to avoid repeat installations.
 #     If desired, the `+ssh-cache` CLI action can be used to manage the installation
 #     cache manually using various arguments.
 #     (Available since: 1.2.0)
@@ -3089,9 +3237,16 @@ shell-integration-features = cursor,no-sudo,title,no-ssh-env,no-ssh-terminfo,pat
 # command-palette-entry = title:"Ghostty",description:"Add a little Ghostty to your terminal.",action:"text:\xf0\x9f\x91\xbb"
 # ```
 # 
+# There are some additional special values that can be specified for
+# command-palette-entry:
+# 
+#   * `command-palette-entry=clear` will clear all command entries. Warning: this
+#     removes ALL entries up to this point, including the default
+#     entries. Available since: 1.4.0
+# 
 # By default, the command palette is preloaded with most actions that might
 # be useful in an interactive setting yet do not have easily accessible or
-# memorizable shortcuts. The default entries can be cleared by setting this
+# memorizable shortcuts. The default entries can be restored by setting this
 # setting to an empty value:
 # 
 # ```ini
@@ -3099,8 +3254,9 @@ shell-integration-features = cursor,no-sudo,title,no-ssh-env,no-ssh-terminfo,pat
 # ```
 # 
 # Available since: 1.2.0
-command-palette-entry = title:"Change Tab Title\xe2\x80\xa6",description:"Prompt for a new title for the current tab.",action:"prompt_tab_title"
-command-palette-entry = title:"Change Terminal Title\xe2\x80\xa6",description:"Prompt for a new title for the current terminal.",action:"prompt_surface_title"
+command-palette-entry = title:"Change Tab Title…",description:"Prompt for a new title for the current tab.",action:"prompt_tab_title"
+command-palette-entry = title:"Change Terminal Title…",description:"Prompt for a new title for the current terminal.",action:"prompt_surface_title"
+command-palette-entry = title:"Change Window Title…",description:"Prompt for a new title for the current window.",action:"prompt_window_title"
 command-palette-entry = title:"Check for Updates",description:"Check for updates to the application.",action:"check_for_updates"
 command-palette-entry = title:"Clear Screen",description:"Clear the screen and scrollback.",action:"clear_screen"
 command-palette-entry = title:"Close All Windows",description:"Close all windows.",action:"close_all_windows"
@@ -3144,14 +3300,16 @@ command-palette-entry = title:"Focus Split: Right",description:"Focus the split 
 command-palette-entry = title:"Focus Split: Up",description:"Focus the split above, if it exists.",action:"goto_split:up"
 command-palette-entry = title:"Focus Window: Next",description:"Focus the next window, if any.",action:"goto_window:next"
 command-palette-entry = title:"Focus Window: Previous",description:"Focus the previous window, if any.",action:"goto_window:previous"
-command-palette-entry = title:"Ghostty",description:"Put a little Ghostty in your terminal.",action:"text:\xf0\x9f\x91\xbb"
+command-palette-entry = title:"Ghostty",description:"Put a little Ghostty in your terminal.",action:"text:👻"
 command-palette-entry = title:"Increase Font Size",description:"Increase the font size by 1 point.",action:"increase_font_size:1"
 command-palette-entry = title:"Move Tab Left",description:"Move the current tab to the left.",action:"move_tab:-1"
 command-palette-entry = title:"Move Tab Right",description:"Move the current tab to the right.",action:"move_tab:1"
+command-palette-entry = title:"Move Tab to New Window",description:"Move the current tab to a new window.",action:"move_tab_to_new_window"
 command-palette-entry = title:"New Tab",description:"Open a new tab.",action:"new_tab"
 command-palette-entry = title:"New Window",description:"Open a new window.",action:"new_window"
 command-palette-entry = title:"Next Search Result",description:"Navigate to the next search result, if any.",action:"navigate_search:next"
-command-palette-entry = title:"Open Config",description:"Open the config file.",action:"open_config"
+command-palette-entry = title:"Open Config in New Terminal Window",description:"Open the config file in a new window using $EDITOR or $VISUAL.",action:"open_config:new_window"
+command-palette-entry = title:"Open Config Using OS editor",description:"Open the config file with the OS's default editor.",action:"open_config:os_open"
 command-palette-entry = title:"Paste from Clipboard",description:"Paste the contents of the main clipboard.",action:"paste_from_clipboard"
 command-palette-entry = title:"Paste from Selection",description:"Paste the contents of the selection clipboard.",action:"paste_from_selection"
 command-palette-entry = title:"Previous Search Result",description:"Navigate to the previous search result, if any.",action:"navigate_search:previous"
@@ -3214,6 +3372,76 @@ osc-color-report-format = 16-bit
 # if you know you need KAM, you know. If you don't know if you
 # need KAM, you don't need it.
 vt-kam-allowed = false
+
+# If true, allows the running program to resize the window using the
+# xterm `CSI 8 ; rows ; columns t` escape sequence. If a parameter is zero
+# or omitted, the current size of that dimension is kept. Sizes smaller
+# than 40 columns by 10 rows are raised to that size so that a program
+# can't shrink the window to hide its output.
+# 
+# The request is ignored if the terminal is in a split, in a window with
+# multiple tabs, or the quick terminal, or if the window manager controls
+# the window size, such as when it is fullscreen, maximized, or tiled.
+# Sizes larger than the screen are clamped to the screen.
+# 
+# This is disabled by default because it lets any program, including one
+# running on a remote machine, change the size of your window.
+# 
+# Available since: 1.4.0
+vt-window-resize-allowed = false
+
+# Enables or disables checksum reporting (DECRQCRA, `CSI Pi ; Pg ; Pt ;
+# Pl ; Pb ; Pr * y`). This escape sequence allows the running program to
+# ask for a checksum of an area of the screen. Terminal test suites use it
+# to check what is on the screen.
+# 
+# This is disabled by default because a program can ask for the checksum of
+# one cell at a time and so read back everything on the screen, including
+# the output of other programs.
+# 
+# While this is disabled, XTCHECKSUM (`CSI Ps # y`), which changes how the
+# checksum is calculated, is ignored as well.
+# 
+# Available since: 1.4.0
+vt-xt-checksum-report = false
+
+# How the checksum reported for DECRQCRA (see `vt-xt-checksum-report`) is
+# calculated. This is the calculation used after a reset, like xterm's
+# `checksumExtension` resource. A running program can change it with
+# XTCHECKSUM (`CSI Ps # y`) until the next reset. The default is the
+# calculation of a real DEC terminal.
+# 
+# Valid values are:
+# 
+#   * `negate` - Report the negated sum, as DEC terminals do.
+# 
+#   * `attributes` - Add bold, underline, blink, inverse, invisible, and
+#     protected attributes to the value of each cell.
+# 
+#   * `trim` - Omit plain spaces other than the first cell of the area.
+# 
+#   * `undrawn` - Count cells that were never written to as spaces
+#     instead of skipping them.
+# 
+#   * `full` - Use the full codepoint of each cell instead of the DEC
+#     8-bit value.
+# 
+# Prefix a value with `no-` to disable it. For example, esctest expects
+# `no-negate,no-attributes,no-trim,full` when run with `--xterm-checksum`,
+# which is xterm's `checksumExtension: 23`.
+# 
+# The bits of xterm's resource are described in its
+# [man page](https://github.com/ThomasDickey/xterm-snapshots/blob/xterm-411/xterm.man#L2870-L2896)
+# and its [control sequence documentation](https://github.com/ThomasDickey/xterm-snapshots/blob/xterm-411/ctlseqs.ms#L2562-L2569),
+# but where those disagree with xterm's
+# [implementation](https://github.com/ThomasDickey/xterm-snapshots/blob/xterm-411/screen.c#L3162-L3290),
+# Ghostty follows the implementation. The documentation describes bit 3
+# as omitting cells that were never written to, but xterm skips those
+# cells by default and counts them as spaces with the bit set, which is
+# `undrawn` here. It also lists a bit 5 that xterm doesn't implement.
+# 
+# Available since: 1.4.0
+vt-xt-checksum-extension = negate,attributes,trim,no-undrawn,no-full
 
 # Custom shaders to run after the default shaders. This is a file path
 # to a GLSL-syntax shader for all platforms.
@@ -3905,6 +4133,13 @@ gtk-titlebar = true
 # with keybinds.
 gtk-tabs-location = top
 
+# If true, the close button of each tab is shown at the start of the tab
+# (the left, in left-to-right languages) and the tab's icon at the end.
+# This applies to both the tab bar and the tab overview. GTK only.
+# 
+# Available since: 1.4.0
+gtk-tabs-inverted = false
+
 # If this is `true`, the titlebar will be hidden when the window is maximized,
 # and shown when the titlebar is unmaximized. GTK only.
 # 
@@ -3941,6 +4176,14 @@ gtk-titlebar-style = native
 # If you set this to `false` then tabs will only take up space they need,
 # which is the old style.
 gtk-wide-tabs = true
+
+# If `true` (default), then two-finger horizontal scrolling on a touchpad
+# will switch between tabs. Scrolling left goes to the next tab and
+# scrolling right goes to the previous tab. Set this to `false` to
+# disable this behavior.
+# 
+# Available since 1.4.0.
+gtk-horizontal-tab-scroll = true
 
 # Custom CSS files to be loaded.
 # 

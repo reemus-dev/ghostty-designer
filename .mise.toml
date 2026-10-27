@@ -148,7 +148,7 @@ depends = ["ui:build"]
 run = "cargo test --workspace --locked"
 
 [tasks."test:scenarios"]
-description = "Replay the session scenarios against Ghostty 1.3.1 in sandboxes; UPDATE_RECORDINGS=1 rewrites the recordings"
+description = "Replay the session scenarios against the installed Ghostty in sandboxes; UPDATE_RECORDINGS=1 rewrites the recordings"
 run = [
   "cargo build --locked -p ghostty-designer-host --example stdio-host",
   "bun test --max-concurrency=4 ./ui/core/testing/replay.ts",

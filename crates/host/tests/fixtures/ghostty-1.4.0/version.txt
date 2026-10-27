@@ -1,11 +1,11 @@
-Ghostty 1.3.1
+Ghostty 1.4.0
 
 Version
-  - version: 1.3.1
+  - version: 1.4.0
   - channel: stable
 Build Config
-  - Zig version   : 0.15.2
-  - build mode    : .ReleaseFast
+  - Zig version   : 0.17.0
+  - build mode    : .fast
   - app runtime   : .none
   - font engine   : .coretext
   - renderer      : renderer.generic.Renderer(renderer.Metal)

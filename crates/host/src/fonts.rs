@@ -751,7 +751,7 @@ mod tests {
 
     #[test]
     fn parses_the_families_ghostty_lists() {
-        let courier = include_str!("../tests/fixtures/ghostty-1.3.1/list-fonts.txt");
+        let courier = include_str!("../tests/fixtures/ghostty-1.4.0/list-fonts.txt");
         let cases: [(&str, &[&str]); 3] = [
             (courier, &["Courier New", "Menlo", "Monaco"]),
             ("", &[]),

@@ -69,10 +69,9 @@ const STATE_SHAPE: Shape = {
   own: {colors: "map"},
 };
 
-const GHOSTTY_VERSION = "1.3.1";
-const FIXTURES = path.join(
+const BASELINE = path.join(
   import.meta.dir,
-  `../../../crates/host/tests/fixtures/ghostty-${GHOSTTY_VERSION}`,
+  "../../../crates/host/tests/fixtures/baseline.conf",
 );
 const SCENARIOS = path.join(import.meta.dir, "../scenarios");
 const RECORDINGS = path.join(SCENARIOS, "recordings");
@@ -132,11 +131,6 @@ async function replay(scenario: Scenario): Promise<Recording> {
     let defaults: Values = {};
     const connect: TestHost["connect"] = async (listener) => {
       const info = await started.connect(listener);
-      if (info.ghosttyVersion !== GHOSTTY_VERSION) {
-        throw new Error(
-          `Ghostty is ${info.ghosttyVersion}, but the recordings need ${GHOSTTY_VERSION}`,
-        );
-      }
       defaults = parseShowConfig(info.defaultsWithDocs).values;
       return info;
     };
@@ -376,7 +370,7 @@ function prepare(root: string, scenario: Scenario) {
 
 /** Scenario text with `<baseline>` and `<root>` expanded. */
 function expand(text: string, root: string) {
-  const baseline = readFileSync(path.join(FIXTURES, "baseline.conf"), "utf8");
+  const baseline = readFileSync(BASELINE, "utf8");
   return text
     .replaceAll("<baseline>", () => baseline)
     .replaceAll("<root>", () => root);
@@ -410,11 +404,16 @@ function snapshot(root: string) {
 const warningTargets = (list: SessionState["warnings"]) =>
   list.map(({ratio: _ratio, fix: _fix, ...warning}) => warning);
 
+/** An inexact match as `<closest>`, since Ghostty's bundled themes change. */
+const matchTarget = (match: SessionState["colorMatch"]) =>
+  match === null || match.exact ? match : {...match, theme: "<closest>"};
+
 /**
  * The state without Ghostty's defaults in `saved` and `effective`, the
- * provenance of keys at their default, and the ratio and fix of readability
- * warnings, which colour maths computes. The apply status settles after a
- * reply, so each step records it separately.
+ * provenance of keys at their default, the ratio and fix of readability
+ * warnings, which colour maths computes, and the theme of inexact colour
+ * matches. The apply status settles after a reply, so each step records it
+ * separately.
  */
 function normalizeState(
   {
@@ -423,6 +422,7 @@ function normalizeState(
     effective,
     provenance,
     warnings,
+    colorMatch,
     own,
     ...rest
   }: SessionState,
@@ -436,7 +436,12 @@ function normalizeState(
       Object.entries(provenance).filter(([, from]) => from !== "default"),
     ),
     warnings: warningTargets(warnings),
-    own: {...own, warnings: warningTargets(own.warnings)},
+    colorMatch: matchTarget(colorMatch),
+    own: {
+      ...own,
+      warnings: warningTargets(own.warnings),
+      colorMatch: matchTarget(own.colorMatch),
+    },
   }) as Json;
 }
 

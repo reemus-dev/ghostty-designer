@@ -2,11 +2,11 @@
 
 `*.json` here are scenarios. `recordings/<name>.json` records what the session
 did for each. `mise run test:scenarios` runs `../testing/replay.ts` with
-`bun test`: it replays every scenario against the installed Ghostty, which must
-be 1.3.1, and compares each run with its recording after the normalisation
-below. With `UPDATE_RECORDINGS=1` it writes the recordings from the run instead,
-which also records a new scenario. Plain `bun test` skips the replay, because
-the runner's file name is outside its pattern. `-t <name>` replays one scenario.
+`bun test`: it replays every scenario against the installed Ghostty and compares
+each run with its recording after the normalisation below. With
+`UPDATE_RECORDINGS=1` it writes the recordings from the run instead, which also
+records a new scenario. Plain `bun test` skips the replay, because the runner's
+file name is outside its pattern. `-t <name>` replays one scenario.
 
 ## Sandbox
 
@@ -26,7 +26,7 @@ out. Four scenarios run at once.
 
 `{description, setup?, steps}`. In `setup`, `files` maps root-relative paths to
 text. The config is `config` (default `<baseline>`, which expands to
-`crates/host/tests/fixtures/ghostty-1.3.1/baseline.conf`) plus
+`crates/host/tests/fixtures/baseline.conf`) plus
 `config-file = ?ghostty-designer.conf`, unless `include` is false. Setup writes
 the files, then the config. `<root>` expands to the absolute root.
 
@@ -73,5 +73,6 @@ several lines, such as file text and plan diffs, becomes a list of its lines, so
 a recording diff shows the lines that changed. Plan ids become `plan-N`. `saved`
 and `effective` leave out the keys at the default that the host reads from
 Ghostty at start, and `provenance` the keys from `default`. Dropped: `ratio` and
-`fix` of warnings (colour maths). Key order is not compared, except in preview
-text.
+`fix` of warnings (colour maths). An inexact `colorMatch` names its theme
+`<closest>`, because Ghostty versions bundle different themes. Key order is not
+compared, except in preview text.

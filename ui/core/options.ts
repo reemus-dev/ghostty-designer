@@ -4,7 +4,7 @@ import type {Control, OptionMeta} from "./types";
 /**
  * The curated appearance options, and the whitelist of keys a draft may set.
  * Omitted fields default to non-repeatable, live reload, both platforms. Reload
- * classes were verified against the Ghostty 1.3.1 source.
+ * classes were verified against the Ghostty 1.4.0 source.
  */
 type OptionDef = Pick<OptionMeta, "key" | "group" | "label" | "control"> &
   Partial<
@@ -150,7 +150,7 @@ export const OPTIONS: readonly OptionDef[] = [
     group: "cursor",
     label: "Cursor blink",
     // Blank blinks too, but follows DEC mode 12, which true and false ignore
-    // (src/config/Config.zig:874-891).
+    // (src/config/Config.zig:885-902).
     control: {kind: "enum", values: ["", "true", "false"]},
     reload: "special",
     reloadNote: CURSOR_SHAPE_NOTE,
@@ -160,7 +160,7 @@ export const OPTIONS: readonly OptionDef[] = [
     group: "cursor",
     label: "Cursor at the shell prompt",
     control: {kind: "flags"},
-    // Shells read the features when they start (src/termio/Exec.zig:760-764).
+    // Shells read the features when they start (src/termio/Exec.zig:773-777).
     reload: "new-surface",
   },
   {

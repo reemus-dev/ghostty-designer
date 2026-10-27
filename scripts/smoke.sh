@@ -2,7 +2,7 @@
 # Launch-and-close smoke for the window: runs the app in a throwaway sandbox,
 # under Xvfb on Linux, then checks it reports ready once the panel has drawn and
 # exits cleanly on SIGTERM with no preview left behind. A fake Ghostty CLI
-# answers from the Ghostty 1.3.1 fixtures, so no Ghostty install is needed. The
+# answers from the Ghostty 1.4.0 fixtures, so no Ghostty install is needed. The
 # sandbox has no config, so Ghostty shows its defaults.
 #
 #   smoke.sh            build the app with the embedded UI and smoke it
@@ -26,7 +26,7 @@ trap 'kill "${pid:-}" 2>/dev/null || true
 rm -rf "$sandbox" 2>/dev/null || { sleep 1; rm -rf "$sandbox"; }' EXIT
 mkdir -p "$sandbox"/{home,xdg,state}
 
-fixtures=$(cd "$scripts/../crates/host/tests/fixtures/ghostty-1.3.1" && pwd)
+fixtures=$(cd "$scripts/../crates/host/tests/fixtures/ghostty-1.4.0" && pwd)
 cat >"$sandbox/ghostty" <<EOF
 #!/bin/sh
 case \$1 in

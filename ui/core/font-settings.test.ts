@@ -1,7 +1,7 @@
 import {expect, it} from "bun:test";
 import {parseFeatures, parseVariations, withoutTag} from "./font-settings";
 
-// Ghostty 1.3.1's own cases, src/font/shaper/feature.zig:292-333.
+// Ghostty 1.4.0's own cases, src/font/shaper/feature.zig:291-332.
 const KERN_ON = ["kern", "kern on", "+kern", '"kern" = 1', "  kern "];
 const KERN_OFF = ["kern off", "-'kern'", '"kern" = 0', "kern    off"];
 const AALT_2 = ["aalt=2", "'aalt' 2", "'aalt'\t2"];

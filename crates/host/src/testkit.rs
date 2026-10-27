@@ -1,7 +1,7 @@
 //! A temporary `Env` and a fake Ghostty CLI for tests.
 //!
 //! The fake, `tests/fixtures/fake-ghostty`, answers `+version` and
-//! `+list-fonts` with Ghostty 1.3.1's output (`tests/fixtures/ghostty-1.3.1/`),
+//! `+list-fonts` with Ghostty 1.4.0's output (`tests/fixtures/ghostty-1.4.0/`),
 //! `+show-config --default` with one documented key, and accepts every config
 //! in `+validate-config`. Tests change how an action behaves at any time with
 //! [`FakeGhostty::set`], for all later calls or for one call.
@@ -18,17 +18,17 @@ use crate::env::Env;
 const FIXTURES: [(&str, &str); 2] = [
     (
         "version.txt",
-        include_str!("../tests/fixtures/ghostty-1.3.1/version.txt"),
+        include_str!("../tests/fixtures/ghostty-1.4.0/version.txt"),
     ),
     (
         "list-fonts.txt",
-        include_str!("../tests/fixtures/ghostty-1.3.1/list-fonts.txt"),
+        include_str!("../tests/fixtures/ghostty-1.4.0/list-fonts.txt"),
     ),
 ];
 
 const SCRIPT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/fake-ghostty");
 
-const BASELINE: &str = include_str!("../tests/fixtures/ghostty-1.3.1/baseline.conf");
+const BASELINE: &str = include_str!("../tests/fixtures/baseline.conf");
 
 /// A fresh root: `home/`, `xdg/` with the baseline config and the preview
 /// include, `state/` and `tmp/`. No target PIDs. Ghostty is the fake in
@@ -203,7 +203,7 @@ mod tests {
     async fn answers_each_action() {
         let t = TestEnv::default();
         let version = call(&t, &["+version"]).await;
-        assert!(version.stdout.contains("  - version: 1.3.1\n"));
+        assert!(version.stdout.contains("  - version: 1.4.0\n"));
 
         let defaults = call(&t, &["+show-config", "--default", "--docs"]).await;
         assert!(defaults.stdout.contains("\nfont-size = 13\n"));

@@ -42,12 +42,35 @@ Lima VMs for Linux.
 | ------------------------- | ------------------------------------------------------------------------- |
 | `mise run check`          | Typecheck, lint, unit tests, clippy, Rust tests and format check          |
 | `mise run fix`            | Apply safe lint fixes, then format TypeScript and Rust                    |
-| `mise run test:scenarios` | Replay the session scenarios against an installed Ghostty 1.3.1           |
+| `mise run test:scenarios` | Replay the session scenarios against the installed Ghostty                |
 | `mise run build`          | Build `dist/ghostty-designer`                                             |
 | `mise run dev`            | Run from source with a hot-reloading panel, against your real config      |
 | `mise run dev:reset`      | Make the next `dev` run a first launch, keeping saved settings and themes |
 
 CI runs `check` on macOS and Linux, and the scenarios on macOS.
+
+## Ghostty versions
+
+The designer supports Ghostty 1.3.1 and later. CI replays the scenarios against
+the oldest supported version and the newest release, which the `scenarios` job
+in [ci.yml](.github/workflows/ci.yml) lists. Both share one set of recordings.
+
+When Ghostty releases a new version:
+
+1. Make it the newest version in the `scenarios` job, with its DMG's SHA-256.
+2. Replace `crates/host/tests/fixtures/ghostty-<version>/` with its `+version`
+   and `+show-config --default --docs` output, captured in a sandbox shell
+   (`eval "$(sandbox.ts --name <name> env)"`). Update the paths and tests that
+   name the folder.
+3. Compare its source with the previous release for every option in
+   `ui/core/options.ts`: new keys and values, reload behaviour and platforms.
+   Add a note where an older supported version behaves differently, such as
+   "needs Ghostty 1.4".
+4. Run `mise run test:scenarios` with it installed.
+
+To raise the oldest supported version, change it in the `scenarios` job and in
+the README's requirements. Then resolve the `[UNTIL]` markers that it satisfies,
+and delete the notes about older versions.
 
 ## Where to read next
 

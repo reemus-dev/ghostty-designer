@@ -33,7 +33,7 @@ An unofficial community tool, not affiliated with the Ghostty project.
 
 | Requirement | Needs                                                                     |
 | ----------- | ------------------------------------------------------------------------- |
-| Ghostty     | [Installed](https://ghostty.org/download), tested with 1.3.1              |
+| Ghostty     | [Installed](https://ghostty.org/download), 1.3.1 or later                 |
 | macOS       | 15 or later, arm64 or x86_64                                              |
 | Linux       | glibc 2.34 or later (Ubuntu 22.04, Debian 12, Fedora 35), arm64 or x86_64 |
 
@@ -267,8 +267,9 @@ The designer opens the config you last edited.
 - **A program keeps its old colours while the designer runs.** The preview turns
   off Ghostty's replies to colour queries (`osc-color-report-format = none`),
   because Ghostty 1.3.1 can freeze when a reload lands during a burst of them.
-  The [fix](https://github.com/ghostty-org/ghostty/pull/14834) is not in a
-  Ghostty release yet.
+  Ghostty 1.4.0 has the
+  [fix](https://github.com/ghostty-org/ghostty/pull/14834), and the designer
+  keeps the workaround while it supports 1.3.1.
 - **`error while loading shared libraries: libwebkit2gtk-4.1.so.0`.** Install
   the [runtime libraries](#install).
 - **Anything else.** Startup errors print in the terminal. Later output goes to
