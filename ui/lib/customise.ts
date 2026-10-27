@@ -164,6 +164,7 @@ const COLUMNS = [
         "window-show-tab-bar",
         "gtk-tabs-location",
         "gtk-wide-tabs",
+        "gtk-tabs-inverted",
         "macos-window-shadow",
         "macos-non-native-fullscreen",
         "window-colorspace",
@@ -217,6 +218,7 @@ const COLUMNS = [
         "unfocused-split-opacity",
         "unfocused-split-fill",
         "split-divider-color",
+        "drag-handle",
       ],
     },
     {

@@ -431,10 +431,10 @@ export const OPTIONS: readonly OptionDef[] = [
     key: "window-padding-balance",
     group: "window",
     label: "Balance padding",
-    control: {kind: "bool"},
+    control: {kind: "enum", values: ["false", "true", "equal"]},
     reload: "special",
     reloadNote:
-      "Turning it off keeps the balanced padding until a new tab or split opens.",
+      "Equal centres the grid and needs Ghostty 1.4. Turning it off keeps the balanced padding until a new tab or split opens.",
   },
   {
     key: "window-padding-color",
@@ -459,6 +459,12 @@ export const OPTIONS: readonly OptionDef[] = [
     group: "splits",
     label: "Split divider colour",
     control: {kind: "color"},
+  },
+  {
+    key: "drag-handle",
+    group: "splits",
+    label: "Split drag handle",
+    control: {kind: "enum", values: ["always", "auto", "never"]},
   },
   {
     key: "window-theme",
@@ -720,6 +726,13 @@ export const OPTIONS: readonly OptionDef[] = [
     key: "gtk-wide-tabs",
     group: "window",
     label: "Wide tabs",
+    control: {kind: "bool"},
+    platforms: ["linux"],
+  },
+  {
+    key: "gtk-tabs-inverted",
+    group: "window",
+    label: "Close button at tab start",
     control: {kind: "bool"},
     platforms: ["linux"],
   },
