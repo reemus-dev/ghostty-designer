@@ -1,75 +1,81 @@
 # ghostty-designer
 
-![Ghostty Designer's Customise and Themes windows in front of two Ghostty windows, running Claude Code and ghostty-designer demo in the same colours](assets/cover.png)
-
 [![CI](https://github.com/reemus-dev/ghostty-designer/actions/workflows/ci.yml/badge.svg)](https://github.com/reemus-dev/ghostty-designer/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/reemus-dev/ghostty-designer)](https://github.com/reemus-dev/ghostty-designer/releases/latest)
 
-Design Ghostty's appearance in a control panel window, with your own Ghostty
-windows as the live preview. An unofficial community tool, not affiliated with
-the Ghostty project. Built entirely by AI agents, which I direct and review.
+**A visual editor for Ghostty, with every change previewed live in your running
+terminals.**
 
-- Try any of Ghostty's themes, or tune your own colours with OKLCH sliders and
-  readability checks
-- Pin a theme beside your colours and copy the ones you like
-- Pick fonts drawn in their own face, with ligature, feature and variable-axis
-  controls
-- Set cursor, opacity, blur, padding, titlebar and split options
-- See every change in Ghostty at once, and save to your config only when you
-  choose
+Themes, colours, fonts, cursor and window. Nothing is saved until you review the
+diff.
 
-## Contents
+![Ghostty Designer's Customise and Themes windows in front of two Ghostty windows, running Claude Code and ghostty-designer demo in the same colours](assets/cover.png)
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [How your config stays safe](#how-your-config-stays-safe)
-- [Development](#development)
-- [License](#license)
-
-## Installation
+- **Themes:** try themes with the arrow keys, or pin a theme beside your colours
+  and copy single colours from it.
+- **Colours:** tune each colour with OKLCH sliders and contrast checks.
+- **Fonts:** browse fonts previewed in their own typeface, with ligature,
+  feature and variable-axis controls.
+- **Cursor and window:** set cursor, opacity, blur, padding, titlebar and split
+  options.
+- **Other apps:** edit the config of apps built on libghostty, such as cmux.
+- **Safe saves:** save only the lines you changed, with a backup first.
 
 <!-- oxfmt-ignore -->
 > [!NOTE]
-> `ghostty-designer` runs on macOS and Linux, on arm64 and x86_64. It is tested with Ghostty 1.3.1.
+> **Built entirely by AI agents in Claude Code with Opus 5.5 💌** I own the result, and I put my expertise and care into it.
 
-It needs macOS 15 or later. On Linux it needs glibc 2.34 or later (Ubuntu 22.04,
-Debian 12, Fedora 35), GTK 3 and WebKitGTK 4.1. The `.deb` and `.rpm` packages
-install them.
+An unofficial community tool, not affiliated with the Ghostty project.
 
-### Homebrew (macOS)
+## Install
+
+| Requirement | Needs                                                                     |
+| ----------- | ------------------------------------------------------------------------- |
+| Ghostty     | [Installed](https://ghostty.org/download), tested with 1.3.1              |
+| macOS       | 15 or later, arm64 or x86_64                                              |
+| Linux       | glibc 2.34 or later (Ubuntu 22.04, Debian 12, Fedora 35), arm64 or x86_64 |
+
+**Homebrew** (macOS)
 
 ```sh
 brew install reemus-dev/tap/ghostty-designer
 ```
 
-### Mise
+**Linux packages**
 
-```sh
-mise use -g github:reemus-dev/ghostty-designer
-```
-
-### npm
-
-```sh
-npx ghostty-designer          # or: bunx ghostty-designer
-npm install -g ghostty-designer
-```
-
-On Linux, install the runtime libraries for the tarball first, listed under
-[Linux packages](#linux-packages).
-
-### Linux packages
-
-Download the `.deb` or `.rpm` for your platform from the
-[GitHub Releases](https://github.com/reemus-dev/ghostty-designer/releases) page:
+Download the `.deb` or `.rpm` for your platform from
+[GitHub Releases](https://github.com/reemus-dev/ghostty-designer/releases). The
+packages install the runtime libraries.
 
 ```sh
 sudo apt install ./ghostty-designer_<version>_amd64.deb      # Ubuntu, Debian
 sudo dnf install ./ghostty-designer-<version>-1.x86_64.rpm   # Fedora
 ```
 
-The release also has a tarball for each platform. Copy `ghostty-designer` from
-it to a directory on `PATH`, after you install the runtime libraries:
+**Mise** (macOS, Linux)
+
+```sh
+mise use -g github:reemus-dev/ghostty-designer
+```
+
+**npm** (macOS, Linux)
+
+Run it without installing:
+
+```sh
+npx ghostty-designer@latest     # or: bunx ghostty-designer@latest
+```
+
+Or install it:
+
+```sh
+npm install -g ghostty-designer
+```
+
+On Linux, Mise, npm and the release tarball need the runtime libraries:
+
+<details>
+<summary>Runtime libraries</summary>
 
 ```sh
 sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 procps fontconfig   # Ubuntu, Debian
@@ -77,9 +83,17 @@ sudo dnf install webkit2gtk4.1 gtk3 procps-ng fontconfig             # Fedora
 sudo pacman -S --needed webkit2gtk-4.1 gtk3 procps-ng fontconfig     # Arch
 ```
 
-### From source
+To use the tarball from the release, copy `ghostty-designer` from it to a
+directory on `PATH`.
 
-Requires [Mise](https://mise.jdx.dev/).
+</details>
+
+<details>
+<summary>Build from source</summary>
+
+Requires [Mise](https://mise.jdx.dev/). On Linux, the build also needs the GTK 3
+and WebKitGTK 4.1 development packages (`libwebkit2gtk-4.1-dev` on Debian and
+Ubuntu).
 
 ```sh
 git clone https://github.com/reemus-dev/ghostty-designer.git
@@ -87,191 +101,199 @@ cd ghostty-designer
 mise install
 mise run install
 mise run build
+./dist/ghostty-designer
 ```
 
-The binary is written to `dist/ghostty-designer`. On Linux, the build needs the
-GTK 3 and WebKitGTK 4.1 development packages (`libwebkit2gtk-4.1-dev` on Debian
-and Ubuntu).
+</details>
 
-## Usage
+## Quick start
 
-```sh
-ghostty-designer                # open the control panel window
-ghostty-designer --config FILE  # edit FILE instead of Ghostty's config, such as another app's
-ghostty-designer demo           # print sample terminal output in this terminal's colours and font
-```
+1. Run `ghostty-designer`. The panel opens and the prompt returns.
+2. Click **Enable live preview**. The designer backs up your config, then adds
+   two lines to the end of it.
+3. Change a setting and watch Ghostty update. Some settings apply only to new
+   windows, and the panel notes which.
+4. Click **Save to config…**, review the exact changes, and confirm.
 
-From a terminal, the designer moves to the background, and the prompt returns
-once the window is open. Startup errors print in the terminal. Later output goes
-to `~/.local/state/ghostty-designer/ghostty-designer.log`.
+The panel has two views. **Customise** shows your colours, font and window
+settings on one page. **Themes** shows every theme as a small terminal in its
+colours.
 
-The panel opens on **Customise**, which shows your current colours, font and
-window settings on one page. **Themes** lists every theme as a small terminal in
-its colours. Click a theme or a font, or move to it with the arrow keys, and
-Ghostty shows it. ⌘Z after trying several goes back to where you started in one
-step. Press ⌘K to find any setting.
-
-On first run, the panel asks to add an include line to the end of your config,
-which turns on the live preview. From then on every change shows in your Ghostty
-windows as you make it. Nothing else is written until you choose **Save to
-config…**, review the exact changes and confirm. Click the live status in the
-toolbar to turn the live preview off or on. The designer remembers your choice.
-
-Running `ghostty-designer` again while it runs brings its window to the front.
-With `--config`, the window also offers to switch to that file.
-
-### Other apps' configs
-
-Apps built on libghostty, such as cmux, Supacode, Ghostex, agterm and macterm,
-can load their own config file. To edit one, choose **Switch config…** in the
-toolbar's ··· menu or with ⌘K. It lists the known apps whose config file exists
-at its default path, your recent files, and takes any other file by path. The
-designer opens the config you last edited, also one given with `--config`.
-
-Some apps load Ghostty's config first and their own file on top, and some load
-only their own. The designer shows the file the way the app loads it: known apps
-as they do by default, other files on top of Ghostty's config. If colours or
-fonts in the designer don't match the app, select the file in the switcher and
-change **Does this app use Ghostty's config as a base?**. The designer remembers
-it for that file.
-
-- A save writes only that file and the files it includes. When a line in
-  Ghostty's config still decides a setting, the save review says so.
-- Only Ghostty reloads with the live preview. Other apps show your changes when
-  they reload their config, and some do that by themselves.
-- Editing Ghostty's config, the save review also names the settings an app's own
-  config overrides.
-
-Closing the panel window or quitting the app stops the designer. With unsaved
-changes, the panel asks first.
-
-- **Font size:** a change resets each window's zoom (⌘+ / ⌘−) to the new size.
-  On macOS, the first one asks for permission to control Ghostty, which is how
-  the zoom is reset.
-- **Cursor:** Ghostty draws a hollow block in windows that are not focused, so
-  click into Ghostty to see a cursor change. Shell integration sets a bar cursor
-  at every prompt unless you turn on **Use this cursor at the shell prompt**.
+Click **Live in Ghostty** in the toolbar to turn the live preview off or on. The
+designer remembers your choice. Close the panel to stop the designer. With
+unsaved changes, it asks first.
 
 ## How your config stays safe
 
 ```text
- Control panel window
-        │ every change
-        ▼
- ghostty-designer ── appearance settings only, checked by ghostty +validate-config
-        │
-        ├─ preview ─▶ ghostty-designer.conf, next to your config ──┐ included by
-        │             emptied when the designer stops               │ your config,
-        │                                                            ▼ loaded last
-        │                                            Ghostty reloads every window
-        │
-        └─ Save  (only after you review the exact diff)
-                 ├─▶ ~/.local/state/ghostty-designer/original/  first copy, never replaced
-                 ├─▶ ~/.local/state/ghostty-designer/previous/  copy before the latest write
-                 └─▶ your config   only the changed lines, edited in place
+ Panel
+   │
+   ├─ every change ─▶ ghostty-designer.conf
+   │                  (emptied when the designer stops)
+   │                        │ included after your config
+   │                        ▼
+   │                  Ghostty reloads
+   │
+   └─ Save ─▶ review the exact diff
+                    │ confirm
+                    ▼
+              your config: changed lines only
+              (backed up first)
 ```
 
-Your config over time:
+**Preview never edits your config.** Each change goes to
+`ghostty-designer.conf`, next to your config, and Ghostty reloads. The preview
+loads after every line of your main config file, so it wins over all of them. A
+file that loads later can still override it, such as a file that one of your
+includes includes. The panel warns when that hides a change.
 
-```text
- ──●───────────────────●───────────────────────────●──────────────▶
-   designer starts     Enable live preview         Save
-   nothing written     2 lines added at the end    your changed lines
-                       (original copied first)     (previous version copied first)
+**Save edits only what you changed, where it is set.** The save rewrites each
+changed key on the line that sets it last, even in an included file. It adds new
+keys in a `# ghostty-designer: saved settings` block. Comments, order and
+formatting stay. When you save a new theme, the save comments out your colour
+lines that would override it with `# ghostty-designer:`. The review lists those
+lines, and any settings in the theme besides colours.
 
-   ⋯ › Restore original config…  puts the file back as it was at the first ●
-```
+**Undo any write:**
 
-**Previewing never edits your config.** Each change goes to the preview file,
-then Ghostty reloads. Ghostty loads an included file after the whole file that
-includes it, so the preview wins over every line of your config, even lines
-below the include. Only a `config-file` line placed after it loads later, and
-the panel warns when that hides a change.
+| Write                                               | Undo                                                         |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| `ghostty-designer.conf`, on each change             | Stop the designer, or delete the file                        |
+| Two include lines, on **Enable live preview**       | Delete the two lines                                         |
+| Changed lines in your config, on save               | Copy back the file from `previous/`, or restore the original |
+| A theme file in `~/.config/ghostty/themes`, on save | Delete the file. A theme never replaces another file.        |
 
-- Ghostty checks every preview before loading it. A value it rejects is left
-  out, and the panel names that setting.
-- While the designer runs, the preview file also turns off Ghostty's replies to
-  colour queries (`osc-color-report-format = none`). Ghostty 1.3.1 can freeze
-  when a reload lands while a program floods it with colour queries, as Herdr
-  does after every reload. Programs that ask for Ghostty's colours meanwhile
-  keep the colours they knew.
-- Stopping the designer clears the preview file: closing the panel, quitting the
-  app, a termination signal, or a crash. After a hard kill or power loss,
-  Ghostty shows the last preview until the next start replaces it, or until you
-  delete the file. The `?` makes the include optional, so Ghostty starts fine
-  without the file.
-- The panel can only change appearance keys: colours, fonts, cursor, window and
-  splits. Keybinds, commands and every other key are out of its reach.
+Before it changes a config file, the designer backs the file up to
+`~/.local/state/ghostty-designer/` (`$XDG_STATE_HOME/ghostty-designer/` when
+set):
 
-**Saving edits only what you changed, where it is defined.**
+- `original/` keeps each file as it was before the designer first changed it,
+  and is never replaced.
+- `previous/` keeps each file as it was before the latest save.
 
-- A changed key is rewritten on the line that sets it last, even inside an
-  included file. Keys your config does not set yet go into a
-  `# ghostty-designer: saved settings` block. Comments, order and formatting
-  stay.
-- A new theme would be hidden by your explicit colour lines and wiped by a
-  `palette = ""` reset, so save comments them out with `# ghostty-designer:`
-  instead of deleting them. The save sheet lists them, and any setting besides
-  colours in the theme file, which Ghostty applies too.
-- If any config file changes on disk after you review the save, the save stops
-  before writing anything.
-- A save writes every file or none: if one file cannot be written, the files
-  written before it are put back. A file that is not valid UTF-8 is never
-  rewritten.
+**Restore original config…** in the ⋯ menu puts back the current config's files
+from `original/`. It also discards every later change to those files, including
+your own edits.
 
-**Every write can be undone.**
+**Other guarantees:**
 
-| What                                       | When                                                                    | Undo                                                  |
-| ------------------------------------------ | ----------------------------------------------------------------------- | ----------------------------------------------------- |
-| The preview file                           | On start, and on every change while live preview is on                  | Stop the designer, or delete the file                 |
-| Two lines at the end of your config        | When you click **Enable live preview**                                  | **Restore original config…**, or delete the two lines |
-| The changed lines in your config           | When you confirm **Save**                                               | **Restore original config…**, or the previous copy    |
-| A theme file in `~/.config/ghostty/themes` | When you save colours as a theme, or tick the backup option when saving | Delete the file. A theme never replaces another file. |
+- The panel's controls edit only appearance settings: colours, fonts, cursor,
+  window and splits. A theme can carry other settings, and the save review lists
+  them.
+- Ghostty validates every preview before it loads. The designer leaves out a
+  value Ghostty rejects, and the panel names that setting.
+- A save stops before it writes anything if a config file changed on disk after
+  your review.
+- If a file cannot be written, the save puts back the files it already wrote. It
+  never rewrites a file that is not valid UTF-8.
+- Quitting, a termination signal or a designer crash empties the preview file.
+  After a hard kill or power loss, Ghostty shows the last preview until the
+  designer starts again or you delete the file. The include is optional
+  (`config-file = ?ghostty-designer.conf`), so Ghostty starts without the file.
 
-Before its first write to a file, the designer copies the file to
-`~/.local/state/ghostty-designer/original/`, and never overwrites that copy.
-**Restore original config…** in the ⋯ menu puts every file back as it was before
-the designer first touched it. Each completed write also keeps the files it
-changed, as they were before it, in `~/.local/state/ghostty-designer/previous/`,
-replacing the copy from the write before.
+## Usage
 
-## Development
+### Command line
 
-Requires [Mise](https://mise.jdx.dev/).
+| Command                          | Action                                                                              |
+| -------------------------------- | ----------------------------------------------------------------------------------- |
+| `ghostty-designer`               | Open the panel, or bring the open panel to the front                                |
+| `ghostty-designer --config FILE` | Edit `FILE` instead of Ghostty's config. A running designer offers to switch to it. |
+| `ghostty-designer demo`          | Print sample output in this terminal's colours and font                             |
 
-```sh
-mise install
-mise run install
-mise run check
-```
+### Shortcuts
 
-`mise run dev` runs the app from source against your real config and reloads
-your Ghostty. To work without touching either, use a sandbox with its own home
-and config under `.cache/sandboxes/`. In a shell with mise activated, the
-commands in `scripts/` are on the PATH:
+| macOS      | Linux                 | Action                                          |
+| ---------- | --------------------- | ----------------------------------------------- |
+| ⌘K         | Ctrl+K                | Find any setting, theme, font or action         |
+| ⌘S         | Ctrl+S                | Review and save                                 |
+| ⌘Z / ⇧⌘Z   | Ctrl+Z / Ctrl+Shift+Z | Undo / redo                                     |
+| ⌥1 / ⌥2    | Alt+1 / Alt+2         | Show Customise / Themes                         |
+| `/`        | `/`                   | Search fonts in Customise, or themes in Themes  |
+| Hold `\`   | Hold `\`              | Show your saved config in Ghostty while held    |
+| Arrow keys | Arrow keys            | In the theme grid or font list, try each choice |
 
-```sh
-sandbox.ts --name try run         # the app from source in the sandbox "try"
-sandbox.ts --name try run --dev   # the same, with a hot-reloading UI
-sandbox.ts --name try reset       # restore the sandbox's baseline config
-sandbox.ts --name try start       # run in the background, until "stop"
-```
+Trying several themes or fonts in a row is one undo step.
 
-Each name is a separate sandbox, so runs with different names can run side by
-side.
+### Other apps' configs
 
-A sandboxed app never reloads Ghostty, so previews land only in the sandbox's
-config files.
+Apps built on libghostty can load a config file of their own. To edit one,
+choose **Switch config…** in the toolbar's ⋯ menu or with ⌘K. The designer still
+needs Ghostty installed. The switcher lists the apps below when their config
+file has content, your recent files, and any other file by path.
 
-`mise run dev:reset` makes the next `mise run dev` a first launch. It deletes
-the designer's state, the preview file and the include line, and keeps your
-saved settings and themes.
+| App      | Config file                                                     | Loads Ghostty's config first |
+| -------- | --------------------------------------------------------------- | ---------------------------- |
+| cmux     | `~/Library/Application Support/com.cmuxterm.app/config.ghostty` | Yes                          |
+| Supacode | `~/.config/supacode/config.ghostty`                             | Yes                          |
+| Ghostex  | `~/.config/ghostex/ghostty/config.ghostty`                      | No                           |
+| agterm   | `~/.config/agterm/ghostty.conf`                                 | No                           |
+| macterm  | `~/.config/macterm/config.ghostty`                              | Yes                          |
 
-Development builds, from `mise run dev` and sandboxes, serve WebDriver on
-127.0.0.1, so `panel.ts` can drive the panel. `docs/verify.md` describes it.
+The designer loads any other file on top of Ghostty's config. To change this for
+a file, select it in the switcher and change **Does this app use Ghostty's
+config as a base?**.
 
-`mise run test:scenarios` replays the session scenarios against an installed
-Ghostty 1.3.1.
+- A save writes only that file and the files it includes. When a line in
+  Ghostty's config still decides a setting, the save review says so.
+- The live preview reloads only Ghostty. Other apps show your changes when they
+  reload their config.
+- When you edit Ghostty's config, the save review names the settings that an
+  app's own config overrides.
+
+The designer opens the config you last edited.
+
+## Troubleshooting
+
+<!-- [UNTIL] The oldest Ghostty the designer supports includes the fix. https://github.com/ghostty-org/ghostty/issues/14833 Then remove the colour-query item. -->
+
+- **A change does not show in Ghostty.** A file that loads after the preview may
+  set the same key, and the panel warns about it. Check the order of your
+  `config-file` lines.
+- **A cursor change does not show.** Ghostty draws a hollow block in windows
+  that are not focused. Click into Ghostty.
+- **The cursor turns into a bar at the prompt.** Shell integration sets it. Turn
+  on **Use this cursor at the shell prompt**.
+- **Background opacity does not change on macOS.** Open a new Ghostty window, or
+  restart Ghostty.
+- **macOS asks to let the designer control Ghostty.** A font size change resets
+  each window's zoom (⌘+ / ⌘−) through Apple Events. Allow it, so zoomed windows
+  show the new size.
+- **Colours or fonts differ from another app.** Check whether the app loads
+  Ghostty's config first, then set **Does this app use Ghostty's config as a
+  base?** to match in the config switcher.
+- **A program keeps its old colours while the designer runs.** The preview turns
+  off Ghostty's replies to colour queries (`osc-color-report-format = none`),
+  because Ghostty 1.3.1 can freeze when a reload lands during a burst of them.
+  The [fix](https://github.com/ghostty-org/ghostty/pull/14834) is not in a
+  Ghostty release yet.
+- **`error while loading shared libraries: libwebkit2gtk-4.1.so.0`.** Install
+  the [runtime libraries](#install).
+- **Anything else.** Startup errors print in the terminal. Later output goes to
+  `~/.local/state/ghostty-designer/ghostty-designer.log`.
+
+## Uninstall
+
+1. Quit the designer.
+2. In each config where you enabled live preview, delete these two lines, and
+   delete `ghostty-designer.conf` next to it:
+
+   ```text
+   # ghostty-designer: live preview, keep below other config-file lines
+   config-file = ?ghostty-designer.conf
+   ```
+
+3. Remove the package with the tool that installed it.
+4. Optional: delete `~/.local/state/ghostty-designer/` once you no longer need
+   its backups.
+
+Your saved settings and themes are ordinary Ghostty config and stay.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+[docs/architecture.md](docs/architecture.md) describes how the work splits
+between the Rust host and the panel.
 
 ## License
 
