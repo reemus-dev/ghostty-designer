@@ -5,6 +5,7 @@ _.path = ["{{config_root}}/node_modules/.bin", "{{config_root}}/scripts"]
 bun = "1.4.3"
 node = "26.8.1"
 rust = { version = "1.99.0", components = "rustfmt,clippy" }
+oxipng = "10.2.1"
 
 # ── Setup ───────────────────────────────────────────────────────────────────
 
@@ -60,6 +61,10 @@ cp target/release/ghostty-designer dist/ghostty-designer
 description = "Launch the window in a sandbox, under Xvfb on Linux, and close it with SIGTERM"
 depends = ["ui:build"]
 run = "scripts/smoke.sh"
+
+[tasks.cover]
+description = "Capture the app beside two Ghostty windows and write the README cover and social preview to assets/ (macOS, run by hand)"
+run = "scripts/cover/cover.ts"
 
 # ── Release ─────────────────────────────────────────────────────────────────
 

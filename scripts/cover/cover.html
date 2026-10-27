@@ -1,0 +1,150 @@
+<!doctype html>
+<!-- The cover layouts. cover.ts captures the windows into .cache/cover/ and
+     screenshots each stage, so after a run this page opens in a browser to
+     adjust the layout. -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        display: grid;
+        gap: 32px;
+        justify-content: start;
+        margin: 0;
+      }
+      .stage {
+        position: relative;
+        width: 1280px;
+        overflow: hidden;
+        background:
+          radial-gradient(
+            60% 40% at 50% 0%,
+            rgb(252 125 84 / 0.16),
+            transparent 75%
+          ),
+          radial-gradient(
+            35% 35% at 0% 40%,
+            rgb(101 179 246 / 0.07),
+            transparent 70%
+          ),
+          radial-gradient(
+            35% 35% at 100% 45%,
+            rgb(224 144 228 / 0.06),
+            transparent 70%
+          ),
+          linear-gradient(180deg, #24201e 0%, #161414 100%);
+      }
+      /* The README shows the cover as a card. Social sites fill transparent
+         corners with a colour, so the social preview stays square. */
+      #readme {
+        height: 936px;
+        border-radius: 16px;
+      }
+      #social {
+        height: 640px;
+      }
+      /* macOS windows have 16 pt corners, so the radius is 16 pt times the
+         window's scale: its width here (--w) over its captured width. */
+      .win {
+        position: absolute;
+        width: calc(var(--w) * 1px);
+        border-radius: calc(16px * var(--s));
+      }
+      .win img {
+        display: block;
+        width: 100%;
+      }
+      .term {
+        box-shadow:
+          0 0 0 1px rgb(255 255 255 / 0.2),
+          0 12px 30px rgb(0 0 0 / 0.45);
+      }
+      .app {
+        box-shadow:
+          0 0 0 1px rgb(255 255 255 / 0.2),
+          0 2px 8px rgb(0 0 0 / 0.3),
+          0 16px 40px rgb(0 0 0 / 0.5);
+      }
+      .claude {
+        --s: calc(var(--w) / 820);
+        transform: rotate(-3.3deg);
+      }
+      .demo {
+        --s: calc(var(--w) / 820);
+        transform: rotate(5deg);
+      }
+      .customise {
+        --s: calc(var(--w) / 1100);
+      }
+      .themes {
+        --s: calc(var(--w) / 540);
+      }
+      #readme .claude {
+        --w: 640;
+        left: 105px;
+        top: 52px;
+      }
+      #readme .demo {
+        --w: 680;
+        left: 520px;
+        top: 110px;
+      }
+      #readme .customise {
+        --w: 900;
+        left: 20px;
+        top: 413px;
+      }
+      #readme .themes {
+        --w: 390;
+        left: 870px;
+        top: 515px;
+      }
+      #social .claude {
+        --w: 560;
+        left: 130px;
+        top: 34px;
+      }
+      #social .demo {
+        --w: 590;
+        left: 540px;
+        top: 70px;
+      }
+      #social .customise {
+        --w: 800;
+        left: 80px;
+        top: 290px;
+      }
+      #social .themes {
+        --w: 350;
+        left: 852px;
+        top: 370px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="readme">
+      <div class="win term claude">
+        <img src="../../.cache/cover/claude.png" />
+      </div>
+      <div class="win term demo"><img src="../../.cache/cover/demo.png" /></div>
+      <div class="win app customise">
+        <img src="../../.cache/cover/customise.png" />
+      </div>
+      <div class="win app themes">
+        <img src="../../.cache/cover/themes.png" />
+      </div>
+    </div>
+    <div class="stage" id="social">
+      <div class="win term claude">
+        <img src="../../.cache/cover/claude.png" />
+      </div>
+      <div class="win term demo"><img src="../../.cache/cover/demo.png" /></div>
+      <div class="win app customise">
+        <img src="../../.cache/cover/customise.png" />
+      </div>
+      <div class="win app themes">
+        <img src="../../.cache/cover/themes.png" />
+      </div>
+    </div>
+  </body>
+</html>

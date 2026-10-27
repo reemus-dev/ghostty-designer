@@ -42,6 +42,7 @@ session in TypeScript.
 | `ui/components/`                 | Shared controls, with shadcn components in `components/ui/`                |
 | `ui/lib/`                        | Store, host commands, view helpers, the theme card sample                  |
 | `scripts/`                       | On the PATH: sandbox, panel driver, tour, VMs, smoke, icon, release        |
+| `scripts/cover/`                 | README cover and social preview: look, layout, capture (`mise run cover`)  |
 | `docs/`                          | Architecture and distribution decisions, running and driving the app       |
 | `npm/`                           | npm package manifest, and the launcher that runs the machine's build       |
 | `.github/workflows/`             | CI on macOS and Linux, releases from version tags                          |

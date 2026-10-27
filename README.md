@@ -1,9 +1,9 @@
 # ghostty-designer
 
+![Ghostty Designer's Customise and Themes windows in front of two Ghostty windows, running Claude Code and ghostty-designer demo in the same colours](assets/cover.png)
+
 [![CI](https://github.com/reemus-dev/ghostty-designer/actions/workflows/ci.yml/badge.svg)](https://github.com/reemus-dev/ghostty-designer/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/reemus-dev/ghostty-designer)](https://github.com/reemus-dev/ghostty-designer/releases/latest)
-
-![The Customise page: colours with the OKLCH editor, then fonts](assets/customise.png)
 
 Design Ghostty's appearance in a control panel window, with your own Ghostty
 windows as the live preview. An unofficial community tool, not affiliated with

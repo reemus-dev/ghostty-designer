@@ -84,6 +84,77 @@ url = "https://nodejs.org/dist/v26.8.1/node-v26.8.1-darwin-x64.tar.gz"
 checksum = "sha256:57693d8e93d1b04e7b7de46aca53ecd63e97564e73de36a68428d7ff08d83587"
 url = "https://nodejs.org/dist/v26.8.1/node-v26.8.1-win-x64.zip"
 
+[[tools.oxipng]]
+version = "10.2.1"
+backend = "aqua:oxipng/oxipng"
+specifiers = ["10.2.1"]
+
+[tools.oxipng."platforms.linux-arm64"]
+checksum = "sha256:f51bb7c9836202da52a8181549641940662aa87ec2e3ae68115d822d893015b3"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541677736"
+
+[tools.oxipng."platforms.linux-arm64-musl"]
+checksum = "sha256:ff21aa2a005b324c8dfbdf13cd2f469fb6728b27dacded82635824ecd12e3b35"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541678486"
+
+[tools.oxipng."platforms.linux-x64"]
+checksum = "sha256:46e3c4beb9aae57290ad809dd3374b07153579d3322a3778c53900633618b7c6"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541676037"
+
+[tools.oxipng."platforms.linux-x64-baseline"]
+checksum = "sha256:46e3c4beb9aae57290ad809dd3374b07153579d3322a3778c53900633618b7c6"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541676037"
+
+[tools.oxipng."platforms.linux-x64-musl"]
+checksum = "sha256:1813750ef592c5350ca79c88f98b2c0876d05c826dc7156245256d4255c1ad17"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541676949"
+
+[tools.oxipng."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:1813750ef592c5350ca79c88f98b2c0876d05c826dc7156245256d4255c1ad17"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541676949"
+
+[tools.oxipng."platforms.macos-arm64"]
+checksum = "sha256:7039fcfc78e8aa1ed2b57d848057a0296f082e92b3e1807ac65402d10d926764"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541682884"
+
+[tools.oxipng."platforms.macos-x64"]
+checksum = "sha256:111883bbe42b25e01cb1ca41f39f8094e4830b173f0e42be342ecc4ca48f3131"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541682093"
+
+[tools.oxipng."platforms.macos-x64-baseline"]
+checksum = "sha256:111883bbe42b25e01cb1ca41f39f8094e4830b173f0e42be342ecc4ca48f3131"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541682093"
+
+[tools.oxipng."platforms.windows-x64"]
+checksum = "sha256:7e940f83ee46874b73f53031f96a15834cb70b220af27391fb06fe7b4dd798e1"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541679560"
+
+[tools.oxipng."platforms.windows-x64-baseline"]
+checksum = "sha256:7e940f83ee46874b73f53031f96a15834cb70b220af27391fb06fe7b4dd798e1"
+checksum_source = "mise-versions"
+url = "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/oxipng/oxipng/releases/assets/541679560"
+
 [[tools.rust]]
 version = "1.99.0"
 backend = "core:rust"
