@@ -624,6 +624,63 @@ export const OPTIONS: readonly OptionDef[] = [
     platforms: ["macos"],
   },
   {
+    key: "macos-icon",
+    group: "window",
+    label: "Icon",
+    control: {
+      kind: "enum",
+      values: [
+        "official",
+        "blueprint",
+        "chalkboard",
+        "glass",
+        "holographic",
+        "microchip",
+        "paper",
+        "retro",
+        "xray",
+        "custom",
+        "custom-style",
+      ],
+    },
+    reloadNote:
+      "Custom style needs a ghost and a screen colour. Without them, the official icon shows.",
+    platforms: ["macos"],
+  },
+  {
+    key: "macos-custom-icon",
+    group: "window",
+    label: "Icon file",
+    control: {kind: "text", placeholder: "~/.config/ghostty/Ghostty.icns"},
+    platforms: ["macos"],
+  },
+  {
+    key: "macos-icon-frame",
+    group: "window",
+    label: "Frame",
+    control: {
+      kind: "enum",
+      values: ["aluminum", "beige", "plastic", "chrome"],
+    },
+    platforms: ["macos"],
+  },
+  {
+    key: "macos-icon-ghost-color",
+    group: "window",
+    label: "Ghost colour",
+    control: {kind: "color"},
+    reloadNote:
+      "Ghostty keeps the ghost light, so a colour shows as a pale tint.",
+    platforms: ["macos"],
+  },
+  {
+    key: "macos-icon-screen-color",
+    group: "window",
+    label: "Screen colours",
+    control: {kind: "text", placeholder: "#1c1c1c,#3a6ea5"},
+    platforms: ["macos"],
+  },
+  {
     key: "gtk-titlebar",
     group: "window",
     label: "Titlebar",

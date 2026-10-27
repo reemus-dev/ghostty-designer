@@ -23,10 +23,11 @@ import {useAppName} from "@/lib/views";
 export function WindowSection() {
   const options = useSnapshot((snapshot) => snapshot.options);
   const platform = useSnapshot((snapshot) => snapshot.platform);
+  const icon = useEffective("macos-icon")?.[0];
 
   const layout = useMemo(
-    () => windowCards(options, platform),
-    [options, platform],
+    () => windowCards(options, platform, icon),
+    [options, platform, icon],
   );
 
   return (

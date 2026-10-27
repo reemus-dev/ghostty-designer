@@ -219,27 +219,58 @@ const COLUMNS = [
         "split-divider-color",
       ],
     },
+    {
+      label: "App icon",
+      keys: [
+        "macos-icon",
+        "macos-custom-icon",
+        "macos-icon-frame",
+        "macos-icon-ghost-color",
+        "macos-icon-screen-color",
+      ],
+    },
   ],
 ];
 
 /**
- * The window and cursor cards by column, then every option only for the other
- * platform in a card of its own.
+ * The macos-icon value each icon option applies to. Ghostty ignores it
+ * otherwise.
  */
-export function windowCards(options: OptionMeta[], platform: Platform) {
-  const grouped = options.filter((option) => WINDOW_GROUPS.has(option.group));
+const ICON_DETAILS = new Map([
+  ["macos-custom-icon", "custom"],
+  ["macos-icon-frame", "custom-style"],
+  ["macos-icon-ghost-color", "custom-style"],
+  ["macos-icon-screen-color", "custom-style"],
+]);
+
+/**
+ * The window and cursor cards by column, then every option only for the other
+ * platform in a card of its own. `icon` is macos-icon's value: each icon option
+ * shows only with the value it applies to.
+ */
+export function windowCards(
+  options: OptionMeta[],
+  platform: Platform,
+  icon: string | undefined,
+) {
+  const shown = options.filter(
+    (option) => (ICON_DETAILS.get(option.key) ?? icon) === icon,
+  );
+  const grouped = shown.filter((option) => WINDOW_GROUPS.has(option.group));
   const other: Platform = platform === "macos" ? "linux" : "macos";
   return {
     columns: COLUMNS.map((column) =>
-      column.map((card) => ({
-        label: card.label,
-        options: own(grouped, platform, card.keys),
-      })),
+      column
+        .map((card) => ({
+          label: card.label,
+          options: own(grouped, platform, card.keys),
+        }))
+        .filter((card) => card.options.length > 0),
     ),
     elsewhere: {
       label: `${PLATFORM_LABEL[other]} only`,
       platform: other,
-      options: options.filter((option) => !option.platforms.includes(platform)),
+      options: shown.filter((option) => !option.platforms.includes(platform)),
     },
   };
 }
@@ -256,7 +287,11 @@ type CustomiseSection = {
 /** The sections in page order. */
 export function customiseSections(snapshot: Snapshot): CustomiseSection[] {
   const {options, platform, state} = snapshot;
-  const window = windowCards(options, platform);
+  const window = windowCards(
+    options,
+    platform,
+    state.effective["macos-icon"]?.[0],
+  );
   return [
     {
       id: "colors",
