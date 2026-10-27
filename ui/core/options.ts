@@ -394,6 +394,8 @@ export const OPTIONS: readonly OptionDef[] = [
     group: "background",
     label: "Background opacity",
     control: {kind: "number", min: 0, max: 1, step: 0.01},
+    reloadNote:
+      "On macOS, a change may show only in a new window or after a Ghostty restart.",
   },
   {
     key: "background-opacity-cells",
