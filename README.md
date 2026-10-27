@@ -23,7 +23,9 @@ diff.
 
 <!-- oxfmt-ignore -->
 > [!NOTE]
-> **Built entirely by AI agents in Claude Code with Opus 5.5 💌** I own the result, and I put my expertise and care into it.
+> **Built entirely by AI agents in Claude Code with Opus 5.5 💌**
+>
+> I own the result, and I put my expertise and care into it.
 
 An unofficial community tool, not affiliated with the Ghostty project.
 
