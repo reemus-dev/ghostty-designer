@@ -3,6 +3,7 @@ import {cn} from "cn";
 import {
   ChevronRightIcon,
   CircleCheckIcon,
+  CopyIcon,
   LayersIcon,
   PaletteIcon,
   SlidersHorizontalIcon,
@@ -21,7 +22,7 @@ import {
 import {errorText} from "@/core/errors";
 import type {ConfigOverride, SavePlan, SaveResult} from "@/core/types";
 import {draftChanges} from "@/lib/changes";
-import {session, setSaveOpen, useSnapshot, useStore} from "@/lib/store";
+import {notify, session, setSaveOpen, useSnapshot, useStore} from "@/lib/store";
 import {appName} from "@/lib/views";
 import {ChangeValues} from "./change-values";
 
@@ -351,9 +352,25 @@ function Diffs(props: {plan: SavePlan}) {
     <div className="flex flex-col gap-3">
       {props.plan.files.map((file) => (
         <section key={file.path} className="flex flex-col gap-1.5">
-          <h3 className="font-mono text-xs text-muted-foreground">
-            <TruncatedPath path={file.path} className="block" />
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="min-w-0 flex-1 font-mono text-xs text-muted-foreground">
+              <TruncatedPath path={file.path} className="block" />
+            </h3>
+            <Button
+              size="xs"
+              variant="outline"
+              onClick={() =>
+                void navigator.clipboard
+                  .writeText(file.text)
+                  .then(() => notify(`Copied the updated ${file.path}`))
+                  .catch(() =>
+                    notify("Could not copy to the clipboard", "error"),
+                  )
+              }>
+              <CopyIcon />
+              Copy content
+            </Button>
+          </div>
           <DiffView diff={file.diff} />
         </section>
       ))}

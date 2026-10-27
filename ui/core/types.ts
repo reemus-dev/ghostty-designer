@@ -294,7 +294,8 @@ export type ConfigOverride = {
 export type SavePlan = {
   /** Identifies this review: a save applies only the plan last reviewed. */
   id: string;
-  files: {path: string; diff: string}[];
+  /** Each file the save writes: its diff, and its whole text once saved. */
+  files: {path: string; diff: string; text: string}[];
   /**
    * The number of explicit colour lines and `palette = ""` resets that would
    * hide the saved theme. Save comments them out.

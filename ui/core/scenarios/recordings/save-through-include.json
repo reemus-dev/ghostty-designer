@@ -630,6 +630,12 @@
                 "+window-width = 120",
                 "+font-feature = -calt",
                 ""
+              ],
+              "text": [
+                "font-size = 16",
+                "window-width = 120",
+                "font-feature = -calt",
+                ""
               ]
             },
             {
@@ -655,6 +661,43 @@
                 "+cursor-style = bar",
                 "+",
                 " config-file = ?ghostty-designer.conf",
+                ""
+              ],
+              "text": [
+                "theme = \"GitHub Dark\"",
+                "font-family = Menlo",
+                "font-size = 15",
+                "window-colorspace = srgb",
+                "background = #101010",
+                "foreground = #faf9f6",
+                "cursor-color = #fc7d54",
+                "cursor-text = #121212",
+                "selection-background = #4c3128",
+                "selection-foreground = #faf9f6",
+                "palette = 0=#3d3d3d",
+                "palette = 1=#ff7178",
+                "palette = 2=#70cd82",
+                "palette = 3=#f6c260",
+                "palette = 4=#65b3f6",
+                "palette = 5=#e090e4",
+                "palette = 6=#23d8dc",
+                "palette = 7=#e7e3e0",
+                "palette = 8=#a09c96",
+                "palette = 9=#ff989a",
+                "palette = 10=#97e79b",
+                "palette = 11=#ffdf90",
+                "palette = 12=#8dcaff",
+                "palette = 13=#f8b7ff",
+                "palette = 14=#6ceef1",
+                "palette = 15=#fffdf8",
+                "window-width = 110",
+                "window-height = 32",
+                "config-file = extra.conf",
+                "",
+                "# ghostty-designer: saved settings",
+                "cursor-style = bar",
+                "",
+                "config-file = ?ghostty-designer.conf",
                 ""
               ]
             }

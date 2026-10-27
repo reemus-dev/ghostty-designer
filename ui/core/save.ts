@@ -300,7 +300,7 @@ function fileEdits(changes: Map<ConfigFile, LineEdit[]>, files: ConfigFile[]) {
       before: isNew ? null : serializeConfig(file),
       after,
     });
-    diffs.push({path: file.path, diff});
+    diffs.push({path: file.path, diff, text: after});
   }
   return {edits, diffs};
 }
