@@ -273,6 +273,7 @@ function ChoiceRow(props: {
           void navigator.clipboard
             .writeText(choice.path)
             .then(() => notify(`Copied ${choice.path}`))
+            .catch(() => notify("Could not copy to the clipboard", "error"))
         }>
         <CopyIcon />
       </IconButton>
