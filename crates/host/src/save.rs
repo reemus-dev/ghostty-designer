@@ -338,6 +338,26 @@ pub fn apply_save(edits: &[FileEdit], state_dir: &Path) -> Result<SavedFiles, Er
             Ok(step) => staged.push(Staged { edit, step }),
             Err(error) => {
                 discard(&staged);
+                // A config that Nix or a similar tool generates links into a
+                // read-only store. Naming the link's target shows where it is.
+                if matches!(
+                    error.kind(),
+                    io::ErrorKind::PermissionDenied | io::ErrorKind::ReadOnlyFilesystem
+                ) {
+                    let file = if edit.path.is_symlink() {
+                        format!(
+                            "{} links to {}, which",
+                            edit.path.display(),
+                            canonical(&edit.path).display()
+                        )
+                    } else {
+                        edit.path.display().to_string()
+                    };
+                    return Err(Error::Input(format!(
+                        "{file} is read-only. If a tool such as Nix generates it, make this \
+                         change there. No file was changed."
+                    )));
+                }
                 return Err(Error::Internal(format!(
                     "Could not write {}: {error}. No file was changed.",
                     edit.path.display()

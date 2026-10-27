@@ -169,8 +169,14 @@ pub fn canonical(path: &Path) -> PathBuf {
     let Some(base) = nearest_existing(path) else {
         return path.to_owned();
     };
-    let rest = path.strip_prefix(base).unwrap_or(Path::new(""));
-    fs::canonicalize(base).map_or_else(|_| path.to_owned(), |base| base.join(rest))
+    let Ok(resolved) = fs::canonicalize(base) else {
+        return path.to_owned();
+    };
+    // Joining an empty rest would add a trailing slash.
+    match path.strip_prefix(base) {
+        Ok(rest) if !rest.as_os_str().is_empty() => resolved.join(rest),
+        _ => resolved,
+    }
 }
 
 fn nearest_existing(path: &Path) -> Option<&Path> {
