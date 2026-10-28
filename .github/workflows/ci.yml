@@ -84,7 +84,7 @@ jobs:
           VERSION: ${{ matrix.ghostty.version }}
           SHA256: ${{ matrix.ghostty.sha256 }}
         run: |
-          curl -sSLfo Ghostty.dmg "https://release.files.ghostty.org/$VERSION/Ghostty.dmg"
+          curl -sSLf --retry 3 --retry-all-errors --max-time 300 -o Ghostty.dmg "https://release.files.ghostty.org/$VERSION/Ghostty.dmg"
           echo "$SHA256  Ghostty.dmg" | shasum -a 256 -c
           hdiutil attach Ghostty.dmg -nobrowse -mountpoint /Volumes/Ghostty
           cp -R /Volumes/Ghostty/Ghostty.app /Applications/
