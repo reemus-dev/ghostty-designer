@@ -33,6 +33,9 @@ An unofficial community tool, not affiliated with the Ghostty project.
 
 ## Install
 
+The designer installs as a terminal command, `ghostty-designer`. Run it in a
+terminal to open the panel window.
+
 | Requirement | Needs                                                                     |
 | ----------- | ------------------------------------------------------------------------- |
 | Ghostty     | [Installed](https://ghostty.org/download), 1.3.1 or later                 |
@@ -112,7 +115,12 @@ mise run build
 
 ## Quick start
 
-1. Run `ghostty-designer`. The panel opens and the prompt returns.
+<!-- oxfmt-ignore -->
+> [!NOTE]
+> The designer is a GUI app, but you launch it from a terminal.
+
+1. Run `ghostty-designer`. The panel opens in its own window, and the prompt
+   returns.
 2. Click **Enable live preview**. The designer backs up your config, then adds
    two lines to the end of it.
 3. Change a setting and watch Ghostty update. Some settings apply only to new
