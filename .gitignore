@@ -17,6 +17,9 @@ rustc-ice-*.txt
 # sandboxes, VMs and smoke screenshots
 .cache/
 
+# private project material
+.local/
+
 # mise local overrides
 .mise.local.toml
 .mise.*.local.toml
