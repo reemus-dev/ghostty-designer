@@ -11,6 +11,9 @@ diff.
 
 ![Ghostty Designer's Customise and Themes windows in front of two Ghostty windows, running Claude Code and ghostty-designer demo in the same colours](assets/cover.png)
 
+▶ [Watch the 1-minute demo](https://www.youtube.com/watch?v=tcUtw31Ih2Y) of the
+live preview.
+
 - **Themes:** try themes with the arrow keys, or pin a theme beside your colours
   and copy single colours from it.
 - **Colours:** tune each colour with OKLCH sliders and contrast checks.
